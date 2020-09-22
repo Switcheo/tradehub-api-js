@@ -1,0 +1,31 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nativeAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_externalAddress",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_bytecodeHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getWalletAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

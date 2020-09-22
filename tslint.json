@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "tslint-immutable"
+  ],
+  "rules": {
+    "interface-name": [
+      true,
+      "never-prefix"
+    ],
+    "no-implicit-dependencies": [
+      true,
+      "dev"
+    ]
+  }
+}
