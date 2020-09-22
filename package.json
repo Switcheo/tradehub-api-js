@@ -8,7 +8,7 @@
   ],
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
-  "repository": "https://github.com/holyxiaoxin/switcheo-chain-js-sdk",
+  "repository": "https://github.com/Switcheo/tradehub-api-js",
   "license": "MIT",
   "keywords": [],
   "scripts": {
