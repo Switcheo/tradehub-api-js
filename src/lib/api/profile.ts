@@ -14,6 +14,7 @@ export interface UpdateProfileMsg {
 
 export async function updateProfile(wallet: Wallet, msg: UpdateProfileMsg, options?: Options) {
   if (!msg.originator) msg.originator = wallet.pubKeyBech32
+  console.log('msg', msg)
   return wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], options)
 }
 

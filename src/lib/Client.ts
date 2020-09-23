@@ -1,7 +1,9 @@
 import {EventEmitter} from 'events'
 import WebSocket from 'isomorphic-ws'
 
-import ClientApi from './clients/api/ClientApi'
+// import ClientApi from './clients/api/ClientApi'
+import RestClient from './clients/rest'
+import WsClient from './clients/ws'
 import { getNetwork } from '../lib/config'
 
 export enum Network {
@@ -17,23 +19,18 @@ export enum ClientEvent {
 }
 
 export default class Client extends EventEmitter {
-  public api: ClientApi
+  public rest: RestClient
+  public ws: WsClient
 
-  private socket: WebSocket
+  public socket: WebSocket
   private channelIdToId: Map<string, string> = new Map()
 
   constructor(network?: Network) {
     super()
-
-    const [restBaseUrl, wsBaseUrl] = this.getBaseUrls(network)
-    this.socket = this.newWebSocket(wsBaseUrl)
-    this.api = new ClientApi(restBaseUrl, this.socket)
-  }
-
-  private getBaseUrls(network: Network): [string, string] {
     const net = getNetwork(network)
-    return [net.REST_URL, net.WS_URL]
-
+    this.socket = this.newWebSocket(net.WS_URL)
+    this.rest = new RestClient(network)
+    this.ws = new WsClient(this.socket)
   }
 
   private newWebSocket(baseUrl: string): WebSocket {

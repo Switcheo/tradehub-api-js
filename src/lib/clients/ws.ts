@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 
-export default abstract class BaseWsApi extends EventEmitter {
+export default class BaseWsApi extends EventEmitter {
   protected socket: WebSocket
 
   constructor(socket: WebSocket) {
@@ -46,5 +46,17 @@ export default abstract class BaseWsApi extends EventEmitter {
     } catch (e) {
       console.error(e.message)
     }
+  }
+
+  public subscribeMarketStats() {
+    const channelId: string = 'market_stats'
+    const id: string = `market:sub:${channelId}`
+    this.subscribe(id, channelId)
+  }
+
+  public unsubscribeMarketStats() {
+    const channelId: string = 'market_stats'
+    const id: string = `market:unsub:${channelId}`
+    this.unsubscribe(id, channelId)
   }
 }

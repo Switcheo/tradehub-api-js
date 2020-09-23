@@ -1,5 +1,5 @@
-const { default: Client, ClientEvent, Network, MarketEvent } = require('../.')
+const { default: Client, clients, Network, MarketEvent } = require('../.')
 
-const client = new Client(Network.TestNet)
-
-console.log(client)
+console.log('client', clients)
+const c = new BaseRestApi()
+console.log(c)
