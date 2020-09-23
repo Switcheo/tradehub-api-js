@@ -28,6 +28,7 @@ export { createSubAccount, activateSubAccount } from './subaccount'
 export { setLeverage, setLeverages, SetLeverageMsg } from './leverage'
 export { getPrices, getIndexPrice, getLastPrice } from './prices'
 export { updateProfile, getProfile, getUsernameIsTaken } from './profile'
+export * from './position'
 export * from './amm'
 export { submitProposal, depositProposal, voteProposal, SubmitProposalMsg, DepositProposalMsg, VoteProposalMsg } from './gov'
 
