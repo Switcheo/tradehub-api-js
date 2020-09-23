@@ -20,7 +20,7 @@ export class PrivKeySecp256k1 {
       Buffer.from(this.privKey),
       true
     );
-    return new PubKeySecp256k1(pubKey);
+    return new PubKeySecp256k1(Buffer.from(pubKey));
   }
 
   public equals(privKey) {
@@ -31,7 +31,7 @@ export class PrivKeySecp256k1 {
     return secp256k1.ecdsaSign(
       Buffer.from(new sha256().update(msg).digest()),
       Buffer.from(this.privKey)
-    ).signature
+    )
   }
 }
 

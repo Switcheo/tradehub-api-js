@@ -202,7 +202,7 @@ export class Wallet {
   public sign(message) {
     const privKey = this.privKey
     const data = privKey.sign(message)
-    const signatureBase64 = data.toString()
+    const signatureBase64 = Buffer.from(data.signature).toString('base64')
     return {
       pub_key: {
         type: 'tendermint/PubKeySecp256k1',
