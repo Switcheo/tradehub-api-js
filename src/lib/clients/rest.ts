@@ -1,9 +1,9 @@
 import fetch from '../utils/fetch'
 
-import { camelCaseDeep } from "../utils/json";
-import { getNetwork } from '../config';
+import { camelCaseDeep } from "../utils/json"
+import { getNetwork } from '../config'
 
-export default class BaseRestApi {
+export class RestClient {
   protected baseUrl: string
 
   constructor(network: string) {

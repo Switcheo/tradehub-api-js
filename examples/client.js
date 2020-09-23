@@ -1,5 +1,7 @@
-const { default: Client, clients, Network, MarketEvent } = require('../.')
+const { BaseRestApi, BaseWsApi } = require('../.')
 
-console.log('client', clients)
-const c = new BaseRestApi()
-console.log(c)
+// console.log('BaseRestApi', BaseRestApi)
+// const c = new BaseRestApi()
+const w = new BaseWsApi()
+console.log('w', w)
+w.subscribeMarketStats()

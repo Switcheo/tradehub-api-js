@@ -44,3 +44,11 @@ export const UNLINK_POOL_MSG_TYPE = 'amm/UnlinkPool'
 export const SUBMIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgSubmitProposal'
 export const DEPOSIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgDeposit'
 export const VOTE_PROPOSAL_TYPE = 'cosmos-sdk/MsgVote'
+
+export enum Network {
+  LocalHost = 'LOCALHOST',
+  TestNet = 'TESTNET',
+  MainNet = 'MAINNET',
+  DevNet = 'DEVNET',
+}
+
