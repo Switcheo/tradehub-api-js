@@ -1,8 +1,7 @@
 import {EventEmitter} from 'events'
 import WebSocket from 'isomorphic-ws'
 
-import MarketClient from './clients/Market/MarketClient'
-import TradeClient from './clients/Trade/TradeClient'
+import ClientApi from './clients/api/ClientApi'
 import { getNetwork } from '../lib/config'
 
 export enum Network {
@@ -18,8 +17,7 @@ export enum ClientEvent {
 }
 
 export default class Client extends EventEmitter {
-  public market: MarketClient
-  public trade: TradeClient
+  public api: ClientApi
 
   private socket: WebSocket
   private channelIdToId: Map<string, string> = new Map()
@@ -29,8 +27,7 @@ export default class Client extends EventEmitter {
 
     const [restBaseUrl, wsBaseUrl] = this.getBaseUrls(network)
     this.socket = this.newWebSocket(wsBaseUrl)
-    this.market = new MarketClient(restBaseUrl, this.socket)
-    this.trade = new TradeClient(restBaseUrl, this.socket)
+    this.api = new ClientApi(restBaseUrl, this.socket)
   }
 
   private getBaseUrls(network: Network): [string, string] {

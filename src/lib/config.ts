@@ -132,7 +132,7 @@ export function getBech32Prefix(net: Network, type: Bech32Type = 'main') {
 export function getNetwork(net): Network {
   const network = NETWORK[net]
   if (!network) {
-    throw new Error('network must be LOCALHOST/DEVNET/TESTNET')
+    throw new Error('network must be LOCALHOST/DEVNET/TESTNET/MAINNET')
   }
   return network
 }

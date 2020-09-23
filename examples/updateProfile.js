@@ -3,7 +3,6 @@ const fetch = require('node-fetch')
 const SDK = require('../.')
 const { wallet, api } = SDK
 const { Wallet } = wallet
-const mnemonics = require('../mnemonics.json')
 
 
 async function update() {

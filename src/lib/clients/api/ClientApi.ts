@@ -1,7 +1,7 @@
 import RestApi from "./RestApi"
 import WsApi from "./WsApi"
 
-export default class MarketClient {
+export default class ClientApi {
     public rest: RestApi
     public ws: WsApi
 

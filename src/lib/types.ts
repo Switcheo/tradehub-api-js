@@ -32,7 +32,7 @@ export const CREATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgCreateSubAccountV2'
 export const ACTIVATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgActivateSubAccountV2'
 
 // Profile
-export const UPDATE_PROFILE_MSG_TYPE = 'profile/MsgUpdateProfile'
+export const UPDATE_PROFILE_MSG_TYPE = 'profile/UpdateProfile'
 
 export const ADD_LIQUIDITY_MSG_TYPE = 'amm/AddLiquidity'
 export const REMOVE_LIQUIDITY_MSG_TYPE = 'amm/RemoveLiquidity'
