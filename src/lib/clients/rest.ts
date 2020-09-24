@@ -99,7 +99,7 @@ export interface REST {
   editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options): Promise<any>
   editOrders(orderIDs: string[], params: types.EditOrderParams[], options?: types.Options): Promise<any>
   cancelAll(msg: types.CancelAllMsg, options?: types.Options): Promise<any>
-  sendTokens(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
+  send(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
 }
 
 export class RestClient implements REST {
@@ -485,7 +485,7 @@ export class RestClient implements REST {
     return this.wallet.signAndBroadcast([msg], [types.CANCEL_ALL_MSG_TYPE], options)
   }
 
-  public async sendTokens(msg: types.SendTokensMsg, options?: types.Options) {
+  public async send(msg: types.SendTokensMsg, options?: types.Options) {
     return this.wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], options)
   }
 
