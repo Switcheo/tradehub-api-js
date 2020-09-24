@@ -103,8 +103,8 @@ export interface REST {
 }
 
 export class RestClient implements REST {
-  protected baseUrl: string
-  private wallet: WalletClient
+  public readonly baseUrl: string
+  public readonly wallet: WalletClient
 
   constructor(options: any) {
     const { network, wallet } = options
