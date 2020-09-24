@@ -1,2 +1,3 @@
-export * from './Market'
-export * from './Trade'
+export { RestClient } from './rest'
+export { WsClient, MarketEvent, ClientEvent } from './ws'
+export { WalletClient } from './wallet'

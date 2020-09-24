@@ -1,3 +1,6 @@
+import { SignMessageOptions } from './wallet'
+import { TransactionOptions } from './containers/Transaction'
+
 // Orders
 export const CREATE_ORDER_MSG_TYPE = 'order/MsgCreateOrder'
 export const CANCEL_ORDER_MSG_TYPE = 'order/MsgCancelOrder'
@@ -32,7 +35,7 @@ export const CREATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgCreateSubAccountV2'
 export const ACTIVATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgActivateSubAccountV2'
 
 // Profile
-export const UPDATE_PROFILE_MSG_TYPE = 'profile/MsgUpdateProfile'
+export const UPDATE_PROFILE_MSG_TYPE = 'profile/UpdateProfile'
 
 export const ADD_LIQUIDITY_MSG_TYPE = 'amm/AddLiquidity'
 export const REMOVE_LIQUIDITY_MSG_TYPE = 'amm/RemoveLiquidity'
@@ -45,3 +48,49 @@ export const UNLINK_POOL_MSG_TYPE = 'amm/UnlinkPool'
 export const SUBMIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgSubmitProposal'
 export const DEPOSIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgDeposit'
 export const VOTE_PROPOSAL_TYPE = 'cosmos-sdk/MsgVote'
+
+export enum Network {
+  LocalHost = 'LOCALHOST',
+  TestNet = 'TESTNET',
+  MainNet = 'MAINNET',
+  DevNet = 'DEVNET',
+}
+
+export interface CreateOrderParams {
+  OrderType?: string,
+  StopPrice?: string,
+  TriggerType?: string,
+  Market: string,
+  Side: string,
+  Quantity: string,
+  Price: string,
+  IsReduceOnly?: boolean,
+  IsPostOnly?: boolean,
+}
+
+export interface CancelOrderParams {
+  order_id: string,
+  originator?: string,
+}
+
+export interface EditOrderParams {
+  StopPrice?: string,
+  Quantity?: string,
+  Price?: string,
+}
+
+export interface CancelAllMsg {
+  market: string,
+  originator?: string,
+}
+
+export interface SendTokensMsg {
+  from_address: string,
+  to_address: string,
+  amount: Array<{
+    denom: string,
+    amount: string,
+  }>
+}
+
+export interface Options extends SignMessageOptions, TransactionOptions { }

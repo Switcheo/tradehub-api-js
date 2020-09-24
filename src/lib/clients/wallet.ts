@@ -1,21 +1,20 @@
-import * as bip32 from 'bip32'
-import * as bip39 from 'bip39'
 import fetch from 'node-fetch'
 import { BigNumber } from 'bignumber.js'
 import Dagger from '@maticnetwork/eth-dagger'
 import { ethers } from 'ethers'
-import { CONFIG, getBech32Prefix, NETWORK, Network } from './config'
-import { Fee, StdSignDoc, Transaction } from './containers'
-import { marshalJSON, sortAndStringifyJSON } from './utils/encoder'
-import { Address, getPath, getPathArray, PrivKeySecp256k1, PubKeySecp256k1 } from './utils/wallet'
-import { ConcreteMsg } from './containers/Transaction'
-import { HDWallet } from './utils/hdwallet'
-import BALANCE_READER_ABI from './eth/abis/balanceReader.json'
-import WALLET_FACTORY_ABI from './eth/abis/walletFactory.json'
-import { Blockchain, ETH_WALLET_BYTECODE } from './constants'
+import { CONFIG, getBech32Prefix, getNetwork, Network } from '../config'
+import { Fee, StdSignDoc, Transaction } from '../containers'
+import { marshalJSON, sortAndStringifyJSON } from '../utils/encoder'
+import { Address, getPathArray, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
+import { ConcreteMsg } from '../containers/Transaction'
+import { HDWallet } from '../utils/hdwallet'
+import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
+import WALLET_FACTORY_ABI from '../eth/abis/walletFactory.json'
+import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
 import Neon, { nep5, api, u } from "@cityofzion/neon-js"
 import stripHexPrefix from 'strip-hex-prefix'
 import CosmosLedger from '@lunie/cosmos-ledger'
+import { getPrivKeyFromMnemonic } from '../wallet'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -40,44 +39,34 @@ export interface BroadcastResults {
   [id: string]: any
 }
 
-export class Wallet {
-  public static async connect(mnemonic: string, net = 'LOCALHOST') {
-    const network = NETWORK[net]
-    if (!network) {
-      throw new Error('network must be LOCALHOST/DEVNET/TESTNET')
-    }
+export class WalletClient {
+  public static async connectMnemonic(mnemonic: string, net?: string) {
+    const network = getNetwork(net)
     const privateKey = getPrivKeyFromMnemonic(mnemonic)
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
     const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
-    return new Wallet({ mnemonic, accountNumber: value.account_number.toString(), network, signerType: 'mnemonic' })
+    return new WalletClient({ mnemonic, accountNumber: value.account_number.toString(), network, signerType: 'mnemonic' })
   }
 
-  public static async connectPrivateKey(privateKey: string, net = 'LOCALHOST') {
-    const network = NETWORK[net]
-    if (!network) {
-      throw new Error('network must be LOCALHOST/DEVNET/TESTNET')
-    }
+  public static async connectPrivateKey(privateKey: string, net?: string) {
+    const network = getNetwork(net)
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
     const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
-    return new Wallet({ privateKey, accountNumber: value.account_number.toString(), network, signerType: 'privateKey' })
+    return new WalletClient({ privateKey, accountNumber: value.account_number.toString(), network, signerType: 'privateKey' })
   }
 
-  public static async connectLedger(cosmosLedger: any, net = 'LOCALHOST',
+  public static async connectLedger(cosmosLedger: any, net = 'TESTNET',
                                     onRequestSign: OnRequestSignCallback,
                                     onSignComplete: OnSignCompleteCallback) {
-    const network = NETWORK[net]
-    if (!network) {
-      throw new Error('Network unrecognised. Must be LOCALHOST/DEVNET/TESTNET/MAINNET')
-    }
-
+    const network = getNetwork(net)
     const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
     const pubKey = await cosmosLedger.getPubKey()
 
     const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
-    return new Wallet({
+    return new WalletClient({
       accountNumber: value.account_number.toString(),
       network,
       pubKey,
@@ -89,15 +78,12 @@ export class Wallet {
   }
 
   // for debug view
-  public static async connectPublicKey(pubKeyBech32: string, net = 'LOCALHOST') {
-    const network = NETWORK[net]
-    if (!network) {
-      throw new Error('Network unrecognised. Must be LOCALHOST/DEVNET/TESTNET/MAINNET')
-    }
+  public static async connectPublicKey(pubKeyBech32: string, net?: string) {
+    const network = getNetwork(net)
 
     const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
-    return new Wallet({ accountNumber: value.account_number.toString(), network, pubKeyBech32 })
+    return new WalletClient({ accountNumber: value.account_number.toString(), network, pubKeyBech32 })
   }
 
   public readonly mnemonic?: string
@@ -731,40 +717,4 @@ export class Wallet {
 
     return concreteMsgs
   }
-}
-
-export function newAccount(net: string = 'TESTNET') {
-  const network = NETWORK[net]
-  const mnemonic = bip39.generateMnemonic()
-  const privateKey = getPrivKeyFromMnemonic(mnemonic)
-  const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network))
-  return {
-    mnemonic,
-    privateKey,
-    pubKeyBech32,
-  }
-}
-
-export function accountFromMnemonic(mnemonic, net: string = 'LOCALHOST') {
-  const network = NETWORK[net]
-  const privateKey = getPrivKeyFromMnemonic(mnemonic)
-  const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network))
-  return {
-    mnemonic,
-    privateKey,
-    pubKeyBech32,
-  }
-}
-
-export function getPrivKeyFromMnemonic(mnemonic) {
-  const path = getPath()
-  const seed = bip39.mnemonicToSeedSync(mnemonic, '')
-  const masterKey = bip32.fromSeed(seed)
-  const hd = masterKey.derivePath(path)
-
-  const privateKey = hd.privateKey
-  if (!privateKey) {
-    throw new Error("null hd key")
-  }
-  return privateKey.toString('hex')
 }
