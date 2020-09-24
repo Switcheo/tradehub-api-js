@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 import { getNetwork } from '../config'
 import fetch from '../utils/fetch'
@@ -73,33 +73,33 @@ export interface AddressOnlyGetterParams {
 
 // * Transaction requests * //
 
-export async function createValidator(wallet: Wallet, msg: CreateValidatorMsg, options?: Options) {
+export async function createValidator(wallet: WalletClient, msg: CreateValidatorMsg, options?: Options) {
   return wallet.signAndBroadcast([msg], [types.CREATE_VALIDATOR_MSG_TYPE], options)
 }
 
-export async function delegateTokens(wallet: Wallet, msg: DelegateTokensMsg, options?: Options) {
+export async function delegateTokens(wallet: WalletClient, msg: DelegateTokensMsg, options?: Options) {
   return wallet.signAndBroadcast([msg], [types.DELEGATE_TOKENS_MSG_TYPE], options)
 }
 
-export async function unbondTokens(wallet: Wallet,
+export async function unbondTokens(wallet: WalletClient,
                                    msg: BeginUnbondingTokensMsg, options?: Options) {
   return wallet.signAndBroadcast([msg], [types.BEGIN_UNBONDING_TOKENS_MSG_TYPE], options)
 }
 
-export async function redelegateTokens(wallet: Wallet,
+export async function redelegateTokens(wallet: WalletClient,
                                        msg: BeginRedelegatingTokensMsg, options?: Options) {
   return wallet.signAndBroadcast([msg],
     [types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE], options)
 }
 
-export async function withdrawDelegatorRewards(wallet: Wallet,
+export async function withdrawDelegatorRewards(wallet: WalletClient,
                                                msg: WithdrawDelegatorRewardsMsg,
                                                options?: Options) {
   return wallet.signAndBroadcast([msg],
     [types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE], options)
 }
 
-export async function withdrawAllDelegatorRewards(wallet: Wallet,
+export async function withdrawAllDelegatorRewards(wallet: WalletClient,
                                                   msg: WithdrawAllDelegatorRewardsParams,
                                                   options?: Options) {
   const { validatorAddresses, delegatorAddress } = msg

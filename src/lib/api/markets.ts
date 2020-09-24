@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 import { getNetwork } from '../config'
 import fetch from '../utils/fetch'
@@ -32,11 +32,11 @@ export interface CreateMarketMsg {
   originator?: string,
 }
 
-export async function createMarket(wallet: Wallet, msg: CreateMarketMsg, options?: Options) {
+export async function createMarket(wallet: WalletClient, msg: CreateMarketMsg, options?: Options) {
   return createMarkets(wallet, [msg], options)
 }
 
-export async function createMarkets(wallet: Wallet, msgs: CreateMarketMsg[], options?: Options) {
+export async function createMarkets(wallet: WalletClient, msgs: CreateMarketMsg[], options?: Options) {
   const address = wallet.pubKeyBech32
   msgs = msgs.map(msg => {
     // msg.TickSize = new BigNumber(msg.TickSize).toFixed(18)
@@ -52,11 +52,11 @@ export interface InitiateSettlementMsg {
   originator?: string,
 }
 
-export async function initiateSettlement(wallet: Wallet, msg: InitiateSettlementMsg, options?: Options) {
+export async function initiateSettlement(wallet: WalletClient, msg: InitiateSettlementMsg, options?: Options) {
   return initiateSettlements(wallet, [msg], options)
 }
 
-export async function initiateSettlements(wallet: Wallet, msgs: InitiateSettlementMsg[], options?: Options) {
+export async function initiateSettlements(wallet: WalletClient, msgs: InitiateSettlementMsg[], options?: Options) {
   const address = wallet.pubKeyBech32
   msgs = msgs.map(msg => {
     if (!msg.originator) msg.originator = address

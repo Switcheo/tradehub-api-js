@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 
 interface Options extends SignMessageOptions, TransactionOptions { }
@@ -13,7 +13,7 @@ export interface CreateWithdrawalMsg {
   originator?: string,
 }
 
-export async function createWithdrawal(wallet: Wallet, msg: CreateWithdrawalMsg, options?: Options) {
+export async function createWithdrawal(wallet: WalletClient, msg: CreateWithdrawalMsg, options?: Options) {
   if (!msg.originator) msg.originator = wallet.pubKeyBech32
   return wallet.signAndBroadcast([msg], [types.CREATE_WITHDRAWAL_TYPE], options)
 }

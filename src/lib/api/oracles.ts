@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 
 interface Options extends SignMessageOptions, TransactionOptions { }
@@ -23,13 +23,13 @@ export interface CreateVoteMsg {
 	originator?: string,
 }
 
-export async function createOracle(wallet: Wallet, msg: CreateOracleMsg, options?: Options) {
+export async function createOracle(wallet: WalletClient, msg: CreateOracleMsg, options?: Options) {
 	if (!msg.originator) msg.originator = wallet.pubKeyBech32
 
 	return wallet.signAndBroadcast([msg], [types.CREATE_ORACLE_TYPE], options)
 }
 
-export async function createVote(wallet: Wallet, msg: CreateVoteMsg, options?: Options) {
+export async function createVote(wallet: WalletClient, msg: CreateVoteMsg, options?: Options) {
 	if (!msg.originator) msg.originator = wallet.pubKeyBech32
 
 	return wallet.signAndBroadcast([msg], [types.CREATE_VOTE_TYPE], options)

@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 
 interface Options extends SignMessageOptions, TransactionOptions { }
@@ -10,11 +10,11 @@ export interface SetLeverageMsg {
   originator?: string,
 }
 
-export async function setLeverage(wallet: Wallet, msg: SetLeverageMsg, options?: Options) {
+export async function setLeverage(wallet: WalletClient, msg: SetLeverageMsg, options?: Options) {
   return setLeverages(wallet, [msg], options)
 }
 
-export async function setLeverages(wallet: Wallet, msgs: SetLeverageMsg[], options?: Options) {
+export async function setLeverages(wallet: WalletClient, msgs: SetLeverageMsg[], options?: Options) {
   msgs = msgs.map(msg => {
     if (!msg.originator) msg.originator = wallet.pubKeyBech32
     return msg

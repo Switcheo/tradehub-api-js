@@ -1,11 +1,11 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 import { BigNumber } from 'bignumber.js'
 
 interface Options extends SignMessageOptions, TransactionOptions { }
 
-export async function sendTokens(wallet: Wallet, msg: types.SendTokensMsg, options?: Options) {
+export async function sendTokens(wallet: WalletClient, msg: types.SendTokensMsg, options?: Options) {
   return wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], options)
 }
 
@@ -23,11 +23,11 @@ export interface CreateTokenMsg {
   delegated_supply: string,
   originator?: string,
 }
-export async function createToken(wallet: Wallet, msg: CreateTokenMsg, options?: Options) {
+export async function createToken(wallet: WalletClient, msg: CreateTokenMsg, options?: Options) {
   return createTokens(wallet, [msg], options)
 }
 
-export async function createTokens(wallet: Wallet, msgs: CreateTokenMsg[], options?: Options) {
+export async function createTokens(wallet: WalletClient, msgs: CreateTokenMsg[], options?: Options) {
   const address = wallet.pubKeyBech32
   msgs = msgs.map(msg => {
     if (!msg.originator) msg.originator = address
@@ -42,7 +42,7 @@ export interface MintParams {
   mint: Array<{ denom: string, amount: string }>
 }
 
-export async function mintMultipleTestnetTokens(minterWallet: Wallet, params: MintParams) {
+export async function mintMultipleTestnetTokens(minterWallet: WalletClient, params: MintParams) {
   const { toAddress, mint } = params
   const promises = mint.map((v: { denom: string, amount: string }) => {
     return mintTestnetTokens(minterWallet, {
@@ -61,7 +61,7 @@ export interface MintTokenMsg {
   denom: string // max 18 decimal places e.g. 1.000000000000000000
 }
 
-export async function mintTestnetTokens(minterWallet: Wallet, msg: MintTokenMsg, options?: Options) {
+export async function mintTestnetTokens(minterWallet: WalletClient, msg: MintTokenMsg, options?: Options) {
   // console.log('minterWallet', minterWallet)
   if (!msg.originator) msg.originator = minterWallet.pubKeyBech32
   console.log('msg', msg)

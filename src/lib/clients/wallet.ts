@@ -1,3 +1,5 @@
+import * as bip32 from 'bip32'
+import * as bip39 from 'bip39'
 import fetch from 'node-fetch'
 import { BigNumber } from 'bignumber.js'
 import Dagger from '@maticnetwork/eth-dagger'
@@ -5,7 +7,7 @@ import { ethers } from 'ethers'
 import { CONFIG, getBech32Prefix, getNetwork, Network } from '../config'
 import { Fee, StdSignDoc, Transaction } from '../containers'
 import { marshalJSON, sortAndStringifyJSON } from '../utils/encoder'
-import { Address, getPathArray, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
+import { Address, getPath, getPathArray, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
 import { ConcreteMsg } from '../containers/Transaction'
 import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
@@ -14,7 +16,6 @@ import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
 import Neon, { nep5, api, u } from "@cityofzion/neon-js"
 import stripHexPrefix from 'strip-hex-prefix'
 import CosmosLedger from '@lunie/cosmos-ledger'
-import { getPrivKeyFromMnemonic } from '../wallet'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -327,6 +328,22 @@ export class WalletClient {
     }
   }
 
+  public getTargetProxyHash(token) {
+    const prefix = getBech32Prefix(this.network, 'main')
+    const address = Address.fromBech32(prefix, token.originator)
+    const addressBytes = address.toBytes()
+    const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))
+    return addressHex
+  }
+
+  public async getFeeInfo(token) {
+    const url = this.network.FEE_URL + '/fees?denom=' + token.denom
+    const result = await fetch(url).then(res => res.json())
+    if (result && result.details) {
+      return result.details
+    }
+  }
+
   public async sendNeoDeposit(token) {
     const privateKey = this.hdWallet[Blockchain.Neo]
     const account = Neon.create.account(privateKey)
@@ -335,7 +352,7 @@ export class WalletClient {
 
     const fromAssetHash = token.asset_id
     const fromAddress = u.reverseHex(account.scriptHash)
-    const targetProxyHash = this.network.TARGET_PROXY_HASH
+    const targetProxyHash = this.getTargetProxyHash(token)
     const toAssetHash = u.str2hexstring(token.denom)
     const toAddress = this.addressHex
 
@@ -400,21 +417,26 @@ export class WalletClient {
         setTimeout(() => {
           this.sendEthDeposit(
             '0x' + token.asset_id,
-            token.externalBalance
+            token.externalBalance,
+            token
           )
         }, 30)
       }
     }
   }
 
-  public async sendEthDeposit(assetId, amount) {
-    // hardcode feeAmount to 0.001 * 10^18 for now
-    const feeAmount = '1000000000000000'
-    const targetProxyHash = '0xdb8afcccebc026c6cae1d541b25f80a83b065c8a'
-    const feeAddress = '0x989761fb0c0eb0c05605e849cae77d239f98ac7f'
-    const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes('reth5'))
-    // random nonce to prevent replay attacks
-    const nonce = Math.floor(Math.random() * 1000000000)
+  public async sendEthDeposit(assetId, amount, token) {
+    const feeInfo = await this.getFeeInfo(token)
+    if (!feeInfo || !feeInfo.deposit || !feeInfo.deposit.fee) {
+      return 'unsupported token'
+    }
+
+    // TODO: add wallet creation fee if wallet contract is not yet created
+    const feeAmount = feeInfo.deposit.fee
+    const targetProxyHash = '0x' + this.getTargetProxyHash(token)
+    const feeAddress = '0x' + this.network.FEE_ADDRESS
+    const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
+    const nonce = Math.floor(Math.random() * 1000000000) // random nonce to prevent replay attacks
     const message = ethers.utils.solidityKeccak256(
       ['string', 'address', 'bytes', 'bytes', 'bytes', 'uint256', 'uint256', 'uint256'],
       ['sendTokens', assetId, targetProxyHash, toAssetHash, feeAddress, amount, feeAmount, nonce]
@@ -444,7 +466,7 @@ export class WalletClient {
     }
 
     return fetch(
-      this.network.RELAYER_URL + '/deposit',
+      this.network.ETH_PAYER_URL + '/deposit',
       { method: 'POST', body: JSON.stringify(body) }
     )
   }
@@ -479,7 +501,7 @@ export class WalletClient {
     const nativeAddress = (new ethers.Wallet(privateKey)).address
 
     const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
-    const contractAddress = this.network.ETH_WALLET_FACTORY
+    const contractAddress = this.network.ETH_LOCKPROXY
     const contract = new ethers.Contract(contractAddress, WALLET_FACTORY_ABI, provider)
     const walletAddress = await contract.getWalletAddress(nativeAddress, externalAddress, ETH_WALLET_BYTECODE)
 
@@ -717,4 +739,17 @@ export class WalletClient {
 
     return concreteMsgs
   }
+}
+
+export function getPrivKeyFromMnemonic(mnemonic) {
+  const path = getPath()
+  const seed = bip39.mnemonicToSeedSync(mnemonic, '')
+  const masterKey = bip32.fromSeed(seed)
+  const hd = masterKey.derivePath(path)
+
+  const privateKey = hd.privateKey
+  if (!privateKey) {
+    throw new Error("null hd key")
+  }
+  return privateKey.toString('hex')
 }

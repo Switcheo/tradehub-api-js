@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions }  from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 import { getNetwork } from '../../lib/config'
 import fetch from '../../lib/utils/fetch'
@@ -50,41 +50,41 @@ export interface RemoveLiquidityMsg {
   originator?: string,
 }
 
-export async function addLiquidity(wallet: Wallet, msg: AddLiquidityMsg, options?: Options) {
+export async function addLiquidity(wallet: WalletClient, msg: AddLiquidityMsg, options?: Options) {
 	if(!msg.originator) {
     msg.originator = wallet.pubKeyBech32
   }
   return wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], options)
 }
 
-export async function removeLiquidity(wallet: Wallet, msg: RemoveLiquidityMsg, options?: Options) {
+export async function removeLiquidity(wallet: WalletClient, msg: RemoveLiquidityMsg, options?: Options) {
   if(!msg.originator) {
     msg.originator = wallet.pubKeyBech32
   }
   return wallet.signAndBroadcast([msg], [types.REMOVE_LIQUIDITY_MSG_TYPE], options)
 }
 
-export async function createPool(wallet: Wallet, msg: CreatePoolMsg, options?: Options) {
+export async function createPool(wallet: WalletClient, msg: CreatePoolMsg, options?: Options) {
   if(!msg.originator) {
     msg.originator = wallet.pubKeyBech32
   }
   return wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], options)
 }
 
-export async function createPoolWithLiquidity(wallet: Wallet, msg: CreatePoolWithLiquidityMsg, options?: Options) {
+export async function createPoolWithLiquidity(wallet: WalletClient, msg: CreatePoolWithLiquidityMsg, options?: Options) {
   if(!msg.originator) {
     msg.originator = wallet.pubKeyBech32
   }
   return wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], options)
 }
 
-export async function linkPool(wallet: Wallet, msg: LinkPoolMsg, options?: Options) {
+export async function linkPool(wallet: WalletClient, msg: LinkPoolMsg, options?: Options) {
   if(!msg.originator) {
     msg.originator = wallet.pubKeyBech32
   }
   return wallet.signAndBroadcast([msg], [types.LINK_POOL_MSG_TYPE], options)
 }
-export async function unlinkPool(wallet: Wallet, msg: UnlinkPoolMsg, options?: Options) {
+export async function unlinkPool(wallet: WalletClient, msg: UnlinkPoolMsg, options?: Options) {
   if(!msg.originator) {
     msg.originator = wallet.pubKeyBech32
   }

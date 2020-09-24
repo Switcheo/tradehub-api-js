@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 
 interface Options extends SignMessageOptions, TransactionOptions { }
@@ -14,12 +14,12 @@ export interface ActivateSubAccountMsg {
   originator?: string,
 }
 
-export async function createSubAccount(wallet: Wallet, msg: CreateSubAccountMsg, options?: Options) {
+export async function createSubAccount(wallet: WalletClient, msg: CreateSubAccountMsg, options?: Options) {
   if (!msg.originator) msg.originator = wallet.pubKeyBech32
   return wallet.signAndBroadcast([msg], [types.CREATE_SUB_ACCOUNT_MSG_TYPE], options)
 }
 
-export async function activateSubAccount(wallet: Wallet, msg: ActivateSubAccountMsg, options?: Options) {
+export async function activateSubAccount(wallet: WalletClient, msg: ActivateSubAccountMsg, options?: Options) {
   if (!msg.originator) msg.originator = wallet.pubKeyBech32
   return wallet.signAndBroadcast([msg], [types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE], options)
 }

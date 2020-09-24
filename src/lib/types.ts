@@ -1,4 +1,4 @@
-import { SignMessageOptions } from './wallet'
+import { SignMessageOptions } from './clients/wallet'
 import { TransactionOptions } from './containers/Transaction'
 
 // Orders

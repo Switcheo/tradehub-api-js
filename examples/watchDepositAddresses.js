@@ -2,7 +2,6 @@
 const SDK = require('../.')
 const { wallet } = SDK
 const { Wallet } = wallet
-const mnemonics = require('../mnemonics.json')
 
 const net = 'LOCALHOST'
 // const net = 'DEVNET'
@@ -10,8 +9,10 @@ const net = 'LOCALHOST'
 async function run() {
   const mnemonic = 'rely final pipe disease fetch make noodle patch sting hand man digital'
   const account = await Wallet.connect(mnemonic, net)
-  const address = await account.getDepositAddress('neo')
-  account.sendNeoDeposits('AK5JtqW3NbdmuxNDjHPo7KuShjjXKz6u6U')
+  const address = await account.getDepositAddress('eth')
+  // account.sendNeoDeposits('AK5JtqW3NbdmuxNDjHPo7KuShjjXKz6u6U')
+  console.log('swth address', account.pubKeyBech32)
+  console.log('address', address)
 }
 
 run()

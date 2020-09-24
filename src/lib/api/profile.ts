@@ -1,5 +1,5 @@
 import * as types from '../types'
-import { Wallet, SignMessageOptions } from '../wallet'
+import { WalletClient, SignMessageOptions }  from '../clients/wallet'
 import { TransactionOptions } from '../containers/Transaction'
 import { getNetwork } from '../config'
 
@@ -12,7 +12,7 @@ export interface UpdateProfileMsg {
 }
 
 
-export async function updateProfile(wallet: Wallet, msg: UpdateProfileMsg, options?: Options) {
+export async function updateProfile(wallet: WalletClient, msg: UpdateProfileMsg, options?: Options) {
   if (!msg.originator) msg.originator = wallet.pubKeyBech32
   console.log('msg', msg)
   return wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], options)
