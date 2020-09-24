@@ -98,6 +98,8 @@ export interface REST {
   cancelOrders(params: types.CancelOrderParams[], options?: types.Options): Promise<any>
   editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options): Promise<any>
   editOrders(orderIDs: string[], params: types.EditOrderParams[], options?: types.Options): Promise<any>
+  cancelAll(msg: types.CancelAllMsg, options?: types.Options): Promise<any>
+  sendTokens(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
 }
 
 export class RestClient implements REST {
