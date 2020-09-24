@@ -106,7 +106,8 @@ export class RestClient implements REST {
   protected baseUrl: string
   private wallet: WalletClient
 
-  constructor(network: string, wallet?: WalletClient) {
+  constructor(options: any) {
+    const { network, wallet } = options
     this.baseUrl = getNetwork(network).REST_URL
     this.wallet = wallet
   }
