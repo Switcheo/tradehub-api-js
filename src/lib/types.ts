@@ -1,3 +1,6 @@
+import { SignMessageOptions } from './wallet'
+import { TransactionOptions } from './containers/Transaction'
+
 // Orders
 export const CREATE_ORDER_MSG_TYPE = 'order/MsgCreateOrder'
 export const CANCEL_ORDER_MSG_TYPE = 'order/MsgCancelOrder'
@@ -52,3 +55,41 @@ export enum Network {
   DevNet = 'DEVNET',
 }
 
+export interface CreateOrderParams {
+  OrderType?: string,
+  StopPrice?: string,
+  TriggerType?: string,
+  Market: string,
+  Side: string,
+  Quantity: string,
+  Price: string,
+  IsReduceOnly?: boolean,
+  IsPostOnly?: boolean,
+}
+
+export interface CancelOrderParams {
+  order_id: string,
+  originator?: string,
+}
+
+export interface EditOrderParams {
+  StopPrice?: string,
+  Quantity?: string,
+  Price?: string,
+}
+
+export interface CancelAllMsg {
+  market: string,
+  originator?: string,
+}
+
+export interface SendTokensMsg {
+  from_address: string,
+  to_address: string,
+  amount: Array<{
+    denom: string,
+    amount: string,
+  }>
+}
+
+export interface Options extends SignMessageOptions, TransactionOptions { }

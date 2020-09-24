@@ -73,8 +73,6 @@ export interface CancelAllMsg {
   originator?: string,
 }
 
-
-
 export async function cancelAll(wallet: Wallet, msg: CancelAllMsg, options?: Options) {
   if (!msg.originator) msg.originator = wallet.pubKeyBech32
   return wallet.signAndBroadcast([msg], [types.CANCEL_ALL_MSG_TYPE], options)

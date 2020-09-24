@@ -4,6 +4,8 @@ import { camelCaseDeep } from "../utils/json"
 import { getNetwork } from '../config'
 import { WalletClient } from './wallet'
 
+import * as types from '../types'
+
 
 export enum Direction {
   long = 'long',
@@ -52,41 +54,50 @@ interface GetTradesOptions {
 
 // TODO: include optional params such as pagination and limit
 // TODO: response typings
+// TODO: support all POST methods
 
 export interface REST {
+  // public
   checkUsername(username: string): Promise<boolean>
   getAccount(address?: string): Promise<object>
-  getProfile(address?: string): Promise<object>
-  getMarkets(): Promise<Array<object>>
-  getMarket(market: string): Promise<object>
-  getLeaderboard(market: string): Promise<Array<object>>
+  getAccountTrades(options: GetTradesOptions): Promise<Array<object>>
   getActiveWallets(token: string): Promise<string>
   getAllValidators(): Promise<Array<object>>
+  getAverageBlocktime(): Promise<string>
+  getBlocks(page?: number): Promise<Array<object>>
+  getInsuranceFundBalance(): Promise<Array<object>>
+  getLeaderboard(market: string): Promise<Array<object>>
+  getLeverage(market: string, address?: string): Promise<object>
+  getLiquidationTrades(): Promise<Array<object>>
+  getMarkets(): Promise<Array<object>>
+  getMarket(market: string): Promise<object>
+  getMarketStats(market?: string): Promise<Array<object>>
+  getOrder(id: string): Promise<object>
+  getOrders(options: GetOrdersOptions): Promise<Array<object>>
+  getOpenOrders(options: GetOrdersOptions): Promise<Array<object>>
+  getOrderBook(market: string): Promise<OrderBook>
+  getProfile(address?: string): Promise<object>
   getPrices(market: string): Promise<object>
+  getRichList(token: string): Promise<Array<object>>
+  getTotalBalances(): Promise<Array<object>>
+  getTrades(options: GetTradesOptions): Promise<Array<object>>
   getTx(hash: string): Promise<object>
   getTxs(): Promise<Array<object>>
   getTxLog(hash: string): Promise<object>
   getTxTypes(): Promise<Array<string>>
-  getTotalBalances(): Promise<Array<object>>
-  getRichList(token: string): Promise<Array<object>>
-  getAverageBlocktime(): Promise<string>
-  getInsuranceFundBalance(): Promise<Array<object>>
   getPositionsWithHighestPnL(market: string): Promise<Array<object>>
   getPositionsCloseToLiquidation(market: string, direction: Direction): Promise<Array<object>>
   getPositionsLargest(market: string): Promise<Array<object>>
-  getMarketStats(market?: string): Promise<Array<object>>
-  getOrderBook(market: string): Promise<OrderBook>
   getPosition(market: string, address?: string): Promise<object>
   getPositions(address?: string): Promise<Array<object>>
-  getLeverage(market: string, address?: string): Promise<object>
-  getOrder(id: string): Promise<object>
-  getBlocks(page?: number): Promise<Array<object>>
   getWalletBalance(address?: string): Promise<WalletBalance>
-  getOrders(options: GetOrdersOptions): Promise<Array<object>>
-  getOpenOrders(options: GetOrdersOptions): Promise<Array<object>>
-  getAccountTrades(options: GetTradesOptions): Promise<Array<object>>
-  getLiquidationTrades(): Promise<Array<object>>
-  getTrades(options: GetTradesOptions): Promise<Array<object>>
+  //private
+  createOrder(params: types.CreateOrderParams, options?: types.Options): Promise<any>
+  createOrders(params: types.CreateOrderParams[], options?: types.Options): Promise<any>
+  cancelOrder(params: types.CancelOrderParams, options?: types.Options): Promise<any>
+  cancelOrders(params: types.CancelOrderParams[], options?: types.Options): Promise<any>
+  editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options): Promise<any>
+  editOrders(orderIDs: string[], params: types.EditOrderParams[], options?: types.Options): Promise<any>
 }
 
 export class RestClient implements REST {
@@ -427,7 +438,53 @@ export class RestClient implements REST {
   }
 
   // PRIVATE METHODS
+  public async createOrder(params: types.CreateOrderParams, options?: types.Options) {
+    return this.createOrders([params], options)
+  }
 
+  public async createOrders(paramsList: types.CreateOrderParams[], options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
+    const msgs = paramsList.map(params => ({
+      OrderParams: JSON.stringify(params),
+      Originator: address,
+    }))
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_ORDER_MSG_TYPE), options)
+  }
 
+  public async cancelOrder(params: types.CancelOrderParams, options?: types.Options) {
+    return this.cancelOrders([params], options)
+  }
+  
+  public async cancelOrders(params: types.CancelOrderParams[], options?: types.Options) {
+    const msgs = params.map(msg => {
+      if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+      return msg
+    })
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CANCEL_ORDER_MSG_TYPE), options)
+  }
+
+  public async editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options) {
+    return this.editOrders([orderID], [params], options)
+  }
+  
+  public async editOrders(orderIDs: string[], paramsList: types.EditOrderParams[], options?: types.Options) {
+    if (orderIDs.length != paramsList.length) throw new Error("orderIDs.length != paramsList.length")
+    const address = this.wallet.pubKeyBech32
+    const msgs = paramsList.map((params, i) => ({
+      OrderID: orderIDs[i],
+      EditOrderParams: JSON.stringify(params),
+      Originator: address,
+    }))
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_ORDER_MSG_TYPE), options)
+  }
+
+  public async cancelAll(msg: types.CancelAllMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.CANCEL_ALL_MSG_TYPE], options)
+  }
+
+  public async sendTokens(msg: types.SendTokensMsg, options?: types.Options) {
+    return this.wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], options)
+  }
 
 }
