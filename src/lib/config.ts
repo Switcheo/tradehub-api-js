@@ -128,8 +128,14 @@ export function getBech32Prefix(net: Network, type: Bech32Type = 'main') {
       return mainPrefix
   }
 }
+export const DEFAULT_NETWORK = NETWORK.TESTNET
 
 export function getNetwork(net): Network {
+  if (!net) {
+    console.warn(`Network is not defined. Defaulting to ${DEFAULT_NETWORK.NAME}`)
+    return DEFAULT_NETWORK
+  }
+
   const network = NETWORK[net]
   if (!network) {
     throw new Error('network must be LOCALHOST/DEVNET/TESTNET/MAINNET')

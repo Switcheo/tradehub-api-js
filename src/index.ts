@@ -6,11 +6,9 @@ import * as wallet from './lib/wallet'
 import * as api from './lib/api'
 import * as config from './lib/config'
 import * as utils from './lib/utils'
+import * as clients from './lib/clients'
 
-export { default } from './lib/Client'
-export * from './lib/Client'
 export * from './lib/clients'
-
 export * from './lib/constants'
 export * from './lib/containers'
 export * from './lib/types'
@@ -27,4 +25,5 @@ export {
   containers,
   config,
   utils,
+  clients,
 }

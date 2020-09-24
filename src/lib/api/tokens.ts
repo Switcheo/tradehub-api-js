@@ -5,16 +5,7 @@ import { BigNumber } from 'bignumber.js'
 
 interface Options extends SignMessageOptions, TransactionOptions { }
 
-export interface SendTokensMsg {
-  from_address: string,
-  to_address: string,
-  amount: Array<{
-    denom: string,
-    amount: string,
-  }>
-}
-
-export async function sendTokens(wallet: Wallet, msg: SendTokensMsg, options?: Options) {
+export async function sendTokens(wallet: Wallet, msg: types.SendTokensMsg, options?: Options) {
   return wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], options)
 }
 

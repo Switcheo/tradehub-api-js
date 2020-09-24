@@ -11,7 +11,7 @@
 */
 
 /* WS Get Request params */
-import {Network} from "../Client";
+import { Network } from "../types";
 import { getNetwork } from '../config'
 
 export interface WsGetRecentTradesParams {
