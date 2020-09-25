@@ -89,7 +89,30 @@ export interface GetOrdersOptions {
   orderType?: string
 }
 
-export interface GetTradesOptions {
+export interface GetTradesGetterParams {
+  address?: string
+  market?: string
+  limit?: number
+  beforeId?: number
+  afterId?: number
+}
+
+export interface TokenOnlyGetterParams {
+  token: string
+}
+export interface PageOnlyGetterParams {
+  page: number
+}
+export interface MarketOnlyGetterParams {
+  market: string
+}
+
+export interface MarketAndAddressGetterParams {
+  market: string
+  address?: string
+}
+
+export interface GetActiveWalletsParams {
   address?: string
   market?: string
   limit?: number
@@ -181,6 +204,199 @@ export interface EditMarginMsg {
   market: string,
   margin: string,
   originator?: string,
+}
+
+export interface CreateTokenMsg {
+  name: string,
+  symbol: string,
+  denom: string,
+  decimals: string,
+  native_decimals: string,
+  blockchain: string,
+  chain_id: string,
+  asset_id: string,
+  is_collateral: boolean,
+  lock_proxy_hash: string,
+  delegated_supply: string,
+  originator?: string,
+}
+
+export interface MintParams {
+  toAddress: string
+  mint: Array<{ denom: string, amount: string }>
+}
+
+export interface MintTokenMsg {
+  originator?: string
+  to_address: string
+  amount: string
+  denom: string // max 18 decimal places e.g. 1.000000000000000000
+}
+
+export interface CreatePoolMsg {
+  token_a_denom?: string,
+  token_b_denom?: string,
+  token_a_weight?: string,
+  token_b_weight?: string,
+  originator?: string,
+}
+
+export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
+  a_amount?: string
+  a_max_amount?: string
+  b_amount?: string
+  b_max_amount?: string
+}
+
+export interface LinkPoolMsg {
+  pool_id: string,
+  market: string,
+  strategy: string,
+  originator?: string,
+}
+
+export interface UnlinkPoolMsg {
+  pool_id: string,
+  originator?: string,
+}
+
+export interface AddLiquidityMsg {
+  pool_id: string
+  a_denom?: string
+  a_amount?: string
+  a_max_amount?: string
+  b_denom?: string
+  b_amount?: string
+  b_max_amount?: string
+  originator?: string
+}
+
+export interface RemoveLiquidityMsg {
+  pool_id: string,
+  shares: string,
+  originator?: string,
+}
+
+export interface SubmitProposalMsg {
+  content: {
+    type: string,
+    value: {
+      title: string,
+      description: string,
+      changes: ReadonlyArray<{
+        subspace: string,
+        key: string,
+        value: string,
+      }>,
+    },
+  },
+  initial_deposit?: ReadonlyArray<{
+    denom: string,
+    amount: string,
+  }>,
+  proposer?: string,
+}
+
+export interface DepositProposalMsg {
+  proposal_id: string,
+  depositor?: string,
+  amount: ReadonlyArray<{
+    denom: string,
+    amount: string,
+  }>,
+}
+
+export interface VoteProposalMsg {
+  proposal_id: string,
+  voter?: string,
+  option: string,
+}
+
+export interface CreateOracleMsg {
+	id: string,
+	description: string,
+	min_turnout_percentage: string,
+	max_result_age: string,
+	security_type: string,
+	result_strategy: string,
+	resolution: string,
+	spec: string,
+	originator?: string,
+}
+
+export interface CreateVoteMsg {
+	oracle_id: string,
+	timestamp: string,
+	data: string,
+	originator?: string,
+}
+
+export interface DelegateTokensMsg {
+  delegator_address: string,
+  validator_address: string,
+  amount: {
+    amount: string,
+    denom: string,
+  },
+}
+
+export interface BeginUnbondingTokensMsg {
+  delegator_address: string,
+  validator_address: string,
+  amount: {
+    amount: string,
+    denom: string,
+  },
+}
+
+export interface BeginRedelegatingTokensMsg {
+  delegator_address: string,
+  validator_src_address: string,
+  validator_dst_address: string,
+  amount: {
+    amount: string,
+    denom: string,
+  },
+}
+
+export interface WithdrawDelegatorRewardsMsg {
+  delegator_address: string,
+  validator_address: string,
+}
+
+export interface WithdrawAllDelegatorRewardsParams {
+  delegatorAddress: string,
+  validatorAddresses: string[],
+}
+
+export interface CreateValidatorMsg {
+  description: {
+    moniker: string,
+    identity: string,
+    website: string,
+    details: string,
+  },
+  commission: {
+    rate: string,
+    max_rate: string,
+    max_rate_change: string,
+  },
+  min_self_delegation: string,
+  delegator_address: string,
+  validator_address: string,
+  pubkey: string,
+  value: {
+    amount: string,
+    denom: string,
+  },
+}
+
+export interface AddressOnlyGetterParams {
+  address: string
+}
+
+export interface UsernameGetterParams {
+  username: string
 }
 
 export interface Options extends SignMessageOptions, TransactionOptions { }

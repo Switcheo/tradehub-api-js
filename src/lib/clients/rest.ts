@@ -1,3 +1,4 @@
+import { BigNumber } from 'bignumber.js'
 import fetch from '../utils/fetch'
 
 import { camelCaseDeep } from "../utils/json"
@@ -18,40 +19,54 @@ export enum Direction {
 
 export interface REST {
   // public
-  checkUsername(username: string): Promise<boolean>
-  getAccount(address?: string): Promise<object>
-  getAccountTrades(options: types.GetTradesOptions): Promise<Array<object>>
-  getActiveWallets(token: string): Promise<string>
+  checkUsername(params: types.UsernameGetterParams): Promise<boolean>
+  getAccount(params?: types.AddressOnlyGetterParams): Promise<object>
+  getAccountTrades(params: types.GetTradesGetterParams): Promise<Array<object>>
+  getActiveWallets(params: types.TokenOnlyGetterParams): Promise<string>
   getAllValidators(): Promise<Array<object>>
   getAverageBlocktime(): Promise<string>
-  getBlocks(page?: number): Promise<Array<object>>
+  getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
   getInsuranceFundBalance(): Promise<Array<object>>
-  getLeaderboard(market: string): Promise<Array<object>>
-  getLeverage(market: string, address?: string): Promise<object>
+  getLeaderboard(params: types.MarketOnlyGetterParams): Promise<Array<object>>
+  getLeverage(params: types.MarketAndAddressGetterParams): Promise<object>
+  getLiquidityPools(): Promise<any>
   getLiquidationTrades(): Promise<Array<object>>
   getMarkets(): Promise<Array<object>>
-  getMarket(market: string): Promise<object>
-  getMarketStats(market?: string): Promise<Array<object>>
+  getMarket(params: types.MarketOnlyGetterParams): Promise<object>
+  getMarketStats(params?: types.MarketOnlyGetterParams): Promise<Array<object>>
   getOrder(id: string): Promise<object>
   getOrders(options: types.GetOrdersOptions): Promise<Array<object>>
   getOpenOrders(options: types.GetOrdersOptions): Promise<Array<object>>
-  getOrderBook(market: string): Promise<types.OrderBook>
-  getProfile(address?: string): Promise<object>
-  getPrices(market: string): Promise<object>
+  getOrderBook(params: types.MarketOnlyGetterParams): Promise<types.OrderBook>
+  getProfile(params?: types.AddressOnlyGetterParams): Promise<object>
+  getPrices(params: types.MarketOnlyGetterParams): Promise<object>
   getRichList(token: string): Promise<Array<object>>
   getTotalBalances(): Promise<Array<object>>
-  getTrades(options: types.GetTradesOptions): Promise<Array<object>>
+  getTrades(options: types.GetTradesGetterParams): Promise<Array<object>>
   getTx(hash: string): Promise<object>
   getTxs(): Promise<Array<object>>
   getTxLog(hash: string): Promise<object>
   getTxTypes(): Promise<Array<string>>
-  getPositionsWithHighestPnL(market: string): Promise<Array<object>>
+  getPositionsWithHighestPnL(params: types.MarketOnlyGetterParams): Promise<Array<object>>
   getPositionsCloseToLiquidation(market: string, direction: Direction): Promise<Array<object>>
   getPositionsLargest(market: string): Promise<Array<object>>
-  getPosition(market: string, address?: string): Promise<object>
-  getPositions(address?: string): Promise<Array<object>>
-  getWalletBalance(address?: string): Promise<types.WalletBalance>
-  //private
+  getPosition(params: types.MarketAndAddressGetterParams): Promise<object>
+  getPositions(params?: types.AddressOnlyGetterParams): Promise<Array<object>>
+  getWalletBalance(params?: types.AddressOnlyGetterParams): Promise<types.WalletBalance>
+
+  // cosmos
+  getStakingValidators(): Promise<any>
+  getUnbondingStakingValidators(): Promise<any>
+  getUnbondedStakingValidators(): Promise<any> 
+  getStakingPool(): Promise<any>
+  getValidatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
+  getDelegatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
+  getDelegatorUnbondingDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
+  getDelegatorRedelegations(params?: types.AddressOnlyGetterParams): Promise<any>
+  getAllDelegatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
+  getDelegatorDelegationRewards(params?: types.AddressOnlyGetterParams): Promise<any>
+
+  // private
   send(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
   createOrder(params: types.CreateOrderParams, options?: types.Options): Promise<any>
   createOrders(params: types.CreateOrderParams[], options?: types.Options): Promise<any>
@@ -69,15 +84,36 @@ export interface REST {
   initiateSettlements(msgs: types.InitiateSettlementMsg[], options?: types.Options): Promise<any>
   editMargin(params: types.EditMarginMsg, options?: types.Options): Promise<any>
   editMargins(msgs: types.EditMarginMsg[], options?: types.Options): Promise<any>
+  createToken(msg: types.CreateTokenMsg, options?: types.Options): Promise<any>
+  createTokens(msgs: types.CreateTokenMsg[], options?: types.Options): Promise<any>
+  addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options): Promise<any>
+  removeLiquidity(msg: types.RemoveLiquidityMsg, options?: types.Options): Promise<any>
+  createPool(msg: types.CreatePoolMsg, options?: types.Options): Promise<any>
+  createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options): Promise<any>
+  linkPool(msg: types.LinkPoolMsg, options?: types.Options): Promise<any>
+  unlinkPool(msg: types.UnlinkPoolMsg, options?: types.Options): Promise<any>
+  submitProposal(msg: types.SubmitProposalMsg, options?: types.Options): Promise<any>
+  depositProposal(msg: types.DepositProposalMsg, options?: types.Options): Promise<any>
+  voteProposal(msg: types.VoteProposalMsg, options?: types.Options): Promise<any>
+  createOracle(msg: types.CreateOracleMsg, options?: types.Options): Promise<any>
+  createVote(msg: types.CreateVoteMsg, options?: types.Options): Promise<any>
+  createValidator(msg: types.CreateValidatorMsg, options ?: types.Options): Promise<any>
+  delegateTokens(msg: types.DelegateTokensMsg, options ?: types.Options): Promise<any>
+  unbondTokens(msg: types.BeginUnbondingTokensMsg, options ?: types.Options): Promise<any>
+  redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options ?: types.Options): Promise<any>
+  withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options ?: types.Options): Promise<any>
+  withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options): Promise<any>
 }
 
 export class RestClient implements REST {
   public readonly baseUrl: string
+  public readonly cosmosBaseUrl: string
   public readonly wallet: WalletClient
 
   constructor(options: any) {
     const { network, wallet } = options
     this.baseUrl = getNetwork(network).REST_URL
+    this.cosmosBaseUrl = getNetwork(network).COSMOS_URL
     this.wallet = wallet
   }
 
@@ -88,64 +124,87 @@ export class RestClient implements REST {
     return camelCaseDeep(json)
   }
 
+  protected async fetchCosmosJson(relativeUrl: string): Promise<any> {
+    const url: string = `${this.cosmosBaseUrl}${relativeUrl}`
+    const res = await fetch(url)
+    const json = await res.json()
+    return camelCaseDeep(json)
+  }
+  
   //
   // PUBLIC METHODS
   //
 
   // Account
 
-  public async getAccount(address?: string) {
-    if (!address && !this.wallet) {
-      throw new Error('get_account: missing address param')
-    }
-    if (!address) {
+  public async getAccount(params?: types.AddressOnlyGetterParams) {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
       address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
     }
     return this.fetchJson(`/get_account?account=${address}`)
   }
 
-  public async checkUsername(username: string) {
+  public async checkUsername(params: types.UsernameGetterParams) {
+    const { username } = params
     return this.fetchJson(`/username_check?username=${username}`)
   }
 
-  public async getProfile(address?: string) {
-    if (!address && !this.wallet) {
-      throw new Error('get_account: missing address param')
-    }
-    if (!address) {
+  public async getProfile(params?: types.AddressOnlyGetterParams) {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
       address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
     }
     return this.fetchJson(`/get_profile?account=${address}`)
   }
 
-  public async getPosition(market: string, address?: string) {
-    if (!address && !this.wallet) {
+  public async getPosition(params: types.MarketAndAddressGetterParams) {
+    if (!params.address && !this.wallet) {
       throw new Error('get_account: missing address param')
     }
-    if (!address) {
+    let address = ''
+    if (!params.address) {
       address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
     }
-    return this.fetchJson(`/get_position?account=${address}&market=${market}`)
+    return this.fetchJson(`/get_position?account=${address}&market=${params.market}`)
   }
 
-  public async getPositions(address?: string) {
-    if (!address && !this.wallet) {
-      throw new Error('get_account: missing address param')
-    }
-    if (!address) {
+  public async getPositions(params?: types.AddressOnlyGetterParams) {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
       address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
     }
     return this.fetchJson(`/get_position?account=${address}`)
   }
 
-  public async getLeverage(market: string, address?: string) {
-    if (!address && !this.wallet) {
+  public async getLeverage(params: types.MarketAndAddressGetterParams) {
+    if (!params.address && !this.wallet) {
       throw new Error('get_account: missing address param')
     }
-    if (!address) {
+    let address = ''
+    if (!params.address) {
       address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
     }
-    return this.fetchJson(`/get_leverage?account=${address}&market=${market}`)
+    return this.fetchJson(`/get_leverage?account=${address}&market=${params.market}`)
   }
 
   public async getOrder(id: string) {
@@ -232,14 +291,14 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
-  public async getAccountTrades(options: types.GetTradesOptions) {
+  public async getAccountTrades(params: types.GetTradesGetterParams) {
     const {
       address,
       market,
       limit,
       beforeId,
       afterId,
-    } = options
+    } = params
 
     let url = '/get_trades_by_account?'
 
@@ -267,38 +326,41 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
-  public async getWalletBalance(address?: string) {
-    if (!address && !this.wallet) {
-      throw new Error('get_account: missing address param')
-    }
-    if (!address) {
+  public async getWalletBalance(params?: types.AddressOnlyGetterParams) {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
       address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
     }
     return this.fetchJson(`/get_balance?account=${address}`)
   }
 
   // Market Info
 
-  public async getMarket(market: string) {
-    return this.fetchJson(`/get_market?market=${market}`)
+  public async getMarket(params: types.MarketOnlyGetterParams) {
+    return this.fetchJson(`/get_market?market=${params.market}`)
   }
 
-  public async getOrderBook(market: string) {
-    return this.fetchJson(`/get_orderbook?market=${market}`)
+  public async getOrderBook(params: types.MarketOnlyGetterParams) {
+    return this.fetchJson(`/get_orderbook?market=${params.market}`)
   }
 
   public async getMarkets() {
     return this.fetchJson(`/get_markets`)
   }
 
-  public async getPrices(market: string) {
-    return this.fetchJson(`/get_prices?market=${market}`)
+  public async getPrices(params: types.MarketOnlyGetterParams) {
+    return this.fetchJson(`/get_prices?market=${params.market}`)
   }
 
-  public async getMarketStats(market?: string) {
+  public async getMarketStats(params?: types.MarketOnlyGetterParams) {
     let url = '/get_market_stats'
-    if (market) {
-      url = url + `?market=${market}`
+    if (params) {
+      url = url + `?market=${params.market}`
     }
     return this.fetchJson(url)
   }
@@ -307,7 +369,7 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_insurance_balance`)
   }
 
-  public async getTrades(options: types.GetTradesOptions) {
+  public async getTrades(options: types.GetTradesGetterParams) {
     const {
       address,
       market,
@@ -345,14 +407,19 @@ export class RestClient implements REST {
   public async getLiquidationTrades() {
     return this.fetchJson(`/get_liquidations`)
   }
+
+  public async getLiquidityPools(): Promise<any> {
+    return this.fetchJson(`/get_liquidity_pools`)
+  }
+  
   // Leaderboard
 
-  public async getLeaderboard(market: string) {
-    return this.fetchJson(`/get_top_r_profits?market=${market}`)
+  public async getLeaderboard(params: types.MarketOnlyGetterParams) {
+    return this.fetchJson(`/get_top_r_profits?market=${params.market}`)
   }
 
-  public async getPositionsWithHighestPnL(market: string) {
-    return this.fetchJson(`/get_positions_sorted_by_pnl1?market=${market}`)
+  public async getPositionsWithHighestPnL(params: types.MarketOnlyGetterParams) {
+    return this.fetchJson(`/get_positions_sorted_by_pnl1?market=${params.market}`)
   }
 
   public async getPositionsCloseToLiquidation(market: string, direction: Direction) {
@@ -365,7 +432,8 @@ export class RestClient implements REST {
 
   // Blockchain Stats
 
-  public async getActiveWallets(token: string) {
+  public async getActiveWallets(params: types.TokenOnlyGetterParams) {
+    const { token } = params
     return this.fetchJson(`/get_active_wallets?token=${token}`)
   }
 
@@ -401,13 +469,110 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_block_time`)
   }
 
-  public async getBlocks(page: number) {
+  public async getBlocks(params?: types.PageOnlyGetterParams) {
     let url = '/get_blocks'
-    if (page) {
-      url = url + `?page=${page}`
+    if (params) {
+      url = url + `?page=${params.page}`
     }
     return this.fetchJson(url)
   }
+
+  // cosmos
+  public async getStakingValidators(): Promise<any> {
+    return this.fetchCosmosJson(`/staking/validators`)
+  }
+  
+  public async getUnbondingStakingValidators(): Promise<any> {
+    return this.fetchCosmosJson(`/staking/validators?status=unbonding`)
+  }
+  
+  public async getUnbondedStakingValidators(): Promise<any> {
+    return this.fetchCosmosJson(`/staking/validators?status=unbonded`)
+  }
+  
+  public async getStakingPool(): Promise<any> {
+    return this.fetchCosmosJson(`/staking/pool`)
+  }
+  
+  public async getValidatorDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
+    }
+    return this.fetchCosmosJson(`/staking/validators/${address}/delegations`)
+  }
+  
+  public async getDelegatorDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
+    }
+    return this.fetchCosmosJson(`/staking/delegators/${address}/delegations`)
+  }
+  
+  public async getDelegatorUnbondingDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
+    }
+    return this.fetchCosmosJson(`/staking/delegators/${address}/unbonding_delegations`)
+  }
+  
+  public async getDelegatorRedelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
+    }
+    return this.fetchCosmosJson(`/staking/redelegations?delegator=${address}`)
+  }
+  
+  public async getAllDelegatorDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+    const promises = [
+      this.getDelegatorDelegations(params),
+      this.getDelegatorUnbondingDelegations(params),
+      this.getDelegatorRedelegations(params),
+    ]
+    return Promise.all(promises).then((responses) => {
+      return {
+        delegations: responses[0],
+        unbonding: responses[1],
+        redelegations: responses[2],
+      }
+    })
+  }
+  
+  public async getDelegatorDelegationRewards(params: types.AddressOnlyGetterParams): Promise<any> {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
+    }
+    return this.fetchCosmosJson(`/distribution/delegators/${address}/rewards`)
+  }  
 
   // PRIVATE METHODS
   public async createOrder(params: types.CreateOrderParams, options?: types.Options) {
@@ -515,4 +680,134 @@ export class RestClient implements REST {
       return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_MARGIN_MSG_TYPE), options)
   }
 
+  public async createToken(msg: types.CreateTokenMsg, options?: types.Options) {
+    return this.createTokens([msg], options)
+  }
+  
+  public async createTokens(msgs: types.CreateTokenMsg[], options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
+    msgs = msgs.map(msg => {
+      if (!msg.originator) msg.originator = address
+      return msg
+    })
+  
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_TOKEN_MSG_TYPE), options)
+  }
+  
+  public async mintMultipleTestnetTokens(params: types.MintParams) {
+    const { toAddress, mint } = params
+    const promises = mint.map((v: { denom: string, amount: string }) => {
+      return this.mintTestnetTokens({
+        to_address: toAddress,
+        amount: new BigNumber(v.amount).toFixed(18),
+        denom: v.denom,
+      })
+    })
+    return Promise.all(promises)
+  }
+  
+  public async mintTestnetTokens(msg: types.MintTokenMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], options)
+  }
+  
+  public async addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options) {
+    if(!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], options)
+  }
+  
+  public async removeLiquidity(msg: types.RemoveLiquidityMsg, options?: types.Options) {
+    if(!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.REMOVE_LIQUIDITY_MSG_TYPE], options)
+  }
+  
+  public async createPool(msg: types.CreatePoolMsg, options?: types.Options) {
+    if(!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], options)
+  }
+  
+  public async createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options) {
+    if(!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], options)
+  }
+  
+  public async linkPool(msg: types.LinkPoolMsg, options?: types.Options) {
+    if(!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.LINK_POOL_MSG_TYPE], options)
+  }
+  public async unlinkPool(msg: types.UnlinkPoolMsg, options?: types.Options) {
+    if(!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], options)
+  }
+
+  public async submitProposal(msg: types.SubmitProposalMsg, options?: types.Options) {
+    if (!msg.proposer) msg.proposer = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.SUBMIT_PROPOSAL_TYPE], options)
+  }
+  
+  public async depositProposal(msg: types.DepositProposalMsg, options?: types.Options) {
+    if (!msg.depositor) msg.depositor = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.DEPOSIT_PROPOSAL_TYPE], options)
+  }
+  
+  public async voteProposal(msg: types.VoteProposalMsg, options?: types.Options) {
+    if (!msg.voter) msg.voter = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.VOTE_PROPOSAL_TYPE], options)
+  }
+
+  public async createOracle(msg: types.CreateOracleMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_ORACLE_TYPE], options)
+  }
+  
+  public async createVote(msg: types.CreateVoteMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_VOTE_TYPE], options)
+  }
+
+  public async createValidator(msg: types.CreateValidatorMsg, options?: types.Options) {
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_VALIDATOR_MSG_TYPE], options)
+  }
+  
+  public async delegateTokens(msg: types.DelegateTokensMsg, options?: types.Options) {
+    return this.wallet.signAndBroadcast([msg], [types.DELEGATE_TOKENS_MSG_TYPE], options)
+  }
+  
+  public async unbondTokens(msg: types.BeginUnbondingTokensMsg, options?: types.Options) {
+    return this.wallet.signAndBroadcast([msg], [types.BEGIN_UNBONDING_TOKENS_MSG_TYPE], options)
+  }
+  
+  public async redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options?: types.Options) {
+    return this.wallet.signAndBroadcast([msg],
+      [types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE], options)
+  }
+  
+  public async withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options?: types.Options) {
+    return this.wallet.signAndBroadcast([msg],
+      [types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE], options)
+  }
+  
+  public async withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options) {
+    const { validatorAddresses, delegatorAddress } = msg
+    const messages: Array<types.WithdrawDelegatorRewardsMsg> =
+      validatorAddresses.map((address: string) => (
+        { validator_address: address, delegator_address: delegatorAddress }
+      ))
+    return this.wallet.signAndBroadcast(messages,
+      Array(validatorAddresses.length).fill(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE), options)
+  }
+  
+  
 }
