@@ -1,9 +1,11 @@
 ================================
-Tradehub API JS SDK - Designed for simplicity
+Tradehub API JS SDK
 ================================
 
+Designed for simplicity
+
 Note
-___
+--------
 
 .. important:: The code found in this repository is unaudited and incomplete. Switcheo is not responsible for any losses incurred when using this code.
 
