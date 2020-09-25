@@ -100,6 +100,7 @@ export class WalletClient {
   public readonly gas: string
   public readonly signerType: SignerType
   public readonly network: Network
+  public readonly feeMultiplier: BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
   public accountNumber: string
   public broadcastMode: string
   public depositAddresses: {[key: string]: string}
@@ -170,6 +171,7 @@ export class WalletClient {
     this.depositAddresses = {}
     this.onRequestSign = onRequestSign
     this.onSignComplete = onSignComplete
+    this.feeMultiplier = new BigNumber(2)
 
     this.useSequenceCounter = useSequenceCounter
     this.broadcastQueueIntervalTime = broadcastQueueIntervalTime
@@ -412,63 +414,111 @@ export class WalletClient {
     const tokens = await this.getEthExternalBalances(address)
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      if (token.externalBalance !== undefined && token.externalBalance !== '0') {
+      if (!token.externalBalance.isZero()) {
         // send the deposit in 30 seconds to avoid problems with block re-orgs
-        setTimeout(() => {
-          this.sendEthDeposit(
-            '0x' + token.asset_id,
-            token.externalBalance,
-            token
-          )
+        // if the deposit is sent too early, and there is a block re-org then the
+        // ethpayer service might check and see that there is no token balance and
+        // it would ignore the request
+        setTimeout(async () => {
+          try {
+            this.sendEthDeposit(token, address)
+          } catch (e) {
+            console.log('could not send deposit', e)
+          }
         }, 30)
       }
     }
   }
 
-  public async sendEthDeposit(assetId, amount, token) {
+  public async isEthContract(address) {
+    const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
+    const code = await provider.getCode(address)
+    // non-contract addresses should return 0x
+    return code != '0x'
+  }
+
+  public async getDepositFeeAmount(token, depositAddress) {
     const feeInfo = await this.getFeeInfo(token)
     if (!feeInfo || !feeInfo.deposit || !feeInfo.deposit.fee) {
-      return 'unsupported token'
+      throw new Error('unsupported token')
     }
 
-    // TODO: add wallet creation fee if wallet contract is not yet created
-    const feeAmount = feeInfo.deposit.fee
+    let feeAmount = new BigNumber(feeInfo.deposit.fee)
+    if (token.blockchain == Blockchain.Ethereum) {
+      const walletContractDeployed = await this.isEthContract(depositAddress)
+      if (!walletContractDeployed) {
+        feeAmount = feeAmount.plus(new BigNumber(feeInfo.createWallet.fee))
+      }
+    }
+
+    return feeAmount
+  }
+
+  public async getWithdrawalFeeAmount(token) {
+    const feeInfo = await this.getFeeInfo(token)
+    if (!feeInfo || !feeInfo.withdrawal || !feeInfo.withdrawal.fee) {
+      throw new Error('unsupported token')
+    }
+
+    return new BigNumber(feeInfo.withdrawal.fee)
+  }
+
+  public async getMinDepositAmount(token, depositAddress) {
+    const fee = await this.getDepositFeeAmount(token, depositAddress)
+    return fee.multipliedBy(this.feeMultiplier)
+  }
+
+  public async getMinWithdrawalAmount(token) {
+    const fee = await this.getWithdrawalFeeAmount(token)
+    return fee.multipliedBy(this.feeMultiplier)
+  }
+
+  public async sendEthDeposit(token, depositAddress) {
+    const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
+    const amount = new BigNumber(token.externalBalance)
+    if (amount.isLessThan(feeAmount.multipliedBy(this.feeMultiplier))) {
+      return 'insufficient balance'
+    }
+
+    const assetId = '0x' + token.asset_id
     const targetProxyHash = '0x' + this.getTargetProxyHash(token)
     const feeAddress = '0x' + this.network.FEE_ADDRESS
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
     const nonce = Math.floor(Math.random() * 1000000000) // random nonce to prevent replay attacks
     const message = ethers.utils.solidityKeccak256(
       ['string', 'address', 'bytes', 'bytes', 'bytes', 'uint256', 'uint256', 'uint256'],
-      ['sendTokens', assetId, targetProxyHash, toAssetHash, feeAddress, amount, feeAmount, nonce]
+      ['sendTokens', assetId, targetProxyHash, toAssetHash, feeAddress, amount.toString(), feeAmount.toString(), nonce]
     )
     const messageBytes = ethers.utils.arrayify(message)
 
     const privateKey = this.hdWallet[Blockchain.Ethereum]
     const etherWallet = new ethers.Wallet(privateKey)
-    const nativeAddress = etherWallet.address
+    const owner = etherWallet.address
     const signature = await etherWallet.signMessage(messageBytes)
     const rsv = ethers.utils.splitSignature(signature)
 
-    const externalAddress = ethers.utils.hexlify(this.address)
+    const swthAddress = ethers.utils.hexlify(this.address)
     const body = {
-      NativeAddress: nativeAddress,
-      ExternalAddress: externalAddress,
+      OwnerAddress: owner,
+      SwthAddress: swthAddress,
       AssetHash: assetId,
       TargetProxyHash: targetProxyHash,
       ToAssetHash: toAssetHash,
-      Amount: amount,
-      FeeAmount: feeAmount,
+      Amount: amount.toString(),
+      FeeAmount: feeAmount.toString(),
       FeeAddress: feeAddress,
-      Nonce: nonce,
+      Nonce: nonce.toString(),
+      CallAmount: amount.toString(),
       V: rsv.v.toString(),
       R: rsv.r,
       S: rsv.s,
     }
 
-    return fetch(
+    const result = await fetch(
       this.network.ETH_PAYER_URL + '/deposit',
       { method: 'POST', body: JSON.stringify(body) }
     )
+    return result
   }
 
   public async getDepositAddress(blockchain: string) {
@@ -496,14 +546,14 @@ export class WalletClient {
   }
 
   public async getEthDepositAddress() {
-    const externalAddress = ethers.utils.hexlify(this.address)
+    const swthAddress = ethers.utils.hexlify(this.address)
     const privateKey = this.hdWallet[Blockchain.Ethereum]
-    const nativeAddress = (new ethers.Wallet(privateKey)).address
+    const owner = (new ethers.Wallet(privateKey)).address
 
     const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
     const contractAddress = this.network.ETH_LOCKPROXY
     const contract = new ethers.Contract(contractAddress, WALLET_FACTORY_ABI, provider)
-    const walletAddress = await contract.getWalletAddress(nativeAddress, externalAddress, ETH_WALLET_BYTECODE)
+    const walletAddress = await contract.getWalletAddress(owner, swthAddress, ETH_WALLET_BYTECODE)
 
     return walletAddress
   }
@@ -522,7 +572,7 @@ export class WalletClient {
 
     const balances = await contract.getBalances(address, assetIds)
     for (let i = 0; i < tokens.length; i++) {
-      tokens[i].externalBalance = balances[i].toString()
+      tokens[i].externalBalance = balances[i]
     }
 
     return tokens
