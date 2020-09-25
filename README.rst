@@ -1,0 +1,45 @@
+================================
+Tradehub API JS SDK - Designed for simplicitiy
+================================
+
+Note
+___
+
+.. important:: The code found in this repositary is unaudited and incomplete. Switcheo is not responsible for any losses incurred when using this code.
+
+It is recommended to test/develop on TestNet. You can head to .`Tradehub Faucet <https://t.me/the_tradehub_bot`_  get receive free TestNet tokens.
+
+Features
+--------
+
+- Implementation of all General, Market Data, Account, Blockchain endpoints. *WIP*
+- Handling of authentication
+- Typescript support
+
+Quickstart
+-----------
+
+Add ``tradehub-api-js`` to package.json
+
+... code-block:: json
+
+  "dependencies": {
+    "tradehub-api-js": "git+ssh://git@github.com/Switcheo/tradehub-api-js"
+  }
+
+``yarn install`` or ``npm install``
+
+import clients from ``tradehub-api-js``
+
+.. code-block:: javascript
+  const { WalletClient, RestClient, WsClient } = require('tradehub-api-js')
+
+  const network = 'TESTNET'
+
+  async function run() {
+    const wallet = await WalletClient.connectMnemonic(process.env.MNEMONICS, network)
+    const rest = new RestClient({ wallet, network })
+    const ws = new WsClient(network)
+  }
+
+  run()
