@@ -1,13 +1,16 @@
 ================================
-Tradehub API JS SDK - Designed for simplicitiy
+Tradehub API JS SDK - Designed for simplicity
 ================================
 
 Note
 ___
 
-.. important:: The code found in this repositary is unaudited and incomplete. Switcheo is not responsible for any losses incurred when using this code.
+.. important:: The code found in this repository is unaudited and incomplete. Switcheo is not responsible for any losses incurred when using this code.
 
 It is recommended to test/develop on TestNet. You can head to .`Tradehub Faucet <https://t.me/the_tradehub_bot`_  get receive free TestNet tokens.
+
+.. warning:: The Websocket client is still under heavy development.
+
 
 Features
 --------
@@ -16,7 +19,7 @@ Features
 - Handling of authentication
 - Typescript support
 
-Quickstart
+Quick Start
 -----------
 
 Add ``tradehub-api-js`` to package.json
