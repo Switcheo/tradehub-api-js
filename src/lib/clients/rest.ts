@@ -12,46 +12,6 @@ export enum Direction {
   short = 'short',
 }
 
-interface PriceLevel {
-  price: string
-  quantity: string
-}
-
-interface OrderBook {
-  asks: Array<PriceLevel>
-  bids: Array<PriceLevel>
-}
-
-
-interface Balance {
-  available: string
-  denom: string
-  order: string
-  position: string
-}
-
-interface WalletBalance {
-  [key: string]: Balance
-}
-
-interface GetOrdersOptions {
-  address?: string
-  market?: string
-  limit?: number
-  beforeId?: number
-  afterId?: number
-  status?: string
-  orderType?: string
-}
-
-interface GetTradesOptions {
-  address?: string
-  market?: string
-  limit?: number
-  beforeId?: number
-  afterId?: number
-}
-
 // TODO: include optional params such as pagination and limit
 // TODO: response typings
 // TODO: support all POST methods
@@ -60,7 +20,7 @@ export interface REST {
   // public
   checkUsername(username: string): Promise<boolean>
   getAccount(address?: string): Promise<object>
-  getAccountTrades(options: GetTradesOptions): Promise<Array<object>>
+  getAccountTrades(options: types.GetTradesOptions): Promise<Array<object>>
   getActiveWallets(token: string): Promise<string>
   getAllValidators(): Promise<Array<object>>
   getAverageBlocktime(): Promise<string>
@@ -73,14 +33,14 @@ export interface REST {
   getMarket(market: string): Promise<object>
   getMarketStats(market?: string): Promise<Array<object>>
   getOrder(id: string): Promise<object>
-  getOrders(options: GetOrdersOptions): Promise<Array<object>>
-  getOpenOrders(options: GetOrdersOptions): Promise<Array<object>>
-  getOrderBook(market: string): Promise<OrderBook>
+  getOrders(options: types.GetOrdersOptions): Promise<Array<object>>
+  getOpenOrders(options: types.GetOrdersOptions): Promise<Array<object>>
+  getOrderBook(market: string): Promise<types.OrderBook>
   getProfile(address?: string): Promise<object>
   getPrices(market: string): Promise<object>
   getRichList(token: string): Promise<Array<object>>
   getTotalBalances(): Promise<Array<object>>
-  getTrades(options: GetTradesOptions): Promise<Array<object>>
+  getTrades(options: types.GetTradesOptions): Promise<Array<object>>
   getTx(hash: string): Promise<object>
   getTxs(): Promise<Array<object>>
   getTxLog(hash: string): Promise<object>
@@ -90,8 +50,9 @@ export interface REST {
   getPositionsLargest(market: string): Promise<Array<object>>
   getPosition(market: string, address?: string): Promise<object>
   getPositions(address?: string): Promise<Array<object>>
-  getWalletBalance(address?: string): Promise<WalletBalance>
+  getWalletBalance(address?: string): Promise<types.WalletBalance>
   //private
+  send(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
   createOrder(params: types.CreateOrderParams, options?: types.Options): Promise<any>
   createOrders(params: types.CreateOrderParams[], options?: types.Options): Promise<any>
   cancelOrder(params: types.CancelOrderParams, options?: types.Options): Promise<any>
@@ -99,7 +60,15 @@ export interface REST {
   editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options): Promise<any>
   editOrders(orderIDs: string[], params: types.EditOrderParams[], options?: types.Options): Promise<any>
   cancelAll(msg: types.CancelAllMsg, options?: types.Options): Promise<any>
-  send(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
+  updateProfile(msg: types.UpdateProfileMsg, options?: types.Options): Promise<any>
+  setLeverage(msg: types.SetLeverageMsg, options?: types.Options): Promise<any>
+  setLeverages(msgs: types.SetLeverageMsg[], options?: types.Options): Promise<any>
+  createMarket(msg: types.CreateMarketMsg, options?: types.Options): Promise<any>
+  createMarkets(msgs: types.CreateMarketMsg[], options?: types.Options): Promise<any>
+  initiateSettlement(msg: types.InitiateSettlementMsg, options?: types.Options): Promise<any>
+  initiateSettlements(msgs: types.InitiateSettlementMsg[], options?: types.Options): Promise<any>
+  editMargin(params: types.EditMarginMsg, options?: types.Options): Promise<any>
+  editMargins(msgs: types.EditMarginMsg[], options?: types.Options): Promise<any>
 }
 
 export class RestClient implements REST {
@@ -183,7 +152,7 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_order?order_id=${id}`)
   }
 
-  public async getOrders(options: GetOrdersOptions) {
+  public async getOrders(options: types.GetOrdersOptions) {
     const {
       address,
       market,
@@ -225,7 +194,7 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
-  public async getOpenOrders(options: GetOrdersOptions) {
+  public async getOpenOrders(options: types.GetOrdersOptions) {
     const {
       address,
       market,
@@ -263,7 +232,7 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
-  public async getAccountTrades(options: GetTradesOptions) {
+  public async getAccountTrades(options: types.GetTradesOptions) {
     const {
       address,
       market,
@@ -338,7 +307,7 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_insurance_balance`)
   }
 
-  public async getTrades(options: GetTradesOptions) {
+  public async getTrades(options: types.GetTradesOptions) {
     const {
       address,
       market,
@@ -488,6 +457,62 @@ export class RestClient implements REST {
 
   public async send(msg: types.SendTokensMsg, options?: types.Options) {
     return this.wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], options)
+  }
+
+  public async updateProfile(msg: types.UpdateProfileMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], options)
+  }
+
+  public async setLeverage(msg: types.SetLeverageMsg, options?: types.Options) {
+    return this.setLeverages([msg], options)
+  }
+  
+  public async setLeverages(msgs: types.SetLeverageMsg[], options?: types.Options) {
+    msgs = msgs.map(msg => {
+      if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+      return msg
+    })
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.SET_LEVERAGE_MSG_TYPE), options)
+  }
+
+  public async createMarket(msg: types.CreateMarketMsg, options?: types.Options) {
+    return this.createMarkets([msg], options)
+  }
+  
+  public async createMarkets(msgs: types.CreateMarketMsg[], options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
+    msgs = msgs.map(msg => {
+      // msg.TickSize = new BigNumber(msg.TickSize).toFixed(18)
+      if (!msg.originator) msg.originator = address
+      return msg
+    })
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.ADD_MARKET_MSG_TYPE), options)
+  }
+
+  public async initiateSettlement(msg: types.InitiateSettlementMsg, options?: types.Options) {
+    return this.initiateSettlements([msg], options)
+  }
+  
+  public async initiateSettlements(msgs: types.InitiateSettlementMsg[], options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
+    msgs = msgs.map(msg => {
+      if (!msg.originator) msg.originator = address
+      return msg
+    })
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.INITIATE_SETTLEMENT_MSG_TYPE), options)
+  }
+
+  public async editMargin(params: types.EditMarginMsg, options?: types.Options) {
+    return this.editMargins([params], options)
+  }
+
+  public async editMargins(msgs: types.EditMarginMsg[], options?: types.Options) {
+      msgs = msgs.map(msg => {
+          if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+          return msg
+      })
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_MARGIN_MSG_TYPE), options)
   }
 
 }

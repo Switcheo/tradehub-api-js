@@ -56,6 +56,47 @@ export enum Network {
   DevNet = 'DEVNET',
 }
 
+
+export interface PriceLevel {
+  price: string
+  quantity: string
+}
+
+export interface OrderBook {
+  asks: Array<PriceLevel>
+  bids: Array<PriceLevel>
+}
+
+
+export interface Balance {
+  available: string
+  denom: string
+  order: string
+  position: string
+}
+
+export interface WalletBalance {
+  [key: string]: Balance
+}
+
+export interface GetOrdersOptions {
+  address?: string
+  market?: string
+  limit?: number
+  beforeId?: number
+  afterId?: number
+  status?: string
+  orderType?: string
+}
+
+export interface GetTradesOptions {
+  address?: string
+  market?: string
+  limit?: number
+  beforeId?: number
+  afterId?: number
+}
+
 export interface CreateOrderParams {
   OrderType?: string,
   StopPrice?: string,
@@ -91,6 +132,55 @@ export interface SendTokensMsg {
     denom: string,
     amount: string,
   }>
+}
+
+export interface UpdateProfileMsg {
+  username: string,
+  twitter: string,
+  originator?: string,
+}
+
+export interface SetLeverageMsg {
+  market: string,
+  leverage: string,
+  originator?: string,
+}
+
+export interface CreateMarketMsg {
+  name: string,
+  display_name: string,
+  market_type: string,
+  description: string,
+  base: string,
+  quote: string,
+  lot_size: string,
+  tick_size: string,
+  min_quantity: string,
+  risk_step_size: string,
+  initial_margin_base: string,
+  initial_margin_step: string,
+  maintenance_margin_ratio: string,
+  max_liquidation_order_ticket: string,
+  max_liquidation_order_duration: string,
+  impact_size: string,
+  mark_price_band: string,
+  last_price_protected_band: string,
+  index_oracle_id: string,
+  expiry_time: string,
+  taker_fee: string,
+  maker_fee: string,
+  originator?: string,
+}
+
+export interface InitiateSettlementMsg {
+  market: string,
+  originator?: string,
+}
+
+export interface EditMarginMsg {
+  market: string,
+  margin: string,
+  originator?: string,
 }
 
 export interface Options extends SignMessageOptions, TransactionOptions { }

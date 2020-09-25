@@ -19,6 +19,8 @@ Head over to [Tradehub Faucet](https://t.me/the_tradehub_bot) get receive free T
 
 ## Quick Start
 
+* Create a wallet on https://beta.dem.exchange/.
+
 * Add `tradehub-api-js` to package.json
 
 ```
