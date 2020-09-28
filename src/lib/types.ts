@@ -160,7 +160,7 @@ export interface CancelAllMsg {
 }
 
 export interface SendTokensMsg {
-  from_address: string,
+  from_address?: string,
   to_address: string,
   amount: Array<{
     denom: string,

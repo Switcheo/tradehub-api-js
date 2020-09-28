@@ -48,6 +48,7 @@ export interface REST {
   getToken(params: types.TokenOnlyGetterParams): Promise<any>
   getTokens(): Promise<any>
   getTx(params: types.GetIDOnlyGetterParams): Promise<object>
+  getTransfers(params?: types.AddressOnlyGetterParams): Promise<object>
   getTxs(): Promise<Array<object>>
   getTxLog(params: types.GetIDOnlyGetterParams): Promise<object>
   getTxTypes(): Promise<Array<string>>
@@ -500,6 +501,19 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
+  public async getTransfers(params?: types.AddressOnlyGetterParams) {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
+    }
+    return this.fetchJson(`/get_external_transfers?account=${address}`)
+  }
+
   // cosmos
   public async getStakingValidators(): Promise<any> {
     return this.fetchCosmosJson(`/staking/validators`)
@@ -656,6 +670,9 @@ export class RestClient implements REST {
   }
 
   public async send(msg: types.SendTokensMsg, options?: types.Options) {
+    if (!msg.from_address) {
+      msg.from_address = this.wallet.pubKeyBech32
+    }
     return this.wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], options)
   }
 
