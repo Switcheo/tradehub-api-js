@@ -557,7 +557,7 @@ export class RestClient implements REST {
     return this.fetchCosmosJson(`/staking/delegators/${address}/delegations`)
   }
 
-  public async getDelegatorUnbondingDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+  public async getDelegatorUnbondingDelegations(params?: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
       if (!this.wallet) {
@@ -570,7 +570,7 @@ export class RestClient implements REST {
     return this.fetchCosmosJson(`/staking/delegators/${address}/unbonding_delegations`)
   }
 
-  public async getDelegatorRedelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+  public async getDelegatorRedelegations(params?: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
       if (!this.wallet) {
@@ -583,7 +583,7 @@ export class RestClient implements REST {
     return this.fetchCosmosJson(`/staking/redelegations?delegator=${address}`)
   }
 
-  public async getAllDelegatorDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
+  public async getAllDelegatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any> {
     const promises = [
       this.getDelegatorDelegations(params),
       this.getDelegatorUnbondingDelegations(params),
@@ -598,7 +598,7 @@ export class RestClient implements REST {
     })
   }
 
-  public async getDelegatorDelegationRewards(params: types.AddressOnlyGetterParams): Promise<any> {
+  public async getDelegatorDelegationRewards(params?: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
       if (!this.wallet) {
