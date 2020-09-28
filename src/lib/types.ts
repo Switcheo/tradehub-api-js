@@ -136,8 +136,8 @@ export interface CreateOrderMsg {
   stop_price?: string,
   time_in_force?: string,
   trigger_type?: string,
-  is_reduce_only: boolean,
-  is_post_only: boolean,
+  is_reduce_only?: boolean,
+  is_post_only?: boolean,
   originator?: string,
 }
 
