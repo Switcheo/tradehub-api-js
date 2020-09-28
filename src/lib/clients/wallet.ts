@@ -803,3 +803,26 @@ export function getPrivKeyFromMnemonic(mnemonic) {
   }
   return privateKey.toString('hex')
 }
+
+export function newAccount(net: string = 'LOCALHOST') {
+  const network = getNetwork(net)
+  const mnemonic = bip39.generateMnemonic()
+  const privateKey = getPrivKeyFromMnemonic(mnemonic)
+  const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network))
+  return {
+    mnemonic,
+    privateKey,
+    pubKeyBech32,
+  }
+}
+
+export function accountFromMnemonic(mnemonic, net: string = 'LOCALHOST') {
+  const network = getNetwork(net)
+  const privateKey = getPrivKeyFromMnemonic(mnemonic)
+  const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network))
+  return {
+    mnemonic,
+    privateKey,
+    pubKeyBech32,
+  }
+}
