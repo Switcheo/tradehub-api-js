@@ -1,9 +1,11 @@
 import { BigNumber } from 'bignumber.js'
 import fetch from '../utils/fetch'
+import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
 
 import { camelCaseDeep } from "../utils/json"
 import { getNetwork } from '../config'
 import { WalletClient } from './wallet'
+import { Blockchain } from '../constants'
 
 import * as types from '../types'
 
@@ -57,7 +59,7 @@ export interface REST {
   // cosmos
   getStakingValidators(): Promise<any>
   getUnbondingStakingValidators(): Promise<any>
-  getUnbondedStakingValidators(): Promise<any> 
+  getUnbondedStakingValidators(): Promise<any>
   getStakingPool(): Promise<any>
   getValidatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
   getDelegatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
@@ -105,7 +107,7 @@ export interface REST {
   withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options): Promise<any>
   createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options): Promise<any>
   activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options): Promise<any>
-  createWithdrawal(msg: types.CreateWithdrawalMsg, options?: types.Options): Promise<any>
+  createWithdrawal(msg: types.CreateWithdrawalMsg, blockchain: string, options?: types.Options): Promise<any>
   mintTokens(msg: types.MintTokenRequest): Promise<any>
 }
 
@@ -134,7 +136,7 @@ export class RestClient implements REST {
     const json = await res.json()
     return camelCaseDeep(json)
   }
-  
+
   //
   // PUBLIC METHODS
   //
@@ -416,7 +418,7 @@ export class RestClient implements REST {
   public async getLiquidityPools(): Promise<any> {
     return this.fetchJson(`/get_liquidity_pools`)
   }
-  
+
   // Leaderboard
 
   public async getLeaderboard(params: types.MarketOnlyGetterParams) {
@@ -491,19 +493,19 @@ export class RestClient implements REST {
   public async getStakingValidators(): Promise<any> {
     return this.fetchCosmosJson(`/staking/validators`)
   }
-  
+
   public async getUnbondingStakingValidators(): Promise<any> {
     return this.fetchCosmosJson(`/staking/validators?status=unbonding`)
   }
-  
+
   public async getUnbondedStakingValidators(): Promise<any> {
     return this.fetchCosmosJson(`/staking/validators?status=unbonded`)
   }
-  
+
   public async getStakingPool(): Promise<any> {
     return this.fetchCosmosJson(`/staking/pool`)
   }
-  
+
   public async getValidatorDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
@@ -516,7 +518,7 @@ export class RestClient implements REST {
     }
     return this.fetchCosmosJson(`/staking/validators/${address}/delegations`)
   }
-  
+
   public async getDelegatorDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
@@ -529,7 +531,7 @@ export class RestClient implements REST {
     }
     return this.fetchCosmosJson(`/staking/delegators/${address}/delegations`)
   }
-  
+
   public async getDelegatorUnbondingDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
@@ -542,7 +544,7 @@ export class RestClient implements REST {
     }
     return this.fetchCosmosJson(`/staking/delegators/${address}/unbonding_delegations`)
   }
-  
+
   public async getDelegatorRedelegations(params: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
@@ -555,7 +557,7 @@ export class RestClient implements REST {
     }
     return this.fetchCosmosJson(`/staking/redelegations?delegator=${address}`)
   }
-  
+
   public async getAllDelegatorDelegations(params: types.AddressOnlyGetterParams): Promise<any> {
     const promises = [
       this.getDelegatorDelegations(params),
@@ -570,7 +572,7 @@ export class RestClient implements REST {
       }
     })
   }
-  
+
   public async getDelegatorDelegationRewards(params: types.AddressOnlyGetterParams): Promise<any> {
     let address = ''
     if (!params) {
@@ -582,7 +584,7 @@ export class RestClient implements REST {
       address = params.address
     }
     return this.fetchCosmosJson(`/distribution/delegators/${address}/rewards`)
-  }  
+  }
 
   // PRIVATE METHODS
   public async createOrder(params: types.CreateOrderParams, options?: types.Options) {
@@ -601,7 +603,7 @@ export class RestClient implements REST {
   public async cancelOrder(params: types.CancelOrderParams, options?: types.Options) {
     return this.cancelOrders([params], options)
   }
-  
+
   public async cancelOrders(params: types.CancelOrderParams[], options?: types.Options) {
     const msgs = params.map(msg => {
       if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
@@ -613,7 +615,7 @@ export class RestClient implements REST {
   public async editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options) {
     return this.editOrders([orderID], [params], options)
   }
-  
+
   public async editOrders(orderIDs: string[], paramsList: types.EditOrderParams[], options?: types.Options) {
     if (orderIDs.length != paramsList.length) throw new Error("orderIDs.length != paramsList.length")
     const address = this.wallet.pubKeyBech32
@@ -642,7 +644,7 @@ export class RestClient implements REST {
   public async setLeverage(msg: types.SetLeverageMsg, options?: types.Options) {
     return this.setLeverages([msg], options)
   }
-  
+
   public async setLeverages(msgs: types.SetLeverageMsg[], options?: types.Options) {
     msgs = msgs.map(msg => {
       if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
@@ -654,7 +656,7 @@ export class RestClient implements REST {
   public async createMarket(msg: types.CreateMarketMsg, options?: types.Options) {
     return this.createMarkets([msg], options)
   }
-  
+
   public async createMarkets(msgs: types.CreateMarketMsg[], options?: types.Options) {
     const address = this.wallet.pubKeyBech32
     msgs = msgs.map(msg => {
@@ -668,7 +670,7 @@ export class RestClient implements REST {
   public async initiateSettlement(msg: types.InitiateSettlementMsg, options?: types.Options) {
     return this.initiateSettlements([msg], options)
   }
-  
+
   public async initiateSettlements(msgs: types.InitiateSettlementMsg[], options?: types.Options) {
     const address = this.wallet.pubKeyBech32
     msgs = msgs.map(msg => {
@@ -693,17 +695,17 @@ export class RestClient implements REST {
   public async createToken(msg: types.CreateTokenMsg, options?: types.Options) {
     return this.createTokens([msg], options)
   }
-  
+
   public async createTokens(msgs: types.CreateTokenMsg[], options?: types.Options) {
     const address = this.wallet.pubKeyBech32
     msgs = msgs.map(msg => {
       if (!msg.originator) msg.originator = address
       return msg
     })
-  
+
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_TOKEN_MSG_TYPE), options)
   }
-  
+
   public async mintMultipleTestnetTokens(params: types.MintParams) {
     const { toAddress, mint } = params
     const promises = mint.map((v: { denom: string, amount: string }) => {
@@ -715,40 +717,40 @@ export class RestClient implements REST {
     })
     return Promise.all(promises)
   }
-  
+
   public async mintTestnetTokens(msg: types.MintTokenMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], options)
   }
-  
+
   public async addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options) {
     if(!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], options)
   }
-  
+
   public async removeLiquidity(msg: types.RemoveLiquidityMsg, options?: types.Options) {
     if(!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.REMOVE_LIQUIDITY_MSG_TYPE], options)
   }
-  
+
   public async createPool(msg: types.CreatePoolMsg, options?: types.Options) {
     if(!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], options)
   }
-  
+
   public async createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options) {
     if(!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], options)
   }
-  
+
   public async linkPool(msg: types.LinkPoolMsg, options?: types.Options) {
     if(!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
@@ -766,12 +768,12 @@ export class RestClient implements REST {
     if (!msg.proposer) msg.proposer = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.SUBMIT_PROPOSAL_TYPE], options)
   }
-  
+
   public async depositProposal(msg: types.DepositProposalMsg, options?: types.Options) {
     if (!msg.depositor) msg.depositor = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.DEPOSIT_PROPOSAL_TYPE], options)
   }
-  
+
   public async voteProposal(msg: types.VoteProposalMsg, options?: types.Options) {
     if (!msg.voter) msg.voter = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.VOTE_PROPOSAL_TYPE], options)
@@ -781,7 +783,7 @@ export class RestClient implements REST {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.CREATE_ORACLE_TYPE], options)
   }
-  
+
   public async createVote(msg: types.CreateVoteMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.CREATE_VOTE_TYPE], options)
@@ -790,25 +792,25 @@ export class RestClient implements REST {
   public async createValidator(msg: types.CreateValidatorMsg, options?: types.Options) {
     return this.wallet.signAndBroadcast([msg], [types.CREATE_VALIDATOR_MSG_TYPE], options)
   }
-  
+
   public async delegateTokens(msg: types.DelegateTokensMsg, options?: types.Options) {
     return this.wallet.signAndBroadcast([msg], [types.DELEGATE_TOKENS_MSG_TYPE], options)
   }
-  
+
   public async unbondTokens(msg: types.BeginUnbondingTokensMsg, options?: types.Options) {
     return this.wallet.signAndBroadcast([msg], [types.BEGIN_UNBONDING_TOKENS_MSG_TYPE], options)
   }
-  
+
   public async redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options?: types.Options) {
     return this.wallet.signAndBroadcast([msg],
       [types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE], options)
   }
-  
+
   public async withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options?: types.Options) {
     return this.wallet.signAndBroadcast([msg],
       [types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE], options)
   }
-  
+
   public async withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options) {
     const { validatorAddresses, delegatorAddress } = msg
     const messages: Array<types.WithdrawDelegatorRewardsMsg> =
@@ -818,24 +820,33 @@ export class RestClient implements REST {
     return this.wallet.signAndBroadcast(messages,
       Array(validatorAddresses.length).fill(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE), options)
   }
-  
+
   public async createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.CREATE_SUB_ACCOUNT_MSG_TYPE], options)
   }
-  
+
   public async activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE], options)
   }
-  
-  public async createWithdrawal(msg: types.CreateWithdrawalMsg, options?: types.Options) {
+
+  public async formatWithdrawalAddress(address, blockchain) {
+    if (blockchain === Blockchain.Neo) {
+      const scriptHash = neonWallet.getScriptHashFromAddress(address)
+      // return the little endian version of the address
+      return neonUtils.reverseHex(scriptHash)
+    }
+    throw new Error('formatting of withdrawal address not yet supported for ' + blockchain)
+  }
+
+  public async createWithdrawal(msg: types.CreateWithdrawalMsg, blockchain: string, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    msg.to_address = await this.formatWithdrawalAddress(msg.to_address, blockchain)
     return this.wallet.signAndBroadcast([msg], [types.CREATE_WITHDRAWAL_TYPE], options)
   }
-  
+
   public async mintTokens(msg: types.MintTokenRequest) {
     return fetch(`${this.baseUrl}/mint_tokens`, { method: 'POST', body: JSON.stringify(msg) }).then(res => res.json())
   }
-  
 }

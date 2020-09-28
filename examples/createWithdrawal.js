@@ -8,7 +8,8 @@ async function createWithdrawal() {
   const mnemonic = 'direct social glue family aspect vanish hollow grocery armed goat fortune chapter'
   const accountWallet = await Wallet.connect(mnemonic, 'DEVNET')
   const params = {
-    to_address: '6ee8ff54dda23d4c9feeca474794bd077ddf96d1',
+    to_address: 'ARtK6YPiSXs9RzkcUNKXQskczs2rSyQfrz',
+    blockchain: 'neo',
     denom: 'swth2',
     amount: new BigNumber('0.00000010').toFixed(18),
     fee_amount: new BigNumber('0.00000001').toFixed(18),
