@@ -8,19 +8,19 @@ const network = Network.LocalHost
 async function editOrder() {
     let wallet = await setupAccount(mnemonic)
     const client = new RestClient({ wallet, network })
-    // const createRes = await client.createOrder({
-    //     market: 'swth_eth',
-    //     side: 'sell',
-    //     quantity: '200',
-    //     price: '1.01',
-    //     type: 'limit',
-    //     is_post_only: false,
-    //     is_reduce_only: false,
-    // })
-    // const order = JSON.parse(createRes.logs[0].log)
-    // console.log(order)
+    const createRes = await client.createOrder({
+        market: 'swth_eth',
+        side: 'sell',
+        quantity: '300',
+        price: '1.01',
+        type: 'limit',
+        is_post_only: false,
+        is_reduce_only: false,
+    })
+    const order = JSON.parse(createRes.logs[0].log)
+    console.log(order)
     const res = await client.editOrder({
-        id: '2F2406D17402D1F5D0B857FF8FE05598A9613A01BB20A17454A6BFD3E420ED53',
+        id: order.order_id,
         quantity: '200',
         price: '1.01',
         stop_price: '1.01',

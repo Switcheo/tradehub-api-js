@@ -14,8 +14,8 @@ async function createOrder() {
         quantity: '200',
         price: '1.01',
         type: 'limit',
-        is_post_only: false,
-        is_reduce_only: false,
+        // is_post_only: false,
+        // is_reduce_only: false,
     })
     console.log('res:', res)
 }

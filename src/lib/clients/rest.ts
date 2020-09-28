@@ -625,14 +625,8 @@ export class RestClient implements REST {
         console.warn(`msgs[${i}].type should be set, defaulting to limit`)
         msg.type = 'limit'
       }
-      if (msg.is_post_only === undefined) {
-        console.warn(`msgs[${i}].is_post_only should be set, defaulting to false`)
-        msg.is_post_only = false
-      }
-      if (msg.is_reduce_only === undefined) {
-        console.warn(`msgs[${i}].is_reduce_only should be set, defaulting to false`)
-        msg.is_reduce_only = false
-      }
+      if (msg.is_post_only === undefined) msg.is_post_only = false
+      if (msg.is_reduce_only === undefined) msg.is_reduce_only = false
       return msg
     })
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_ORDER_MSG_TYPE), options)
