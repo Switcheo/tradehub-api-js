@@ -45,6 +45,8 @@ export interface REST {
   getRichList(params: types.TokenOnlyGetterParams): Promise<Array<object>>
   getTotalBalances(): Promise<Array<object>>
   getTrades(params: types.GetTradesGetterParams): Promise<Array<object>>
+  getToken(params: types.TokenOnlyGetterParams): Promise<any>
+  getTokens(): Promise<any>
   getTx(params: types.GetIDOnlyGetterParams): Promise<object>
   getTxs(): Promise<Array<object>>
   getTxLog(params: types.GetIDOnlyGetterParams): Promise<object>
@@ -470,6 +472,15 @@ export class RestClient implements REST {
 
   public async getTotalBalances() {
     return this.fetchJson(`/get_total_balances`)
+  }
+
+  public async getToken(params: types.TokenOnlyGetterParams) {
+    const { token } = params
+    return this.fetchJson(`/get_token?token=${token}`)
+  }
+
+  public async getTokens() {
+    return this.fetchJson(`/get_tokens`)
   }
 
   public async getRichList(params: types.TokenOnlyGetterParams) {
