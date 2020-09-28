@@ -31,8 +31,8 @@ export const BEGIN_REDELEGATING_TOKENS_MSG_TYPE = 'cosmos-sdk/MsgBeginRedelegate
 export const WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE = 'cosmos-sdk/MsgWithdrawDelegationReward'
 
 // Accounts
-export const CREATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgCreateSubAccountV2'
-export const ACTIVATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgActivateSubAccountV2'
+export const CREATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgCreateSubAccountV1'
+export const ACTIVATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgActivateSubAccountV1'
 
 // Profile
 export const UPDATE_PROFILE_MSG_TYPE = 'profile/UpdateProfile'
@@ -127,27 +127,31 @@ export interface GetActiveWalletsParams {
   afterId?: number
 }
 
-export interface CreateOrderParams {
-  OrderType?: string,
-  StopPrice?: string,
-  TriggerType?: string,
-  Market: string,
-  Side: string,
-  Quantity: string,
-  Price: string,
-  IsReduceOnly?: boolean,
-  IsPostOnly?: boolean,
-}
-
-export interface CancelOrderParams {
-  order_id: string,
+export interface CreateOrderMsg {
+  market: string,
+  side: string,
+  quantity: string,
+  type: string,
+  price?: string,
+  stop_price?: string,
+  time_in_force?: string,
+  trigger_type?: string,
+  is_reduce_only: boolean,
+  is_post_only: boolean,
   originator?: string,
 }
 
-export interface EditOrderParams {
-  StopPrice?: string,
-  Quantity?: string,
-  Price?: string,
+export interface CancelOrderMsg {
+  id: string,
+  originator?: string,
+}
+
+export interface EditOrderMsg {
+  id: string,
+  quantity?: string,
+  price?: string,
+  stop_price?: string,
+  originator?: string,
 }
 
 export interface CancelAllMsg {
@@ -320,22 +324,22 @@ export interface VoteProposalMsg {
 }
 
 export interface CreateOracleMsg {
-	id: string,
-	description: string,
-	min_turnout_percentage: string,
-	max_result_age: string,
-	security_type: string,
-	result_strategy: string,
-	resolution: string,
-	spec: string,
-	originator?: string,
+  id: string,
+  description: string,
+  min_turnout_percentage: string,
+  max_result_age: string,
+  security_type: string,
+  result_strategy: string,
+  resolution: string,
+  spec: string,
+  originator?: string,
 }
 
 export interface CreateVoteMsg {
-	oracle_id: string,
-	timestamp: string,
-	data: string,
-	originator?: string,
+  oracle_id: string,
+  timestamp: string,
+  data: string,
+  originator?: string,
 }
 
 export interface DelegateTokensMsg {

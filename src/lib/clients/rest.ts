@@ -72,12 +72,12 @@ export interface REST {
 
   // private
   send(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
-  createOrder(params: types.CreateOrderParams, options?: types.Options): Promise<any>
-  createOrders(params: types.CreateOrderParams[], options?: types.Options): Promise<any>
-  cancelOrder(params: types.CancelOrderParams, options?: types.Options): Promise<any>
-  cancelOrders(params: types.CancelOrderParams[], options?: types.Options): Promise<any>
-  editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options): Promise<any>
-  editOrders(orderIDs: string[], params: types.EditOrderParams[], options?: types.Options): Promise<any>
+  createOrder(msg: types.CreateOrderMsg, options?: types.Options): Promise<any>
+  createOrders(msgs: types.CreateOrderMsg[], options?: types.Options): Promise<any>
+  cancelOrder(msg: types.CancelOrderMsg, options?: types.Options): Promise<any>
+  cancelOrders(msgs: types.CancelOrderMsg[], options?: types.Options): Promise<any>
+  editOrder(msg: types.EditOrderMsg, options?: types.Options): Promise<any>
+  editOrders(msgs: types.EditOrderMsg[], options?: types.Options): Promise<any>
   cancelAll(msg: types.CancelAllMsg, options?: types.Options): Promise<any>
   updateProfile(msg: types.UpdateProfileMsg, options?: types.Options): Promise<any>
   setLeverage(msg: types.SetLeverageMsg, options?: types.Options): Promise<any>
@@ -101,11 +101,11 @@ export interface REST {
   voteProposal(msg: types.VoteProposalMsg, options?: types.Options): Promise<any>
   createOracle(msg: types.CreateOracleMsg, options?: types.Options): Promise<any>
   createVote(msg: types.CreateVoteMsg, options?: types.Options): Promise<any>
-  createValidator(msg: types.CreateValidatorMsg, options ?: types.Options): Promise<any>
-  delegateTokens(msg: types.DelegateTokensMsg, options ?: types.Options): Promise<any>
-  unbondTokens(msg: types.BeginUnbondingTokensMsg, options ?: types.Options): Promise<any>
-  redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options ?: types.Options): Promise<any>
-  withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options ?: types.Options): Promise<any>
+  createValidator(msg: types.CreateValidatorMsg, options?: types.Options): Promise<any>
+  delegateTokens(msg: types.DelegateTokensMsg, options?: types.Options): Promise<any>
+  unbondTokens(msg: types.BeginUnbondingTokensMsg, options?: types.Options): Promise<any>
+  redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options?: types.Options): Promise<any>
+  withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options?: types.Options): Promise<any>
   withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options): Promise<any>
   createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options): Promise<any>
   activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options): Promise<any>
@@ -118,7 +118,7 @@ export class RestClient implements REST {
   public readonly cosmosBaseUrl: string
   public readonly wallet: WalletClient
 
-  constructor(options: any) {
+  constructor(options: { network?: string, wallet?: WalletClient } = {}) {
     const { network, wallet } = options
     this.baseUrl = getNetwork(network).REST_URL
     this.cosmosBaseUrl = getNetwork(network).COSMOS_URL
@@ -598,43 +598,55 @@ export class RestClient implements REST {
   }
 
   // PRIVATE METHODS
-  public async createOrder(params: types.CreateOrderParams, options?: types.Options) {
-    return this.createOrders([params], options)
+  public async createOrder(msg: types.CreateOrderMsg, options?: types.Options) {
+    return this.createOrders([msg], options)
   }
 
-  public async createOrders(paramsList: types.CreateOrderParams[], options?: types.Options) {
+  public async createOrders(msgs: types.CreateOrderMsg[], options?: types.Options) {
     const address = this.wallet.pubKeyBech32
-    const msgs = paramsList.map(params => ({
-      OrderParams: JSON.stringify(params),
-      Originator: address,
-    }))
+    msgs = msgs.map((msg, i) => {
+      console.log(msg)
+      if (!msg.originator) msg.originator = address
+      if (msg.type === undefined) {
+        console.warn(`msgs[${i}].type should be set, defaulting to limit`)
+        msg.type = 'limit'
+      }
+      if (msg.is_post_only === undefined) {
+        console.warn(`msgs[${i}].is_post_only should be set, defaulting to false`)
+        msg.is_post_only = false
+      }
+      if (msg.is_reduce_only === undefined) {
+        console.warn(`msgs[${i}].is_reduce_only should be set, defaulting to false`)
+        msg.is_reduce_only = false
+      }
+      return msg
+    })
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_ORDER_MSG_TYPE), options)
   }
 
-  public async cancelOrder(params: types.CancelOrderParams, options?: types.Options) {
-    return this.cancelOrders([params], options)
+  public async cancelOrder(msg: types.CancelOrderMsg, options?: types.Options) {
+    return this.cancelOrders([msg], options)
   }
 
-  public async cancelOrders(params: types.CancelOrderParams[], options?: types.Options) {
-    const msgs = params.map(msg => {
-      if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+  public async cancelOrders(msgs: types.CancelOrderMsg[], options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
+    msgs = msgs.map(msg => {
+      if (!msg.originator) msg.originator = address
       return msg
     })
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CANCEL_ORDER_MSG_TYPE), options)
   }
 
-  public async editOrder(orderID: string, params: types.EditOrderParams, options?: types.Options) {
-    return this.editOrders([orderID], [params], options)
+  public async editOrder(msg: types.EditOrderMsg, options?: types.Options) {
+    return this.editOrders([msg], options)
   }
 
-  public async editOrders(orderIDs: string[], paramsList: types.EditOrderParams[], options?: types.Options) {
-    if (orderIDs.length != paramsList.length) throw new Error("orderIDs.length != paramsList.length")
+  public async editOrders(msgs: types.EditOrderMsg[], options?: types.Options) {
     const address = this.wallet.pubKeyBech32
-    const msgs = paramsList.map((params, i) => ({
-      OrderID: orderIDs[i],
-      EditOrderParams: JSON.stringify(params),
-      Originator: address,
-    }))
+    msgs = msgs.map(msg => {
+      if (!msg.originator) msg.originator = address
+      return msg
+    })
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_ORDER_MSG_TYPE), options)
   }
 
@@ -657,8 +669,9 @@ export class RestClient implements REST {
   }
 
   public async setLeverages(msgs: types.SetLeverageMsg[], options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
     msgs = msgs.map(msg => {
-      if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+      if (!msg.originator) msg.originator = address
       return msg
     })
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.SET_LEVERAGE_MSG_TYPE), options)
@@ -696,11 +709,11 @@ export class RestClient implements REST {
   }
 
   public async editMargins(msgs: types.EditMarginMsg[], options?: types.Options) {
-      msgs = msgs.map(msg => {
-          if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
-          return msg
-      })
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_MARGIN_MSG_TYPE), options)
+    msgs = msgs.map(msg => {
+      if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+      return msg
+    })
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_MARGIN_MSG_TYPE), options)
   }
 
   public async createToken(msg: types.CreateTokenMsg, options?: types.Options) {
@@ -735,41 +748,41 @@ export class RestClient implements REST {
   }
 
   public async addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options) {
-    if(!msg.originator) {
+    if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], options)
   }
 
   public async removeLiquidity(msg: types.RemoveLiquidityMsg, options?: types.Options) {
-    if(!msg.originator) {
+    if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.REMOVE_LIQUIDITY_MSG_TYPE], options)
   }
 
   public async createPool(msg: types.CreatePoolMsg, options?: types.Options) {
-    if(!msg.originator) {
+    if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], options)
   }
 
   public async createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options) {
-    if(!msg.originator) {
+    if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], options)
   }
 
   public async linkPool(msg: types.LinkPoolMsg, options?: types.Options) {
-    if(!msg.originator) {
+    if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.LINK_POOL_MSG_TYPE], options)
   }
   public async unlinkPool(msg: types.UnlinkPoolMsg, options?: types.Options) {
-    if(!msg.originator) {
+    if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], options)

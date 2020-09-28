@@ -1,28 +1,22 @@
-// const SDK = require('switcheo-chain-js-sdk') // use this instead if running this sdk as a library
-const SDK = require('../.')
-const { wallet, api } = SDK
-const { Wallet } = wallet
+const { RestClient, Network } = require("../.")
+const setupAccount = require("./setupAccount")
+
+// random mnemonic
+const mnemonic = 'weapon salute receive close learn hope bone alter action reveal balance depend ketchup rose spread loyal unknown globe curtain foster term else van thumb'
+const network = Network.LocalHost
 
 async function createOrder() {
-  const newAccount = wallet.newAccount()
-  console.log('newAccount', newAccount.pubKeyBech32)
-  const tokenReq = {
-    address: newAccount.pubKeyBech32,
-    amount: '1000',
-    denom: 'swth',
-  }
-  const mintResult = await api.mintTokens(tokenReq)
-  console.log('mintResult', mintResult)
-
-  const accountWallet = await Wallet.connect(newAccount.mnemonic)
-  const params = {
-    Market: 'swth_eth',
-    Side: 'sell',
-    Quantity: '200',
-    Price: '1.01',
-  }
-  const orderResult = await api.createOrder(accountWallet, params)
-  console.log('orderResult', orderResult)
+    const wallet = await setupAccount(mnemonic)
+    const client = new RestClient({ wallet, network })
+    const res = await client.createOrder({
+        market: 'swth_eth',
+        side: 'sell',
+        quantity: '200',
+        price: '1.01',
+        type: 'limit',
+        is_post_only: false,
+        is_reduce_only: false,
+    })
+    console.log('res:', res)
 }
-
 createOrder()
