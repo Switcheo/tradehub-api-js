@@ -79,7 +79,7 @@ export interface WalletBalance {
   [key: string]: Balance
 }
 
-export interface GetOrdersOptions {
+export interface GetOrdersGetterParams {
   address?: string
   market?: string
   limit?: number
@@ -106,10 +106,17 @@ export interface PageOnlyGetterParams {
 export interface MarketOnlyGetterParams {
   market: string
 }
+export interface GetIDOnlyGetterParams {
+  id: string
+}
 
 export interface MarketAndAddressGetterParams {
   market: string
   address?: string
+}
+export interface GetPositionsCloseToLiquidationParams {
+  market: string
+  direction: string
 }
 
 export interface GetActiveWalletsParams {
@@ -391,12 +398,37 @@ export interface CreateValidatorMsg {
   },
 }
 
+export interface CreateSubAccountMsg {
+  sub_address: string,
+  originator?: string,
+}
+
+export interface ActivateSubAccountMsg {
+  expected_main_account: string,
+  originator?: string,
+}
+
 export interface AddressOnlyGetterParams {
   address: string
 }
 
 export interface UsernameGetterParams {
   username: string
+}
+
+export interface CreateWithdrawalMsg {
+  to_address: string,
+  denom: string,
+  amount: string,
+  fee_amount: string,
+  fee_address: string,
+  originator?: string,
+}
+
+export interface MintTokenRequest {
+  address: string,
+  amount: string,
+  denom: string,
 }
 
 export interface Options extends SignMessageOptions, TransactionOptions { }

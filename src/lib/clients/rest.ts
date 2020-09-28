@@ -34,22 +34,22 @@ export interface REST {
   getMarkets(): Promise<Array<object>>
   getMarket(params: types.MarketOnlyGetterParams): Promise<object>
   getMarketStats(params?: types.MarketOnlyGetterParams): Promise<Array<object>>
-  getOrder(id: string): Promise<object>
-  getOrders(options: types.GetOrdersOptions): Promise<Array<object>>
-  getOpenOrders(options: types.GetOrdersOptions): Promise<Array<object>>
+  getOrder(params: types.GetIDOnlyGetterParams): Promise<object>
+  getOrders(params: types.GetOrdersGetterParams): Promise<Array<object>>
+  getOpenOrders(params: types.GetOrdersGetterParams): Promise<Array<object>>
   getOrderBook(params: types.MarketOnlyGetterParams): Promise<types.OrderBook>
   getProfile(params?: types.AddressOnlyGetterParams): Promise<object>
   getPrices(params: types.MarketOnlyGetterParams): Promise<object>
-  getRichList(token: string): Promise<Array<object>>
+  getRichList(params: types.TokenOnlyGetterParams): Promise<Array<object>>
   getTotalBalances(): Promise<Array<object>>
-  getTrades(options: types.GetTradesGetterParams): Promise<Array<object>>
-  getTx(hash: string): Promise<object>
+  getTrades(params: types.GetTradesGetterParams): Promise<Array<object>>
+  getTx(params: types.GetIDOnlyGetterParams): Promise<object>
   getTxs(): Promise<Array<object>>
-  getTxLog(hash: string): Promise<object>
+  getTxLog(params: types.GetIDOnlyGetterParams): Promise<object>
   getTxTypes(): Promise<Array<string>>
   getPositionsWithHighestPnL(params: types.MarketOnlyGetterParams): Promise<Array<object>>
-  getPositionsCloseToLiquidation(market: string, direction: Direction): Promise<Array<object>>
-  getPositionsLargest(market: string): Promise<Array<object>>
+  getPositionsCloseToLiquidation(params: types.GetPositionsCloseToLiquidationParams): Promise<Array<object>>
+  getPositionsLargest(params: types.MarketOnlyGetterParams): Promise<Array<object>>
   getPosition(params: types.MarketAndAddressGetterParams): Promise<object>
   getPositions(params?: types.AddressOnlyGetterParams): Promise<Array<object>>
   getWalletBalance(params?: types.AddressOnlyGetterParams): Promise<types.WalletBalance>
@@ -103,6 +103,10 @@ export interface REST {
   redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options ?: types.Options): Promise<any>
   withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options ?: types.Options): Promise<any>
   withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options): Promise<any>
+  createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options): Promise<any>
+  activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options): Promise<any>
+  createWithdrawal(msg: types.CreateWithdrawalMsg, options?: types.Options): Promise<any>
+  mintTokens(msg: types.MintTokenRequest): Promise<any>
 }
 
 export class RestClient implements REST {
@@ -207,11 +211,12 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_leverage?account=${address}&market=${params.market}`)
   }
 
-  public async getOrder(id: string) {
+  public async getOrder(params: types.GetIDOnlyGetterParams) {
+    const { id } = params
     return this.fetchJson(`/get_order?order_id=${id}`)
   }
 
-  public async getOrders(options: types.GetOrdersOptions) {
+  public async getOrders(params: types.GetOrdersGetterParams) {
     const {
       address,
       market,
@@ -220,7 +225,7 @@ export class RestClient implements REST {
       afterId,
       status,
       orderType,
-    } = options
+    } = params
 
     let url = '/get_orders?'
 
@@ -253,7 +258,7 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
-  public async getOpenOrders(options: types.GetOrdersOptions) {
+  public async getOpenOrders(params: types.GetOrdersGetterParams) {
     const {
       address,
       market,
@@ -261,7 +266,7 @@ export class RestClient implements REST {
       beforeId,
       afterId,
       orderType,
-    } = options
+    } = params
 
     let url = '/get_orders?'
 
@@ -422,11 +427,13 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_positions_sorted_by_pnl1?market=${params.market}`)
   }
 
-  public async getPositionsCloseToLiquidation(market: string, direction: Direction) {
+  public async getPositionsCloseToLiquidation(params: types.GetPositionsCloseToLiquidationParams) {
+    const { market, direction } = params
     return this.fetchJson(`/get_positions_sorted_by_risk?market=${market}&direction=${direction}`)
   }
 
-  public async getPositionsLargest(market: string) {
+  public async getPositionsLargest(params: types.MarketOnlyGetterParams) {
+    const { market } = params
     return this.fetchJson(`/get_positions_sorted_by_size?market=${market}`)
   }
 
@@ -441,16 +448,18 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_all_validators`)
   }
 
-  public async getTx(hash: string) {
-    return this.fetchJson(`/get_transaction?hash=${hash}`)
+  public async getTx(params: types.GetIDOnlyGetterParams) {
+    const { id } = params
+    return this.fetchJson(`/get_transaction?hash=${id}`)
   }
 
   public async getTxs() {
     return this.fetchJson(`/get_transactions`)
   }
 
-  public async getTxLog(hash: string) {
-    return this.fetchJson(`/get_tx_log?hash=${hash}`)
+  public async getTxLog(params: types.GetIDOnlyGetterParams) {
+    const { id } = params
+    return this.fetchJson(`/get_tx_log?hash=${id}`)
   }
 
   public async getTxTypes() {
@@ -461,7 +470,8 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_total_balances`)
   }
 
-  public async getRichList(token: string) {
+  public async getRichList(params: types.TokenOnlyGetterParams) {
+    const { token } = params
     return this.fetchJson(`/get_rich_list?=token=${token}`)
   }
 
@@ -809,5 +819,23 @@ export class RestClient implements REST {
       Array(validatorAddresses.length).fill(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE), options)
   }
   
+  public async createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_SUB_ACCOUNT_MSG_TYPE], options)
+  }
+  
+  public async activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE], options)
+  }
+  
+  public async createWithdrawal(msg: types.CreateWithdrawalMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_WITHDRAWAL_TYPE], options)
+  }
+  
+  public async mintTokens(msg: types.MintTokenRequest) {
+    return fetch(`${this.baseUrl}/mint_tokens`, { method: 'POST', body: JSON.stringify(msg) }).then(res => res.json())
+  }
   
 }

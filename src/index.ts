@@ -11,7 +11,6 @@ export * from './lib/clients'
 export * from './lib/constants'
 export * from './lib/containers'
 export * from './lib/types'
-export * from './lib/api'
 export * from './lib/utils'
 
 export {

@@ -1,7 +1,3 @@
-export { mintTokens, MintTokenRequest } from './mints'
-export { createWithdrawal, CreateWithdrawalMsg } from './withdrawal'
-export { createSubAccount, activateSubAccount } from './subaccount'
-
 export {
     WsWrapper,
     // Ws gets
