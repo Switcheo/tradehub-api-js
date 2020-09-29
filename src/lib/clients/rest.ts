@@ -242,22 +242,22 @@ export class RestClient implements REST {
       url += `address=${address}&`
     }
 
-    if (!market) {
+    if (market) {
       url += `market=${market}&`
     }
-    if (!limit) {
+    if (limit) {
       url += `limit=${limit}&`
     }
-    if (!beforeId) {
+    if (beforeId) {
       url += `before_id=${beforeId}&`
     }
-    if (!afterId) {
+    if (afterId) {
       url += `after_id=${afterId}&`
     }
-    if (!status) {
+    if (status) {
       url += `status=${status}&`
     }
-    if (!orderType) {
+    if (orderType) {
       url += `order_type=${orderType}&`
     }
     return this.fetchJson(url)
@@ -275,27 +275,27 @@ export class RestClient implements REST {
 
     let url = '/get_orders?'
 
-    if (!address) {
-      url += `address=${this.wallet.pubKeyBech32}&`
-    } else {
+    if (address) {
       url += `address=${address}&`
+    } else {
+      url += `address=${this.wallet.pubKeyBech32}&`
     }
 
     url += `order_status=open&`
 
-    if (!market) {
+    if (market) {
       url += `market=${market}&`
     }
-    if (!limit) {
+    if (limit) {
       url += `limit=${limit}&`
     }
-    if (!beforeId) {
+    if (beforeId) {
       url += `before_id=${beforeId}&`
     }
-    if (!afterId) {
+    if (afterId) {
       url += `after_id=${afterId}&`
     }
-    if (!orderType) {
+    if (orderType) {
       url += `order_type=${orderType}&`
     }
     return this.fetchJson(url)
@@ -320,16 +320,16 @@ export class RestClient implements REST {
     } else {
       url += `address=${address}&`
     }
-    if (!market) {
+    if (market) {
       url += `market=${market}&`
     }
-    if (!limit) {
+    if (limit) {
       url += `limit=${limit}&`
     }
-    if (!beforeId) {
+    if (beforeId) {
       url += `before_id=${beforeId}&`
     }
-    if (!afterId) {
+    if (afterId) {
       url += `after_id=${afterId}&`
     }
 
@@ -392,22 +392,22 @@ export class RestClient implements REST {
 
 
     if (!address) {
-      if (!this.wallet) {
+      if (this.wallet) {
         url += `address=${this.wallet.pubKeyBech32}&`
       }
     } else {
       url += `address=${address}&`
     }
-    if (!market) {
+    if (market) {
       url += `market=${market}&`
     }
-    if (!limit) {
+    if (limit) {
       url += `limit=${limit}&`
     }
-    if (!beforeId) {
+    if (beforeId) {
       url += `before_id=${beforeId}&`
     }
-    if (!afterId) {
+    if (afterId) {
       url += `after_id=${afterId}&`
     }
 
