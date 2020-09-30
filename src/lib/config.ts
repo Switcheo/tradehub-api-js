@@ -45,7 +45,7 @@ export const NETWORK: NetworkInterface = {
   },
   DEVNET: {
     NAME: 'devnet',
-    SWTH_CHAIN_ID: 180,
+    SWTH_CHAIN_ID: 191,
     REST_URL: 'https://dev-tradescan.switcheo.org',
     WS_URL: 'wss://dev-ws.dem.exchange/ws',
     ETH_PAYER_URL: 'http://13.251.218.38:700',

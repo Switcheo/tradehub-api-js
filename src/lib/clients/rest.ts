@@ -736,6 +736,7 @@ export class RestClient implements REST {
       if (!msg.originator) msg.originator = address
       return msg
     })
+    console.log(this.wallet, this.wallet.signAndBroadcast)
 
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_TOKEN_MSG_TYPE), options)
   }
