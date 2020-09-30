@@ -276,9 +276,9 @@ export class RestClient implements REST {
     let url = '/get_orders?'
 
     if (address) {
-      url += `address=${address}&`
+      url += `account=${address}&`
     } else {
-      url += `address=${this.wallet.pubKeyBech32}&`
+      url += `account=${this.wallet.pubKeyBech32}&`
     }
 
     url += `order_status=open&`
@@ -316,9 +316,9 @@ export class RestClient implements REST {
       throw new Error('get_account: missing address param')
     }
     if (!address) {
-      url += `address=${this.wallet.pubKeyBech32}&`
+      url += `account=${this.wallet.pubKeyBech32}&`
     } else {
-      url += `address=${address}&`
+      url += `account=${address}&`
     }
     if (market) {
       url += `market=${market}&`
@@ -393,10 +393,10 @@ export class RestClient implements REST {
 
     if (!address) {
       if (this.wallet) {
-        url += `address=${this.wallet.pubKeyBech32}&`
+        url += `account=${this.wallet.pubKeyBech32}&`
       }
     } else {
-      url += `address=${address}&`
+      url += `account=${address}&`
     }
     if (market) {
       url += `market=${market}&`
