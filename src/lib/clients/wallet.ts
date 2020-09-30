@@ -404,8 +404,8 @@ export class WalletClient {
     })
 
     // watch for Ethereum token transfers
-    const transferId = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-    dagger.on(`latest:log/+/filter/${transferId}/+/${address}/#`, () => {
+    const transferKey = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+    dagger.on(`latest:log/+/filter/${transferKey}/+/${address}/#`, () => {
       this.sendEthDeposits(address)
     })
   }
@@ -508,7 +508,6 @@ export class WalletClient {
       FeeAmount: feeAmount.toString(),
       FeeAddress: feeAddress,
       Nonce: nonce.toString(),
-      CallAmount: amount.toString(),
       V: rsv.v.toString(),
       R: rsv.r,
       S: rsv.s,
