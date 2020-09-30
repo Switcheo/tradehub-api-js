@@ -119,7 +119,7 @@ export class RestClient implements REST {
   public readonly cosmosBaseUrl: string
   public readonly wallet: WalletClient
 
-  constructor(options: { network?: string, wallet?: WalletClient } = {}) {
+  constructor(options: { network: string, wallet?: WalletClient }) {
     const { network, wallet } = options
     this.baseUrl = getNetwork(network).REST_URL
     this.cosmosBaseUrl = getNetwork(network).COSMOS_URL
