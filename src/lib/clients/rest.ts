@@ -670,7 +670,7 @@ export class RestClient implements REST {
   }
 
   public async updateProfile(msg: types.UpdateProfileMsg, options?: types.Options) {
-    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    if (!msg.Originator) msg.Originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], options)
   }
 

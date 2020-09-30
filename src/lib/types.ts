@@ -169,9 +169,9 @@ export interface SendTokensMsg {
 }
 
 export interface UpdateProfileMsg {
-  username: string,
-  twitter: string,
-  originator?: string,
+  Username: string,
+  Twitter: string,
+  Originator?: string,
 }
 
 export interface SetLeverageMsg {
