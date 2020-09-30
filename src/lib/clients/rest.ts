@@ -619,7 +619,6 @@ export class RestClient implements REST {
   public async createOrders(msgs: types.CreateOrderMsg[], options?: types.Options) {
     const address = this.wallet.pubKeyBech32
     msgs = msgs.map((msg, i) => {
-      console.log(msg)
       if (!msg.originator) msg.originator = address
       if (msg.type === undefined) {
         console.warn(`msgs[${i}].type should be set, defaulting to limit`)
