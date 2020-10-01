@@ -346,8 +346,8 @@ export class WalletClient {
     }
   }
 
-  public async sendNeoDeposit(token) {
-    const privateKey = this.hdWallet[Blockchain.Neo]
+  public async sendNeoDeposit(token, _privateKey = null) {
+    const privateKey = !!_privateKey ? _privateKey : this.hdWallet[Blockchain.Neo]
     const account = Neon.create.account(privateKey)
 
     const scriptHash = this.network.NEO_LOCKPROXY
@@ -364,7 +364,7 @@ export class WalletClient {
     const nonce = Math.floor(Math.random() * 1000000)
 
     if (amount.isLessThan(feeAmount)) {
-      return
+      return false
     }
 
     const sb = Neon.create.scriptBuilder()
@@ -382,7 +382,7 @@ export class WalletClient {
 
     const rpcUrl = this.getNeoWriteRpcUrl()
     const apiProvider = new api.neoCli.instance(rpcUrl)
-    await Neon.doInvoke({
+    return Neon.doInvoke({
       api: apiProvider,
       url: rpcUrl,
       account,

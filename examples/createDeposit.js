@@ -1,11 +1,11 @@
 // const SDK = require('switcheo-chain-js-sdk') // use this instead if running this sdk as a library
-const SDK = require('../.')
+const SDK = require('../build/main')
 const { clients } = SDK
-const { WalletClient, RestClient } = clients
+const { WalletClient } = clients
 const mnemonics = require('../mnemonics.json')
 
-async function createToken() {
-  const wallet = await WalletClient.connectMnemonic(mnemonics[0], process.env.NET)
+async function createDeposit() {
+  const wallet = await WalletClient.connectMnemonic(mnemonics[0], process.env.NET) // this is the receiving addr
   const params = {
     name: 'Switcheo NEP-5',
     symbol: 'SWTHNV2',
@@ -18,9 +18,10 @@ async function createToken() {
     is_collateral: false,
     lock_proxy_hash: '092cec2fd8e88693dc068a30176d667711df39e3',
     delegated_supply: '0',
+    originator: 'swth1lp5tsyq623gxd0q496v5u8jrvpfgu2lcks6zun',
+    externalBalance: '7000000000' // 70.00000000
   }
-  const rest = new RestClient({ network: process.env.NET, wallet })
-  rest.createToken(params).then(console.log)
+  await wallet.sendNeoDeposit(params, process.env.PRIVATE_KEY).then(console.log) // this is the sending addr
 }
 
-createToken()
+createDeposit()
