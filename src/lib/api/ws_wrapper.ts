@@ -301,7 +301,7 @@ export class WsWrapper {
   public unsubscribe(msgId: string, params: WsSubscribeParams[]) {
     try {
       let channelIds: string[] = params.map((p) => this.generateChannelId(p))
-      console.log("Unsubscribing to " + channelIds)
+      // console.log("Unsubscribing to " + channelIds)
       const msg = JSON.stringify({
         id: msgId,
         method: 'unsubscribe',
@@ -309,7 +309,9 @@ export class WsWrapper {
       })
 
       this.socket.send(msg)
-    } catch (e) { console.log(e.message) }
+    } catch (e) {
+      // console.log(e.message)
+    }
   }
 
   public parseChannelId = (rawChannelId: string): any => {
