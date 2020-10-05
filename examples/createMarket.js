@@ -1,7 +1,8 @@
+const { rest } = require('lodash');
 // const SDK = require('switcheo-chain-js-sdk') // use this instead if running this sdk as a library
-const SDK = require('../.')
-const { wallet, api } = SDK
-const { Wallet } = wallet
+const SDK = require('../build/main')
+const { clients } = SDK
+const { WalletClient, RestClient } = clients
 require('dotenv').config()
 
 function sleep(ms) {
@@ -9,9 +10,11 @@ function sleep(ms) {
 }
 
 async function createMarket() {
-  const newAccount = wallet.newAccount()
-  const accountWallet = await Wallet.connect(newAccount.mnemonic)
-  const mintAccount = await Wallet.connect(process.env.MNEMONICS)
+  const newAccount = WalletClient.newAccount()
+  const accountWallet = await WalletClient.connectMnemonic(newAccount.mnemonic)
+  const mintAccount = await WalletClient.connect(process.env.MNEMONICS)
+  const restClient = new RestClient({ network: process.env.NET, wallet: accountWallet })
+  const minterClient = new RestClient({ network: process.env.NET, wallet: mintAccount })
 
   const tokenReq = {
     toAddress: newAccount.pubKeyBech32,
@@ -20,10 +23,8 @@ async function createMarket() {
       denom: 'swth',
     }],
   }
-  const mintResult = await api.mintMultipleTestnetTokens(mintAccount, tokenReq)
+  const mintResult = await minterClient.mintMultipleTestnetTokens(tokenReq)
   console.log('mintResult', mintResult)
-  // const mintResult = await api.mintTokens(tokenReq)
-
 
   // console.log('minted')
   await sleep(2000)

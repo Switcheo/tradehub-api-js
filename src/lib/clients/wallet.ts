@@ -206,68 +206,13 @@ export class WalletClient {
       .then(res => res.json()) // expecting a json response
   }
 
-  public getValidators() {
-    return fetch(`${this.network.REST_URL}/get_validators`)
-      .then(res => res.json()) // expecting a json response
-  }
-
   public getAccount() {
     return fetch(`${this.network.REST_URL}/get_account?account=${this.pubKeyBech32}`)
       .then(res => res.json()) // expecting a json response
   }
 
-  public getTokens() {
-    return fetch(`${this.network.REST_URL}/get_tokens`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getToken(token: string) {
-    return fetch(`${this.network.REST_URL}/token?token=${token}`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getMarkets() {
-    return fetch(`${this.network.REST_URL}/get_markets`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getMarket(market: string) {
-    return fetch(`${this.network.REST_URL}/get_market?market=${market}`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getOrderbook(market: string) {
-    return fetch(`${this.network.REST_URL}/get_orderbook?market=${market}`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getOrder(orderID: string) {
-    return fetch(`${this.network.REST_URL}/get_order?order_id=${orderID}`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getOrders() {
-    return fetch(`${this.network.REST_URL}/get_orders?account=${this.pubKeyBech32}`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getOpenOrders() {
-    return fetch(`${this.network.REST_URL}/get_orders?account=${this.pubKeyBech32}&order_status=open`)
-      .then(res => res.json()) // expecting a json response
-  }
-
   public getWalletBalance() {
     return fetch(`${this.network.REST_URL}/get_balance?account=${this.pubKeyBech32}`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getLeverage(market: string) {
-    return fetch(`${this.network.REST_URL}/get_leverage?market=${market}&account=${this.pubKeyBech32}`)
-      .then(res => res.json()) // expecting a json response
-  }
-
-  public getPosition(market: string) {
-    return fetch(`${this.network.REST_URL}/get_position?account=${this.pubKeyBech32}&market=${market}`)
       .then(res => res.json()) // expecting a json response
   }
 
@@ -537,6 +482,12 @@ export class WalletClient {
     this.depositAddresses[blockchain] = depositAddress
     return depositAddress
   }
+
+  public getTokens() {
+    return fetch(`${this.network.REST_URL}/get_tokens`)
+      .then(res => res.json()) // expecting a json response
+  }
+
 
   public async getNeoDepositAddress() {
     const privateKey = this.hdWallet[Blockchain.Neo]
