@@ -287,7 +287,7 @@ export class WsWrapper {
   public subscribe(msgId: string, params: WsSubscribeParams[]) { // List of params
     try {
       let channelIds: string[] = params.map((p) => this.generateChannelId(p))
-      console.log("Subscribing to " + msgId)
+      // console.log("Subscribing to " + msgId)
       const msg = JSON.stringify({
         id: msgId,
         method: 'subscribe',
