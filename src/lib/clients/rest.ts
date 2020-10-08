@@ -36,6 +36,7 @@ export interface REST {
   getMarkets(): Promise<Array<object>>
   getMarket(params: types.MarketOnlyGetterParams): Promise<object>
   getMarketStats(params?: types.MarketOnlyGetterParams): Promise<Array<object>>
+  getNodes(): Promise<Array<object>>
   getOrder(params: types.GetIDOnlyGetterParams): Promise<object>
   getOrders(params: types.GetOrdersGetterParams): Promise<Array<object>>
   getOpenOrders(params: types.GetOrdersGetterParams): Promise<Array<object>>
@@ -334,6 +335,10 @@ export class RestClient implements REST {
     }
 
     return this.fetchJson(url)
+  }
+
+  public async getNodes() {
+    return this.fetchJson('/monitor')
   }
 
   public async getWalletBalance(params?: types.AddressOnlyGetterParams) {
