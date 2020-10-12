@@ -1,6 +1,6 @@
 import { camelCase, isArray, isPlainObject } from 'lodash'
 
-export function camelCaseDeep<T>(t?: T): T {
+export function camelCaseDeep(t?: any): any {
   if (isArray(t)) {
     return (t as any).map(camelCaseDeep)
   } else if (isPlainObject(t)) {
