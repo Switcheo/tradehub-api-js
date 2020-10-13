@@ -295,7 +295,7 @@ export class WalletClient {
     const privateKey = !!_privateKey ? _privateKey : this.hdWallet[Blockchain.Neo]
     const account = Neon.create.account(privateKey)
 
-    const scriptHash = this.network.NEO_LOCKPROXY
+    const scriptHash = u.reverseHex(token.lockproxy_hash)
 
     const fromAssetHash = token.asset_id
     const fromAddress = u.reverseHex(account.scriptHash)
