@@ -288,18 +288,69 @@ export interface RemoveLiquidityMsg {
   originator?: string,
 }
 
-export interface SubmitProposalMsg {
+export interface ProposalParameterChangeValue {
+  title: string,
+  description: string,
+  changes: ReadonlyArray<{
+    subspace: string,
+    key: string,
+    value: string,
+  }>,
+}
+
+export interface ProposalTokenValue {
+  title: string,
+  description: string,
+  token: {
+    name: string,
+    symbol: string,
+    denom: string,
+    decimals: string,
+    native_decimals: string,
+    blockchain: string,
+    chain_id: string,
+    asset_id: string,
+    is_collateral: boolean,
+    lock_proxy_hash: string,
+    delegated_supply: string,
+    originator: string,
+  }
+}
+
+export interface ProposalMarketValue {
+  title: string,
+  description: string,
+  market: {
+    name: string,
+    display_name: string,
+    market_type: string,
+    description: string,
+    base: string,
+    quote: string,
+    lot_size: string,
+    tick_size: string,
+    min_quantity: string,
+    risk_step_size: string,
+    initial_margin_base: string,
+    initial_margin_step: string,
+    maintenance_margin_ratio: string,
+    max_liquidation_order_ticket: string,
+    max_liquidation_order_duration: string,
+    impact_size: string,
+    mark_price_band: string,
+    last_price_protected_band: string,
+    index_oracle_id: string,
+    expiry_time: string,
+    taker_fee: string,
+    maker_fee: string,
+    originator: string,
+  }
+}
+
+export interface SubmitProposalMsg<T> {
   content: {
     type: string,
-    value: {
-      title: string,
-      description: string,
-      changes: ReadonlyArray<{
-        subspace: string,
-        key: string,
-        value: string,
-      }>,
-    },
+    value: T,
   },
   initial_deposit?: ReadonlyArray<{
     denom: string,

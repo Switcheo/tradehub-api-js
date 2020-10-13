@@ -98,7 +98,7 @@ export interface REST {
   createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options): Promise<any>
   linkPool(msg: types.LinkPoolMsg, options?: types.Options): Promise<any>
   unlinkPool(msg: types.UnlinkPoolMsg, options?: types.Options): Promise<any>
-  submitProposal(msg: types.SubmitProposalMsg, options?: types.Options): Promise<any>
+  submitProposal<T>(msg: types.SubmitProposalMsg<T>, options?: types.Options): Promise<any>
   depositProposal(msg: types.DepositProposalMsg, options?: types.Options): Promise<any>
   voteProposal(msg: types.VoteProposalMsg, options?: types.Options): Promise<any>
   createOracle(msg: types.CreateOracleMsg, options?: types.Options): Promise<any>
@@ -804,7 +804,7 @@ export class RestClient implements REST {
     return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], options)
   }
 
-  public async submitProposal(msg: types.SubmitProposalMsg, options?: types.Options) {
+  public async submitProposal<T>(msg: types.SubmitProposalMsg<T>, options?: types.Options) {
     if (!msg.proposer) msg.proposer = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.SUBMIT_PROPOSAL_TYPE], options)
   }
