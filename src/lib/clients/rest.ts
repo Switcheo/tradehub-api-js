@@ -2,7 +2,6 @@ import { BigNumber } from 'bignumber.js'
 import fetch from '../utils/fetch'
 import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
 
-import { camelCaseDeep } from "../utils/json"
 import { getNetwork } from '../config'
 import { WalletClient } from './wallet'
 import { Blockchain } from '../constants'
@@ -131,14 +130,14 @@ export class RestClient implements REST {
     const url: string = `${this.baseUrl}${relativeUrl}`
     const res = await fetch(url)
     const json = await res.json()
-    return camelCaseDeep(json)
+    return json
   }
 
   protected async fetchCosmosJson(relativeUrl: string): Promise<any> {
     const url: string = `${this.cosmosBaseUrl}${relativeUrl}`
     const res = await fetch(url)
     const json = await res.json()
-    return camelCaseDeep(json)
+    return json
   }
 
   //
