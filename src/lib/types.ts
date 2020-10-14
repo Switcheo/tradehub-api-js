@@ -288,6 +288,9 @@ export interface RemoveLiquidityMsg {
   originator?: string,
 }
 
+export type ProposalValue = ProposalParameterChangeValue | ProposalTokenValue |
+  ProposalMarketValue | ProposalSettlementPriceValue | ProposalOracleValue | ProposalOracleResultValue
+
 export interface ProposalParameterChangeValue {
   title: string,
   description: string,
@@ -347,10 +350,43 @@ export interface ProposalMarketValue {
   }
 }
 
-export interface SubmitProposalMsg<T> {
+export interface ProposalSettlementPriceValue {
+  title: string,
+  description: string,
+  market: string,
+  settlement_price: string,
+}
+
+export interface ProposalOracleValue {
+  title: string,
+  description: string,
+  oracle: {
+    id: string,
+    description: string,
+    min_turnout_percentage: string,
+    max_result_age: string,
+    security_type: string,
+    result_strategy: string,
+    resolution: string,
+    spec: string,
+    originator: string,
+  },
+}
+
+export interface ProposalOracleResultValue {
+  title: string,
+  description: string,
+  oracle_result: {
+    oracle_id: string,
+    timestamp: string,
+    data: string,
+  },
+}
+
+export interface SubmitProposalMsg<ProposalValue> {
   content: {
     type: string,
-    value: T,
+    value: ProposalValue,
   },
   initial_deposit?: ReadonlyArray<{
     denom: string,
