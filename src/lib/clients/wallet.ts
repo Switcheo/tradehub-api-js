@@ -295,7 +295,7 @@ export class WalletClient {
     const privateKey = !!_privateKey ? _privateKey : this.hdWallet[Blockchain.Neo]
     const account = Neon.create.account(privateKey)
 
-    const scriptHash = u.reverseHex(token.lockproxy_hash)
+    const scriptHash = u.reverseHex(token.lock_proxy_hash)
 
     const fromAssetHash = token.asset_id
     const fromAddress = u.reverseHex(account.scriptHash)
@@ -513,7 +513,7 @@ export class WalletClient {
     const tokens = tokenList.filter(token =>
       token.blockchain == Blockchain.Ethereum &&
       token.asset_id.length == 40 &&
-      token.lockproxy_hash.length == 40
+      token.lock_proxy_hash.length == 40
     )
     const assetIds = tokens.map(token => '0x' + token.asset_id)
     const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
@@ -546,7 +546,7 @@ export class WalletClient {
     const tokens = tokenList.filter(token =>
       token.blockchain == Blockchain.Neo &&
       token.asset_id.length == 40 &&
-      token.lockproxy_hash.length == 40 &&
+      token.lock_proxy_hash.length == 40 &&
       token.denom === 'swth'
     )
     const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
