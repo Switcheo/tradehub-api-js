@@ -7,6 +7,7 @@ export interface Network {
   COSMOS_URL: string,
   SWTH_CHAIN_ID: number,
   NEO_URL: string,
+  NEO_URLS: Array<string>,
   ETH_ENV: string,
   ETH_WS_URL: string,
   ETH_BALANCE_READER: string,
@@ -32,7 +33,8 @@ export const NETWORK: NetworkInterface = {
     ETH_PAYER_URL: `http://${localhost}:7001`,
     FEE_URL: `http://${localhost}:9001`,
     COSMOS_URL: `http://${localhost}:1317`,
-    NEO_URL: 'http://13.82.229.252:11332',
+    NEO_URL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
+    NEO_URLS: ['https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com'],
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xb3c33ac95eda80dfa6853cc9bee5294a6bf98f80',
@@ -49,7 +51,8 @@ export const NETWORK: NetworkInterface = {
     ETH_PAYER_URL: 'http://13.251.218.38:700',
     FEE_URL: 'http://13.251.218.38:9001',
     COSMOS_URL: 'https://dev-tradescan.switcheo.org',
-    NEO_URL: 'http://13.82.229.252:11332',
+    NEO_URL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
+    NEO_URLS: ['https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com'],
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xb3c33ac95eda80dfa6853cc9bee5294a6bf98f80',
@@ -66,7 +69,8 @@ export const NETWORK: NetworkInterface = {
     ETH_PAYER_URL: 'http://54.255.42.175:7001',
     FEE_URL: 'http://54.255.42.175:9001',
     COSMOS_URL: 'https://test-tradescan.switcheo.org',
-    NEO_URL: 'http://13.82.229.252:11332',
+    NEO_URL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
+    NEO_URLS: ['https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com'],
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xb3c33ac95eda80dfa6853cc9bee5294a6bf98f80',
@@ -84,6 +88,13 @@ export const NETWORK: NetworkInterface = {
     FEE_URL: 'https://tradescan.switcheo.org',
     COSMOS_URL: 'https://tradescan.switcheo.org',
     NEO_URL: '',
+    NEO_URLS: [
+      "https://vlqvfsx107.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed1
+      "https://qtl81e9fhb.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed2
+      "https://vonfbyseb2.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed3
+      "https://cn2t0g46mi.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed4
+      "https://ojgox44quf.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed10
+    ],
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xb3c33ac95eda80dfa6853cc9bee5294a6bf98f80',

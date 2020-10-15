@@ -239,14 +239,8 @@ export class WalletClient {
   }
 
   public async sendNeoDeposits(address) {
-    const urls = [
-      "https://vlqvfsx107.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed1
-      "https://qtl81e9fhb.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed2
-      "https://vonfbyseb2.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed3
-      "https://cn2t0g46mi.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed4
-      "https://ojgox44quf.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed10
-    ]
-
+    const urls = this.network.NEO_URLS
+    
     // shuffle urls
     for (let i = urls.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * i)
