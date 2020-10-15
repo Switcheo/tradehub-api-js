@@ -11,7 +11,7 @@ import { Address, getPath, getPathArray, PrivKeySecp256k1, PubKeySecp256k1 } fro
 import { ConcreteMsg } from '../containers/Transaction'
 import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
-import WALLET_FACTORY_ABI from '../eth/abis/walletFactory.json'
+import LOCK_PROXY_ABI from '../eth/abis/lockProxy.json'
 import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
 import Neon, { nep5, api, u } from "@cityofzion/neon-js"
 import stripHexPrefix from 'strip-hex-prefix'
@@ -100,7 +100,7 @@ export class WalletClient {
   public readonly gas: string
   public readonly signerType: SignerType
   public readonly network: Network
-  public readonly feeMultiplier: BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
+  public readonly feeMultiplier: ethers.BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
   public accountNumber: string
   public broadcastMode: string
   public depositAddresses: {[key: string]: string}
@@ -171,7 +171,7 @@ export class WalletClient {
     this.depositAddresses = {}
     this.onRequestSign = onRequestSign
     this.onSignComplete = onSignComplete
-    this.feeMultiplier = new BigNumber(2)
+    this.feeMultiplier = ethers.BigNumber.from(2)
 
     this.useSequenceCounter = useSequenceCounter
     this.broadcastQueueIntervalTime = broadcastQueueIntervalTime
@@ -240,7 +240,7 @@ export class WalletClient {
 
   public async sendNeoDeposits(address) {
     const urls = this.network.NEO_URLS
-    
+
     // shuffle urls
     for (let i = urls.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * i)
@@ -297,12 +297,12 @@ export class WalletClient {
     const toAssetHash = u.str2hexstring(token.denom)
     const toAddress = this.addressHex
 
-    const amount = new BigNumber(token.externalBalance)
-    const feeAmount = new BigNumber('100000000')
+    const amount = ethers.BigNumber.from(token.externalBalance)
+    const feeAmount = ethers.BigNumber.from('100000000')
     const feeAddress = this.network.FEE_ADDRESS
     const nonce = Math.floor(Math.random() * 1000000)
 
-    if (amount.isLessThan(feeAmount)) {
+    if (amount.lt(feeAmount)) {
       return false
     }
 
@@ -360,7 +360,7 @@ export class WalletClient {
         // it would ignore the request
         setTimeout(async () => {
           try {
-            this.sendEthDeposit(token, address)
+            await this.sendEthDeposit(token, address)
           } catch (e) {
             console.log('could not send deposit', e)
           }
@@ -382,11 +382,11 @@ export class WalletClient {
       throw new Error('unsupported token')
     }
 
-    let feeAmount = new BigNumber(feeInfo.deposit.fee)
+    let feeAmount = ethers.BigNumber.from(feeInfo.deposit.fee)
     if (token.blockchain == Blockchain.Ethereum) {
       const walletContractDeployed = await this.isEthContract(depositAddress)
       if (!walletContractDeployed) {
-        feeAmount = feeAmount.plus(new BigNumber(feeInfo.createWallet.fee))
+        feeAmount = feeAmount.add(ethers.BigNumber.from(feeInfo.createWallet.fee))
       }
     }
 
@@ -399,23 +399,23 @@ export class WalletClient {
       throw new Error('unsupported token')
     }
 
-    return new BigNumber(feeInfo.withdrawal.fee)
+    return ethers.BigNumber.from(feeInfo.withdrawal.fee)
   }
 
   public async getMinDepositAmount(token, depositAddress) {
     const fee = await this.getDepositFeeAmount(token, depositAddress)
-    return fee.multipliedBy(this.feeMultiplier)
+    return fee.mul(this.feeMultiplier)
   }
 
   public async getMinWithdrawalAmount(token) {
     const fee = await this.getWithdrawalFeeAmount(token)
-    return fee.multipliedBy(this.feeMultiplier)
+    return fee.mul(this.feeMultiplier)
   }
 
   public async sendEthDeposit(token, depositAddress) {
     const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
-    const amount = new BigNumber(token.externalBalance)
-    if (amount.isLessThan(feeAmount.multipliedBy(this.feeMultiplier))) {
+    const amount = token.externalBalance
+    if (amount.lt(feeAmount.mul(this.feeMultiplier))) {
       return 'insufficient balance'
     }
 
@@ -426,12 +426,12 @@ export class WalletClient {
     const nonce = Math.floor(Math.random() * 1000000000) // random nonce to prevent replay attacks
     const message = ethers.utils.solidityKeccak256(
       ['string', 'address', 'bytes', 'bytes', 'bytes', 'uint256', 'uint256', 'uint256'],
-      ['sendTokens', assetId, targetProxyHash, toAssetHash, feeAddress, amount.toString(), feeAmount.toString(), nonce]
+      ['sendTokens', assetId, targetProxyHash, toAssetHash, feeAddress, amount, feeAmount, nonce]
     )
     const messageBytes = ethers.utils.arrayify(message)
 
     const privateKey = this.hdWallet[Blockchain.Ethereum]
-    const etherWallet = new ethers.Wallet(privateKey)
+    const etherWallet = new ethers.Wallet('0x' + privateKey)
     const owner = etherWallet.address
     const signature = await etherWallet.signMessage(messageBytes)
     const rsv = ethers.utils.splitSignature(signature)
@@ -492,11 +492,11 @@ export class WalletClient {
   public async getEthDepositAddress() {
     const swthAddress = ethers.utils.hexlify(this.address)
     const privateKey = this.hdWallet[Blockchain.Ethereum]
-    const owner = (new ethers.Wallet(privateKey)).address
+    const owner = (new ethers.Wallet('0x' + privateKey)).address
 
     const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
     const contractAddress = this.network.ETH_LOCKPROXY
-    const contract = new ethers.Contract(contractAddress, WALLET_FACTORY_ABI, provider)
+    const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, provider)
     const walletAddress = await contract.getWalletAddress(owner, swthAddress, ETH_WALLET_BYTECODE)
 
     return walletAddress
@@ -507,7 +507,7 @@ export class WalletClient {
     const tokens = tokenList.filter(token =>
       token.blockchain == Blockchain.Ethereum &&
       token.asset_id.length == 40 &&
-      token.lock_proxy_hash.length == 40
+      ('0x' + token.lock_proxy_hash).toLowerCase() == this.network.ETH_LOCKPROXY
     )
     const assetIds = tokens.map(token => '0x' + token.asset_id)
     const provider = ethers.getDefaultProvider(this.network.ETH_ENV)

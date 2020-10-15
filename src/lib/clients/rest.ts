@@ -1,4 +1,5 @@
 import { BigNumber } from 'bignumber.js'
+import { ethers } from 'ethers'
 import fetch from '../utils/fetch'
 import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
 
@@ -872,10 +873,27 @@ export class RestClient implements REST {
 
   public async formatWithdrawalAddress(address, blockchain) {
     if (blockchain === Blockchain.Neo) {
+      const isValidAddress = neonWallet.isAddress(address)
+      if (!isValidAddress) {
+        throw new Error('Invalid Neo address')
+      }
       const scriptHash = neonWallet.getScriptHashFromAddress(address)
       // return the little endian version of the address
       return neonUtils.reverseHex(scriptHash)
     }
+
+    if (blockchain === Blockchain.Ethereum) {
+      const isValidAddress = ethers.utils.isAddress(address)
+      if (!isValidAddress) {
+        throw new Error('Invalid Ethereum address')
+      }
+      const isContract = await this.wallet.isEthContract(address)
+      if (isContract) {
+        throw new Error('cannot withdraw to a contract address: ' + address)
+      }
+      return address.substr(2)
+    }
+
     throw new Error('formatting of withdrawal address not yet supported for ' + blockchain)
   }
 
