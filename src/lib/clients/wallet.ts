@@ -13,9 +13,10 @@ import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
 import WALLET_FACTORY_ABI from '../eth/abis/walletFactory.json'
 import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
-import Neon, { nep5, api, u } from "@cityofzion/neon-js"
+import Neon, { api, u, nep5 } from "@cityofzion/neon-js"
 import stripHexPrefix from 'strip-hex-prefix'
 import CosmosLedger from '@lunie/cosmos-ledger'
+import * as n from '@cityofzion/neon-core'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -45,7 +46,7 @@ export class WalletClient {
     const network = getNetwork(net)
     const privateKey = getPrivKeyFromMnemonic(mnemonic)
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
-    const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
+    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
     return new WalletClient({ mnemonic, accountNumber: value.account_number.toString(), network, signerType: 'mnemonic' })
   }
@@ -53,19 +54,19 @@ export class WalletClient {
   public static async connectPrivateKey(privateKey: string, net?: string) {
     const network = getNetwork(net)
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
-    const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
+    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
     return new WalletClient({ privateKey, accountNumber: value.account_number.toString(), network, signerType: 'privateKey' })
   }
 
   public static async connectLedger(cosmosLedger: any, net = 'TESTNET',
-                                    onRequestSign: OnRequestSignCallback,
-                                    onSignComplete: OnSignCompleteCallback) {
+    onRequestSign: OnRequestSignCallback,
+    onSignComplete: OnSignCompleteCallback) {
     const network = getNetwork(net)
     const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
     const pubKey = await cosmosLedger.getPubKey()
 
-    const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
+    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
     return new WalletClient({
       accountNumber: value.account_number.toString(),
@@ -82,7 +83,7 @@ export class WalletClient {
   public static async connectPublicKey(pubKeyBech32: string, net?: string) {
     const network = getNetwork(net)
 
-    const { result: { value }} = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
+    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
     return new WalletClient({ accountNumber: value.account_number.toString(), network, pubKeyBech32 })
   }
@@ -103,7 +104,7 @@ export class WalletClient {
   public readonly feeMultiplier: BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
   public accountNumber: string
   public broadcastMode: string
-  public depositAddresses: {[key: string]: string}
+  public depositAddresses: { [key: string]: string }
   public onRequestSign?: OnRequestSignCallback
   public onSignComplete?: OnSignCompleteCallback
 
@@ -218,13 +219,10 @@ export class WalletClient {
 
   public getTransfers() {
     return fetch(`${this.network.REST_URL}/get_external_transfers?account=${this.pubKeyBech32}`)
-        .then(res => res.json()); // expecting a json response
+      .then(res => res.json()); // expecting a json response
   }
 
   public async watchDepositAddresses() {
-    if (this.network.NAME !== 'mainnet') {
-      return
-    }
     this.watchNeoDepositAddress()
   }
 
@@ -240,7 +238,7 @@ export class WalletClient {
 
   public async sendNeoDeposits(address) {
     const urls = this.network.NEO_URLS
-    
+
     // shuffle urls
     for (let i = urls.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * i)
@@ -256,7 +254,7 @@ export class WalletClient {
         tokens = await this.getNeoExternalBalances(address, url)
         break
       } catch (e) {
-        console.log('could not fetch balance, will try another endpoint, current endpoint', url)
+        console.log('could not fetch balance, will try another endpoint, current endpoint', url, e)
         continue
       }
     }
@@ -264,7 +262,8 @@ export class WalletClient {
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       if (token.externalBalance !== undefined && token.externalBalance !== '0') {
-        this.sendNeoDeposit(token)
+        const res = this.sendNeoDeposit(token)
+        console.log(res)
       }
     }
   }
@@ -297,7 +296,8 @@ export class WalletClient {
     const toAssetHash = u.str2hexstring(token.denom)
     const toAddress = this.addressHex
 
-    const amount = new BigNumber(token.externalBalance)
+    let amount = new BigNumber(token.externalBalance)
+
     const feeAmount = new BigNumber('100000000')
     const feeAddress = this.network.FEE_ADDRESS
     const nonce = Math.floor(Math.random() * 1000000)
@@ -535,28 +535,54 @@ export class WalletClient {
     return urls[index]
   }
 
+  async getNeoDevnetBalance(provider, assetID, privateKeyOrAddr, denom) {
+    const sb = new n.sc.ScriptBuilder
+    const a = new n.wallet.Account(privateKeyOrAddr)
+    sb.emitAppCall(assetID, 'balanceOf', [n.u.reverseHex(a.scriptHash)])
+    const res = await n.rpc.queryRPC(provider, { method: "invokescript", params: [sb.str] })
+    if (res.result && res.result.state === 'HALT') {
+      const obj = {}
+      obj[denom] = res.result.stack[0].value
+      return obj
+    } else {
+      return res
+    }
+  }
+
   public async getNeoExternalBalances(address: string, url: string) {
     const tokenList = await this.getTokens()
     const tokens = tokenList.filter(token =>
       token.blockchain == Blockchain.Neo &&
       token.asset_id.length == 40 &&
       token.lock_proxy_hash.length == 40 &&
-      token.denom === 'swth'
+      (token.denom === 'swth' || token.denom === 'swth-n')
     )
     const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
     const provider = url
 
-    const balances = await nep5.getTokenBalances(
-      provider,
-      assetIds,
-      address
-    )
+    // Cant use nep5.gettokens for devnet, it throws a hexstring error
+    let balances
+    if (this.network.NAME === 'devnet') {
+      balances = await this.getNeoDevnetBalance(
+        provider,
+        assetIds[0],
+        address,
+        tokens[0].denom.toUpperCase()
+      )
+    } else {
+      balances = await nep5.getTokenBalances(
+        provider,
+        assetIds,
+        address
+      )
+    }
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      tokens[i].externalBalance = balances[token.symbol.toUpperCase()].toRawNumber().toString()
+      // tokens[i].externalBalance = balances[token.denom.toUpperCase()].toRawNumber().toString()
+      tokens[i].externalBalance = balances[token.denom.toUpperCase()]
     }
-
+    
     return tokens
   }
 
@@ -580,7 +606,7 @@ export class WalletClient {
     const stdSignMsg = new StdSignDoc({
       accountNumber: this.accountNumber,
       chainId: this.network.CHAIN_ID,
-      fee: new Fee([{denom: 'swth', amount: (new BigNumber(msgs.length)).shiftedBy(8).toString()}], this.gas),
+      fee: new Fee([{ denom: 'swth', amount: (new BigNumber(msgs.length)).shiftedBy(8).toString() }], this.gas),
       memo,
       msgs,
       sequence: sequence.toString(),
@@ -657,7 +683,7 @@ export class WalletClient {
 
       // there can only be one memo per txn
       // so if there is a memo, we want to put it in a queue by itself
-      if (options && options.memo !== undefined && options.memo.length > 0){
+      if (options && options.memo !== undefined && options.memo.length > 0) {
         // the queue is not empty, so we just break for now
         if (ids.length !== 0) {
           break
