@@ -10,3 +10,4 @@ coverage
 
 examples/.env
 mnemonics.json
+.env
