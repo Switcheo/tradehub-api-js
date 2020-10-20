@@ -249,6 +249,7 @@ export interface CreatePoolMsg {
   token_b_denom?: string,
   token_a_weight?: string,
   token_b_weight?: string,
+  swap_fee: string,
   originator?: string,
 }
 
@@ -257,6 +258,7 @@ export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
   a_max_amount?: string
   b_amount?: string
   b_max_amount?: string
+  swap_fee: string,
 }
 
 export interface LinkPoolMsg {
