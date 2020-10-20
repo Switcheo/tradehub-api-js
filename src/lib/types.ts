@@ -262,7 +262,6 @@ export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
 export interface LinkPoolMsg {
   pool_id: string,
   market: string,
-  strategy: string,
   originator?: string,
 }
 

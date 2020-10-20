@@ -3,13 +3,13 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_nativeAddress",
+        "name": "_ownerAddress",
         "type": "address"
       },
       {
-        "internalType": "string",
-        "name": "_externalAddress",
-        "type": "string"
+        "internalType": "bytes",
+        "name": "_swthAddress",
+        "type": "bytes"
       },
       {
         "internalType": "bytes32",
@@ -26,6 +26,7 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
+    "type": "function",
+    "constant": true
   }
 ]
