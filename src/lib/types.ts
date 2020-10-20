@@ -272,12 +272,8 @@ export interface UnlinkPoolMsg {
 
 export interface AddLiquidityMsg {
   pool_id: string
-  a_denom?: string
-  a_amount?: string
-  a_max_amount?: string
-  b_denom?: string
-  b_amount?: string
-  b_max_amount?: string
+  amount_a?: string
+  amount_b?: string
   originator?: string
 }
 
