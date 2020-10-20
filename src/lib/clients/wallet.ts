@@ -13,10 +13,11 @@ import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
 import LOCK_PROXY_ABI from '../eth/abis/lockProxy.json'
 import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
-import Neon, { api, u, nep5 } from "@cityofzion/neon-js"
+import Neon, { api, u } from "@cityofzion/neon-js"
 import stripHexPrefix from 'strip-hex-prefix'
 import CosmosLedger from '@lunie/cosmos-ledger'
-import * as n from '@cityofzion/neon-core'
+import { wallet as neonWallet, rpc as neonRPC, sc as neonScript, u as neonUtils } from '@cityofzion/neon-core'
+import { chunk } from 'lodash'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -40,6 +41,8 @@ export interface BroadcastQueueItem { id: string, concreteMsgs: ConcreteMsg[], o
 export interface BroadcastResults {
   [id: string]: any
 }
+
+interface ScriptResult { stack: ReadonlyArray<{ value: string }> }
 
 export class WalletClient {
   public static async connectMnemonic(mnemonic: string, net?: string) {
@@ -296,14 +299,8 @@ export class WalletClient {
     const toAssetHash = u.str2hexstring(token.denom)
     const toAddress = this.addressHex
 
-<<<<<<< HEAD
-    let amount = new BigNumber(token.externalBalance)
-
-    const feeAmount = new BigNumber('100000000')
-=======
     const amount = ethers.BigNumber.from(token.externalBalance)
     const feeAmount = ethers.BigNumber.from('100000000')
->>>>>>> master
     const feeAddress = this.network.FEE_ADDRESS
     const nonce = Math.floor(Math.random() * 1000000)
 
@@ -540,54 +537,84 @@ export class WalletClient {
     return urls[index]
   }
 
-  async getNeoDevnetBalance(provider, assetID, privateKeyOrAddr, denom) {
-    const sb = new n.sc.ScriptBuilder
-    const a = new n.wallet.Account(privateKeyOrAddr)
-    sb.emitAppCall(assetID, 'balanceOf', [n.u.reverseHex(a.scriptHash)])
-    const res = await n.rpc.queryRPC(provider, { method: "invokescript", params: [sb.str] })
-    if (res.result && res.result.state === 'HALT') {
-      const obj = {}
-      obj[denom] = res.result.stack[0].value
-      return obj
-    } else {
-      return res
-    }
+  // async getNeoDevnetBalance(provider, assetID, privateKeyOrAddr, denom) {
+  //   const sb = new n.sc.ScriptBuilder
+  //   const a = new n.wallet.Account(privateKeyOrAddr)
+  //   sb.emitAppCall(assetID, 'balanceOf', [n.u.reverseHex(a.scriptHash)])
+  //   const res = await n.rpc.queryRPC(provider, { method: "invokescript", params: [sb.str] })
+  //   if (res.result && res.result.state === 'HALT') {
+  //     const obj = {}
+  //     obj[denom] = res.result.stack[0].value
+  //     return obj
+  //   } else {
+  //     return res
+  //   }
+  // }
+
+  private parseHexNum(hex: string, exp: number = 0): string {
+    if (!hex || typeof (hex) !== 'string') return '0'
+    const res: string = hex.length % 2 !== 0 ? `0${hex}` : hex
+    return new BigNumber(res ? neonUtils.reverseHex(res) : '00', 16).shiftedBy(-exp).toString()
   }
 
   public async getNeoExternalBalances(address: string, url: string) {
     const tokenList = await this.getTokens()
+    const account = new neonWallet.Account(address)
     const tokens = tokenList.filter(token =>
       token.blockchain == Blockchain.Neo &&
       token.asset_id.length == 40 &&
       token.lock_proxy_hash.length == 40 &&
       (token.denom === 'swth' || token.denom === 'swth-n')
     )
-    const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
-    const provider = url
+    // const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
+
+    const client: neonRPC.RPCClient =
+      new neonRPC.RPCClient(url, '2.5.2') // TODO: should we change the RPC version??
+
+    // NOTE: fetching of tokens is chunked in sets of 15 as we may hit
+    // the gas limit on the RPC node and error out otherwise
+    const promises: Promise<{}>[] = // tslint:disable-line
+      chunk(tokens, 15).map(async (partition: ReadonlyArray<any>) => {
+        const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
+
+        partition.forEach((token) => {
+          sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
+            'balanceOf', [neonUtils.reverseHex(account.scriptHash)])
+        })
+
+        const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
+
+        return partition.reduce((acc: {}, symbol: any, index: number) => {
+          acc[symbol] = this.parseHexNum(response.stack[index].value, tokens[symbol].decimals)
+          return acc
+        }, {})
+      })
+
+      const results: ReadonlyArray<{}> = await promises
 
     // Cant use nep5.gettokens for devnet, it throws a hexstring error
-    let balances
-    if (this.network.NAME === 'devnet') {
-      balances = await this.getNeoDevnetBalance(
-        provider,
-        assetIds[0],
-        address,
-        tokens[0].denom.toUpperCase()
-      )
-    } else {
-      balances = await nep5.getTokenBalances(
-        provider,
-        assetIds,
-        address
-      )
-    }
+    // let balances
+    // if (this.network.NAME === 'devnet') {
+    //   balances = await this.getNeoDevnetBalance(
+    //     provider,
+    //     assetIds[0],
+    //     address,
+    //     tokens[0].denom.toUpperCase()
+    //   )
+    // } else {
+    //   balances = await nep5.getTokenBalances(
+    //     provider,
+    //     assetIds,
+    //     address
+    //   )
+    // }
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       // tokens[i].externalBalance = balances[token.denom.toUpperCase()].toRawNumber().toString()
-      tokens[i].externalBalance = balances[token.denom.toUpperCase()]
+      tokens[i].externalBalance = promises[token.denom.toUpperCase()]
     }
-    
+
     return tokens
   }
 
