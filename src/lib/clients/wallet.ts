@@ -561,14 +561,7 @@ export class WalletClient {
   }
 
   public getNeoWriteRpcUrl() {
-    if (this.network.NEO_URL.length > 0) {
-      return this.network.NEO_URL
-    }
-
-    const urls = [
-      'https://explorer.o3node.org:443',
-      'https://main.neologin.io:443'
-    ]
+    const urls = this.network.NEO_URLS
     const index = Math.floor(Math.random() * urls.length)
     return urls[index]
   }
