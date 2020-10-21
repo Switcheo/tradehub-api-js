@@ -251,14 +251,15 @@ export class WalletClient {
       urls[j] = temp
     }
 
-    let tokens
+    let tokens = []
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i]
       try {
         tokens = await this.getNeoExternalBalances(address, url)
         break
       } catch (e) {
-        console.log('could not fetch balance, will try another endpoint, current endpoint', url, e)
+        console.error(e)
+        console.log('could not fetch balance, will try another endpoint, current endpoint', url)
         continue
       }
     }
@@ -549,10 +550,8 @@ export class WalletClient {
     const account = new neonWallet.Account(address)
     const tokens: TokenList = tokenList.filter(token =>
       token.blockchain == Blockchain.Neo &&
-      token.asset_id.length == 40
-      //&&
-      // TODO: why is this empty?
-      // token.lock_proxy_hash.length == 40
+      token.asset_id.length == 40 &&
+      token.lock_proxy_hash.length == 40
     )
     // const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
 

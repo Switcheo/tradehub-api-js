@@ -49,6 +49,9 @@ export const SUBMIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgSubmitProposal'
 export const DEPOSIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgDeposit'
 export const VOTE_PROPOSAL_TYPE = 'cosmos-sdk/MsgVote'
 
+// AMM
+export const LINK_POOL_PROPOSAL_TYPE = 'amm/LinkPoolProposal'
+
 export enum Network {
   LocalHost = 'LOCALHOST',
   TestNet = 'TESTNET',
@@ -249,6 +252,7 @@ export interface CreatePoolMsg {
   token_b_denom?: string,
   token_a_weight?: string,
   token_b_weight?: string,
+  swap_fee: string,
   originator?: string,
 }
 
@@ -257,6 +261,7 @@ export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
   a_max_amount?: string
   b_amount?: string
   b_max_amount?: string
+  swap_fee: string,
 }
 
 export interface LinkPoolMsg {
@@ -272,12 +277,8 @@ export interface UnlinkPoolMsg {
 
 export interface AddLiquidityMsg {
   pool_id: string
-  a_denom?: string
-  a_amount?: string
-  a_max_amount?: string
-  b_denom?: string
-  b_amount?: string
-  b_max_amount?: string
+  amount_a?: string
+  amount_b?: string
   originator?: string
 }
 

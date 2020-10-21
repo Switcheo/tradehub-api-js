@@ -42,22 +42,22 @@ async function addLiquidity() {
   // const create = await api.createPool(accountWallet, params)
   // console.log('create', create)
 
-  console.log('linking pool')
-  const linkParams = {
-    PoolID: 'b33659f8-0cbd-445d-98eb-266f3e83b325',
-    Market: 'swth_eth',
-    Strategy: 'uniswap',
-  }
-  const link = await api.linkPool(accountWallet, linkParams)
-  console.log('link', link)
+  // console.log('linking pool')
+  // const linkParams = {
+  //   PoolID: 'b33659f8-0cbd-445d-98eb-266f3e83b325',
+  //   Market: 'swth_eth',
+  //   Strategy: 'uniswap',
+  // }
+  // const link = await api.linkPool(accountWallet, linkParams)
+  // console.log('link', link)
 
   console.log('adding liquidity')
   const addParams = {
-    PoolID: 'b33659f8-0cbd-445d-98eb-266f3e83b325',
+    PoolID: '2',
     BDenom: 'eth',
-    BAmount: '10000',
-    ADenom: 'swth',
-    AAmount: '1',
+    BAmount: '10',
+    ADenom: 'dai',
+    AAmount: '10000',
   }
   const add = await api.addLiquidity(accountWallet, addParams)
   console.log('add', add)
