@@ -249,13 +249,14 @@ export class WalletClient {
       urls[j] = temp
     }
 
-    let tokens
+    let tokens = []
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i]
       try {
         tokens = await this.getNeoExternalBalances(address, url)
         break
       } catch (e) {
+        console.error(e)
         console.log('could not fetch balance, will try another endpoint, current endpoint', url)
         continue
       }
@@ -553,7 +554,10 @@ export class WalletClient {
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      tokens[i].externalBalance = balances[token.symbol.toUpperCase()].toRawNumber().toString()
+      const symbol = token.symbol.toUpperCase()
+      if (balances[symbol]) {
+        tokens[i].externalBalance = balances[symbol].toRawNumber().toString()
+      }
     }
 
     return tokens
