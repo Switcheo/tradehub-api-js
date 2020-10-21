@@ -11,6 +11,7 @@ export interface TokenObject {
     name: string
     originator: string
     symbol: string
+    external_balance: string
 
 }
 export interface TokenList extends Array<TokenObject> {}

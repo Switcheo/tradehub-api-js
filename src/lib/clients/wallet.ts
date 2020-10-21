@@ -43,7 +43,7 @@ export interface BroadcastResults {
   [id: string]: any
 }
 
-interface ScriptResult { stack: ReadonlyArray<{ value: string }> }
+interface ScriptResult { stack: ReadonlyArray<{ type: string, value: string }> }
 
 export class WalletClient {
   public static async connectMnemonic(mnemonic: string, net?: string) {
@@ -265,7 +265,7 @@ export class WalletClient {
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      if (token.externalBalance !== undefined && token.externalBalance !== '0') {
+      if (token.external_balance !== undefined && token.external_balance !== '0') {
         const res = this.sendNeoDeposit(token)
         console.log(res)
       }
@@ -300,7 +300,7 @@ export class WalletClient {
     const toAssetHash = u.str2hexstring(token.denom)
     const toAddress = this.addressHex
 
-    const amount = ethers.BigNumber.from(token.externalBalance)
+    const amount = ethers.BigNumber.from(token.external_balance)
     const feeAmount = ethers.BigNumber.from('100000000')
     const feeAddress = this.network.FEE_ADDRESS
     const nonce = Math.floor(Math.random() * 1000000)
@@ -538,20 +538,6 @@ export class WalletClient {
     return urls[index]
   }
 
-  // async getNeoDevnetBalance(provider, assetID, privateKeyOrAddr, denom) {
-  //   const sb = new n.sc.ScriptBuilder
-  //   const a = new n.wallet.Account(privateKeyOrAddr)
-  //   sb.emitAppCall(assetID, 'balanceOf', [n.u.reverseHex(a.scriptHash)])
-  //   const res = await n.rpc.queryRPC(provider, { method: "invokescript", params: [sb.str] })
-  //   if (res.result && res.result.state === 'HALT') {
-  //     const obj = {}
-  //     obj[denom] = res.result.stack[0].value
-  //     return obj
-  //   } else {
-  //     return res
-  //   }
-  // }
-
   private parseHexNum(hex: string, exp: number = 0): string {
     if (!hex || typeof (hex) !== 'string') return '0'
     const res: string = hex.length % 2 !== 0 ? `0${hex}` : hex
@@ -562,12 +548,11 @@ export class WalletClient {
     const tokenList: TokenList = await this.getTokens()
     const account = new neonWallet.Account(address)
     const tokens: TokenList = tokenList.filter(token =>
-      // token.blockchain == Blockchain.Neo &&
-      token.asset_id.length == 40 
+      token.blockchain == Blockchain.Neo &&
+      token.asset_id.length == 40
       //&&
       // TODO: why is this empty?
-      // token.lock_proxy_hash.length == 40 &&
-      // (token.denom === 'swth' || token.denom === 'swth-n') // TODO: remove swth-n ?
+      // token.lock_proxy_hash.length == 40
     )
     // const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
 
@@ -579,7 +564,6 @@ export class WalletClient {
     const promises: Promise<{}>[] = // tslint:disable-line
       chunk(tokens, 15).map(async (partition: ReadonlyArray<TokenObject>) => {
         const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
-        console.log('test partition', partition)
         partition.forEach((token: TokenObject) => {
           sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
             'balanceOf', [neonUtils.reverseHex(account.scriptHash)])
@@ -587,16 +571,26 @@ export class WalletClient {
 
         const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
 
-        console.log('test response', response)
-
+        // return partition.map((token: TokenObject, index: number) => {
+        //   let obj = {}
+        //   obj[token.denom.toUpperCase()] = this.parseHexNum(response.stack[index].value)
+        //   return obj
+        // })
         return partition.reduce((acc: {}, symbol: any, index: number) => {
-          acc[symbol] = this.parseHexNum(response.stack[index].value, tokens[symbol].decimals)
+            acc[symbol.denom.toUpperCase()] = response.stack[index].type === 'Integer' // Happens on polychain devnet
+              ? response.stack[index].value
+              : this.parseHexNum(response.stack[index].value)
           return acc
         }, {})
       })
 
-      const results: ReadonlyArray<{}> = await promises
-      console.log('test results', results)
+    const result = await Promise.all(promises).then((results: any[]) => {
+    
+      const combined: [] = results.reduce((acc: {}, res: {}) => ({ ...acc, ...res }), {})
+    
+      return combined
+    })
+
     // Cant use nep5.gettokens for devnet, it throws a hexstring error
     // let balances
     // if (this.network.NAME === 'devnet') {
@@ -613,13 +607,10 @@ export class WalletClient {
     //     address
     //   )
     // }
-
-    // for (let i = 0; i < tokens.length; i++) {
-    //   const token = tokens[i]
-      // tokens[i].externalBalance = balances[token.denom.toUpperCase()].toRawNumber().toString()
-      // tokens[i].externalBalance = promises[token.denom.toUpperCase()]
-    // }
-
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i]
+      tokens[i].external_balance = result[token.denom.toUpperCase()]
+    }
     return tokens
   }
 
