@@ -39,7 +39,7 @@ async function createPool() {
     token_a_weight: '90',
     token_b_denom: 'btc',
     token_b_weight: '10',
-
+    swap_fee: '0.03',
   }
   mainClient.createPool(params).then(console.log)
 }

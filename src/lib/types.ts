@@ -49,6 +49,9 @@ export const SUBMIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgSubmitProposal'
 export const DEPOSIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgDeposit'
 export const VOTE_PROPOSAL_TYPE = 'cosmos-sdk/MsgVote'
 
+// AMM
+export const LINK_POOL_PROPOSAL_TYPE = 'amm/LinkPoolProposal'
+
 export enum Network {
   LocalHost = 'LOCALHOST',
   TestNet = 'TESTNET',
