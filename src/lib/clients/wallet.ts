@@ -540,8 +540,7 @@ export class WalletClient {
     const tokens = tokenList.filter(token =>
       token.blockchain == Blockchain.Neo &&
       token.asset_id.length == 40 &&
-      token.lock_proxy_hash.length == 40 &&
-      token.denom === 'swth'
+      token.lock_proxy_hash.length == 40
     )
     const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
     const provider = url
