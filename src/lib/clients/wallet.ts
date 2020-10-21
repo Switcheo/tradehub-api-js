@@ -355,7 +355,7 @@ export class WalletClient {
       nonce
     ])
 
-    const rpcUrl = this.getNeoWriteRpcUrl()
+    const rpcUrl = this.getRandomNeoRpcUrl()
     const apiProvider = this.network.NAME === 'mainnet' ?
       new api.neonDB.instance('https://api.switcheo.network')
       : new api.neoCli.instance(rpcUrl)
@@ -560,7 +560,7 @@ export class WalletClient {
     return tokens
   }
 
-  public getNeoWriteRpcUrl() {
+  public getRandomNeoRpcUrl() {
     const urls = this.network.NEO_URLS
     const index = Math.floor(Math.random() * urls.length)
     return urls[index]
