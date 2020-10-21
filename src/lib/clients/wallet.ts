@@ -18,6 +18,7 @@ import stripHexPrefix from 'strip-hex-prefix'
 import CosmosLedger from '@lunie/cosmos-ledger'
 import { wallet as neonWallet, rpc as neonRPC, sc as neonScript, u as neonUtils } from '@cityofzion/neon-core'
 import { chunk } from 'lodash'
+import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -558,13 +559,15 @@ export class WalletClient {
   }
 
   public async getNeoExternalBalances(address: string, url: string) {
-    const tokenList = await this.getTokens()
+    const tokenList: TokenList = await this.getTokens()
     const account = new neonWallet.Account(address)
-    const tokens = tokenList.filter(token =>
-      token.blockchain == Blockchain.Neo &&
-      token.asset_id.length == 40 &&
-      token.lock_proxy_hash.length == 40 &&
-      (token.denom === 'swth' || token.denom === 'swth-n')
+    const tokens: TokenList = tokenList.filter(token =>
+      // token.blockchain == Blockchain.Neo &&
+      token.asset_id.length == 40 
+      //&&
+      // TODO: why is this empty?
+      // token.lock_proxy_hash.length == 40 &&
+      // (token.denom === 'swth' || token.denom === 'swth-n') // TODO: remove swth-n ?
     )
     // const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
 
@@ -574,15 +577,17 @@ export class WalletClient {
     // NOTE: fetching of tokens is chunked in sets of 15 as we may hit
     // the gas limit on the RPC node and error out otherwise
     const promises: Promise<{}>[] = // tslint:disable-line
-      chunk(tokens, 15).map(async (partition: ReadonlyArray<any>) => {
+      chunk(tokens, 15).map(async (partition: ReadonlyArray<TokenObject>) => {
         const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
-
-        partition.forEach((token) => {
+        console.log('test partition', partition)
+        partition.forEach((token: TokenObject) => {
           sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
             'balanceOf', [neonUtils.reverseHex(account.scriptHash)])
         })
 
         const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
+
+        console.log('test response', response)
 
         return partition.reduce((acc: {}, symbol: any, index: number) => {
           acc[symbol] = this.parseHexNum(response.stack[index].value, tokens[symbol].decimals)
@@ -591,7 +596,7 @@ export class WalletClient {
       })
 
       const results: ReadonlyArray<{}> = await promises
-
+      console.log('test results', results)
     // Cant use nep5.gettokens for devnet, it throws a hexstring error
     // let balances
     // if (this.network.NAME === 'devnet') {
@@ -609,11 +614,11 @@ export class WalletClient {
     //   )
     // }
 
-    for (let i = 0; i < tokens.length; i++) {
-      const token = tokens[i]
+    // for (let i = 0; i < tokens.length; i++) {
+    //   const token = tokens[i]
       // tokens[i].externalBalance = balances[token.denom.toUpperCase()].toRawNumber().toString()
-      tokens[i].externalBalance = promises[token.denom.toUpperCase()]
-    }
+      // tokens[i].externalBalance = promises[token.denom.toUpperCase()]
+    // }
 
     return tokens
   }
