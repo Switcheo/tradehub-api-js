@@ -13,17 +13,27 @@ import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
 import LOCK_PROXY_ABI from '../eth/abis/lockProxy.json'
 import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
-import Neon, { api, u } from "@cityofzion/neon-js"
+import Neon, { api, u } from '@cityofzion/neon-js'
 import stripHexPrefix from 'strip-hex-prefix'
 import CosmosLedger from '@lunie/cosmos-ledger'
-import { wallet as neonWallet, rpc as neonRPC, sc as neonScript, u as neonUtils } from '@cityofzion/neon-core'
+import {
+  wallet as neonWallet,
+  rpc as neonRPC,
+  sc as neonScript,
+  u as neonUtils
+} from '@cityofzion/neon-core'
 import { chunk } from 'lodash'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
 export type OnSignCompleteCallback = (signature: string) => void
-export interface SignMessageOptions { memo?: string, sequence?: string }
+
+export interface SignMessageOptions {
+  memo?: string,
+  sequence?: string
+}
+
 export interface WalletConstructorParams {
   accountNumber: string
   network: Network
@@ -38,12 +48,20 @@ export interface WalletConstructorParams {
   onRequestSign?: OnRequestSignCallback
   onSignComplete?: OnSignCompleteCallback
 }
-export interface BroadcastQueueItem { id: string, concreteMsgs: ConcreteMsg[], options: any }
+
+export interface BroadcastQueueItem {
+  id: string,
+  concreteMsgs: ConcreteMsg[],
+  options: any
+}
+
 export interface BroadcastResults {
   [id: string]: any
 }
 
-interface ScriptResult { stack: ReadonlyArray<{ type: string, value: string }> }
+interface ScriptResult {
+  stack: ReadonlyArray<{ type: string, value: string }>
+}
 
 export class WalletClient {
   public static async connectMnemonic(mnemonic: string, net?: string) {
@@ -52,7 +70,12 @@ export class WalletClient {
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
     const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
-    return new WalletClient({ mnemonic, accountNumber: value.account_number.toString(), network, signerType: 'mnemonic' })
+    return new WalletClient({
+      mnemonic,
+      accountNumber: value.account_number.toString(),
+      network,
+      signerType: 'mnemonic'
+    })
   }
 
   public static async connectPrivateKey(privateKey: string, net?: string) {
@@ -60,12 +83,17 @@ export class WalletClient {
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
     const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
-    return new WalletClient({ privateKey, accountNumber: value.account_number.toString(), network, signerType: 'privateKey' })
+    return new WalletClient({
+      privateKey,
+      accountNumber: value.account_number.toString(),
+      network,
+      signerType: 'privateKey'
+    })
   }
 
   public static async connectLedger(cosmosLedger: any, net = 'TESTNET',
-    onRequestSign: OnRequestSignCallback,
-    onSignComplete: OnSignCompleteCallback) {
+                                    onRequestSign: OnRequestSignCallback,
+                                    onSignComplete: OnSignCompleteCallback) {
     const network = getNetwork(net)
     const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
     const pubKey = await cosmosLedger.getPubKey()
@@ -89,7 +117,11 @@ export class WalletClient {
 
     const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
-    return new WalletClient({ accountNumber: value.account_number.toString(), network, pubKeyBech32 })
+    return new WalletClient({
+      accountNumber: value.account_number.toString(),
+      network,
+      pubKeyBech32
+    })
   }
 
   public readonly mnemonic?: string
@@ -223,7 +255,7 @@ export class WalletClient {
 
   public getTransfers() {
     return fetch(`${this.network.REST_URL}/get_external_transfers?account=${this.pubKeyBech32}`)
-      .then(res => res.json()); // expecting a json response
+      .then(res => res.json()) // expecting a json response
   }
 
   public async watchDepositAddresses() {
@@ -324,7 +356,9 @@ export class WalletClient {
     ])
 
     const rpcUrl = this.getNeoWriteRpcUrl()
-    const apiProvider = new api.neonDB.instance("https://api.switcheo.network")
+    const apiProvider = this.network.NAME === 'mainnet' ?
+      new api.neonDB.instance('https://api.switcheo.network')
+      : new api.neoCli.instance(rpcUrl)
     return Neon.doInvoke({
       api: apiProvider,
       url: rpcUrl,
@@ -570,9 +604,9 @@ export class WalletClient {
         const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
 
         return partition.reduce((acc: {}, symbol: any, index: number) => {
-            acc[symbol.denom.toUpperCase()] = response.stack[index].type === 'Integer' // Happens on polychain devnet
-              ? response.stack[index].value
-              : this.parseHexNum(response.stack[index].value)
+          acc[symbol.denom.toUpperCase()] = response.stack[index].type === 'Integer' // Happens on polychain devnet
+            ? response.stack[index].value
+            : this.parseHexNum(response.stack[index].value)
           return acc
         }, {})
       })
@@ -596,11 +630,11 @@ export class WalletClient {
       sequence = result.value.sequence
     }
 
-    if (this.accountNumber === "0" || this.accountNumber === undefined || this.accountNumber === null) {
+    if (this.accountNumber === '0' || this.accountNumber === undefined || this.accountNumber === null) {
       const { result } = await this.getAccount()
       this.accountNumber = result.value.account_number.toString()
-      if (this.accountNumber === "0") {
-        throw new Error("Account number still 0 after refetching. This suggests your account is not initialized with funds")
+      if (this.accountNumber === '0') {
+        throw new Error('Account number still 0 after refetching. This suggests your account is not initialized with funds')
       }
     }
 
@@ -608,7 +642,10 @@ export class WalletClient {
     const stdSignMsg = new StdSignDoc({
       accountNumber: this.accountNumber,
       chainId: this.network.CHAIN_ID,
-      fee: new Fee([{ denom: 'swth', amount: (new BigNumber(msgs.length)).shiftedBy(8).toString() }], this.gas),
+      fee: new Fee([{
+        denom: 'swth',
+        amount: (new BigNumber(msgs.length)).shiftedBy(8).toString()
+      }], this.gas),
       memo,
       msgs,
       sequence: sequence.toString(),
@@ -663,8 +700,12 @@ export class WalletClient {
   }
 
   private async processBroadcastQueue() {
-    if (this.broadcastQueue.length === 0) { return }
-    if (this.isBroadcastQueuePaused === true) { return }
+    if (this.broadcastQueue.length === 0) {
+      return
+    }
+    if (this.isBroadcastQueuePaused === true) {
+      return
+    }
 
     this.isBroadcastQueuePaused = true
 
@@ -678,8 +719,12 @@ export class WalletClient {
     let memo
 
     while (true) {
-      if (this.broadcastQueue.length === 0) { break }
-      if (allConcreteMsgs.length + this.broadcastQueue[0].concreteMsgs.length > 100) { break }
+      if (this.broadcastQueue.length === 0) {
+        break
+      }
+      if (allConcreteMsgs.length + this.broadcastQueue[0].concreteMsgs.length > 100) {
+        break
+      }
 
       const { id, concreteMsgs, options } = this.broadcastQueue[0]
 
@@ -747,8 +792,8 @@ export class WalletClient {
   }
 
   private constructConcreteMsgs(msgs: object[], types: string[]) {
-    if (msgs.length != types.length) throw new Error("Msg length is not equal to types length")
-    if (msgs.length > 100) throw new Error("Cannot broadcast more than 100 messages in 1 transaction")
+    if (msgs.length != types.length) throw new Error('Msg length is not equal to types length')
+    if (msgs.length > 100) throw new Error('Cannot broadcast more than 100 messages in 1 transaction')
 
     let concreteMsgs: ConcreteMsg[] = []
     // format message with concrete codec type
@@ -771,7 +816,7 @@ export function getPrivKeyFromMnemonic(mnemonic) {
 
   const privateKey = hd.privateKey
   if (!privateKey) {
-    throw new Error("null hd key")
+    throw new Error('null hd key')
   }
   return privateKey.toString('hex')
 }
