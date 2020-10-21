@@ -560,7 +560,7 @@ export class WalletClient {
     // NOTE: fetching of tokens is chunked in sets of 15 as we may hit
     // the gas limit on the RPC node and error out otherwise
     const promises: Promise<{}>[] = // tslint:disable-line
-      chunk(tokens, 15).map(async (partition: ReadonlyArray<TokenObject>) => {
+      chunk(tokens, 75).map(async (partition: ReadonlyArray<TokenObject>) => {
         const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
         partition.forEach((token: TokenObject) => {
           sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
