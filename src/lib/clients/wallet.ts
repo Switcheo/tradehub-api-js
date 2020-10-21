@@ -324,7 +324,7 @@ export class WalletClient {
     ])
 
     const rpcUrl = this.getNeoWriteRpcUrl()
-    const apiProvider = new api.neoCli.instance(rpcUrl)
+    const apiProvider = new api.neonDB.instance("https://api.switcheo.network")
     return Neon.doInvoke({
       api: apiProvider,
       url: rpcUrl,
