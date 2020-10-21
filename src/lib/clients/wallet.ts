@@ -553,7 +553,6 @@ export class WalletClient {
       token.asset_id.length == 40 &&
       token.lock_proxy_hash.length == 40
     )
-    // const assetIds = tokens.map(token => Neon.u.reverseHex(token.asset_id))
 
     const client: neonRPC.RPCClient =
       new neonRPC.RPCClient(url, '2.5.2') // TODO: should we change the RPC version??
@@ -570,11 +569,6 @@ export class WalletClient {
 
         const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
 
-        // return partition.map((token: TokenObject, index: number) => {
-        //   let obj = {}
-        //   obj[token.denom.toUpperCase()] = this.parseHexNum(response.stack[index].value)
-        //   return obj
-        // })
         return partition.reduce((acc: {}, symbol: any, index: number) => {
             acc[symbol.denom.toUpperCase()] = response.stack[index].type === 'Integer' // Happens on polychain devnet
               ? response.stack[index].value
@@ -584,28 +578,9 @@ export class WalletClient {
       })
 
     const result = await Promise.all(promises).then((results: any[]) => {
-    
-      const combined: [] = results.reduce((acc: {}, res: {}) => ({ ...acc, ...res }), {})
-    
-      return combined
+      return results.reduce((acc: {}, res: {}) => ({ ...acc, ...res }), {})
     })
 
-    // Cant use nep5.gettokens for devnet, it throws a hexstring error
-    // let balances
-    // if (this.network.NAME === 'devnet') {
-    //   balances = await this.getNeoDevnetBalance(
-    //     provider,
-    //     assetIds[0],
-    //     address,
-    //     tokens[0].denom.toUpperCase()
-    //   )
-    // } else {
-    //   balances = await nep5.getTokenBalances(
-    //     provider,
-    //     assetIds,
-    //     address
-    //   )
-    // }
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       tokens[i].external_balance = result[token.denom.toUpperCase()]
