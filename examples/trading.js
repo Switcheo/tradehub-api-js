@@ -75,6 +75,40 @@ async function trade() {
     const cancelOrderLog = JSON.parse(cancelRes.logs[0].log)
     console.log('CANCEL ORDER:', cancelOrderLog.status)
 
+    // create orders
+    console.log('')
+    console.log('=== CREATING ORDERS ===')
+    console.log('')
+    const createsRes = await client.createOrders([
+      {
+        market: 'swth_eth',
+        side: 'sell',
+        quantity: '200',
+        price: '1.01',
+        type: 'limit',
+      },
+      {
+        market: 'swth_eth',
+        side: 'buy',
+        quantity: '200',
+        price: '8.01',
+        type: 'limit',
+      },
+    ]
+  )
+  const createOrdersLog = JSON.parse(createsRes.logs[0].log)
+  console.log('CREATE ORDERS:', createOrdersLog.status)
+
+    // cancel all orders
+    console.log('')
+    console.log('=== CANCELLING ALL ORDERS ===')
+    console.log('')
+    const cancelAllRes = await client.cancelAll({
+        market: 'swth_eth',
+    })
+    const cancelAllLog = JSON.parse(cancelAllRes.logs[0].log)
+    console.log('CANCEL ALL:', cancelAllLog.status)
+
 }
 
 trade()
