@@ -258,21 +258,21 @@ export class WalletClient {
       .then(res => res.json()) // expecting a json response
   }
 
-  public async watchDepositAddresses() {
-    this.watchNeoDepositAddress()
+  public async watchDepositAddresses(whitelistDenoms?: string[]) {
+    this.watchNeoDepositAddress(whitelistDenoms)
   }
 
-  public async watchNeoDepositAddress() {
+  public async watchNeoDepositAddress(whitelistDenoms?: string[]) {
     const address = await this.getDepositAddress(Blockchain.Neo)
-    await this.sendNeoDeposits(address)
+    await this.sendNeoDeposits(address, whitelistDenoms)
 
     // check every 15 seconds
     this.neoDepositsIntervalId = <any>setInterval(() => {
-      this.sendNeoDeposits(address)
+      this.sendNeoDeposits(address, whitelistDenoms)
     }, 15 * 1000)
   }
 
-  public async sendNeoDeposits(address) {
+  public async sendNeoDeposits(address, whitelistDenoms?: string[]) {
     const urls = this.network.NEO_URLS
 
     // shuffle urls
@@ -287,7 +287,7 @@ export class WalletClient {
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i]
       try {
-        tokens = await this.getNeoExternalBalances(address, url)
+        tokens = await this.getNeoExternalBalances(address, url, whitelistDenoms)
         break
       } catch (e) {
         console.error(e)
@@ -572,7 +572,7 @@ export class WalletClient {
     return new BigNumber(res ? neonUtils.reverseHex(res) : '00', 16).shiftedBy(-exp).toString()
   }
 
-  public async getNeoExternalBalances(address: string, url: string) {
+  public async getNeoExternalBalances(address: string, url: string, whitelistDenoms?: string[]) {
     const tokenList: TokenList = await this.getTokens()
     const account = new neonWallet.Account(address)
     const tokens: TokenList = tokenList.filter(token =>
@@ -588,9 +588,10 @@ export class WalletClient {
     // the gas limit on the RPC node and error out otherwise
     const promises: Promise<{}>[] = // tslint:disable-line
       chunk(tokens, 75).map(async (partition: ReadonlyArray<TokenObject>) => {
+        
         let acc = {}
-        for (const index in partition) {
-          const token = partition[index]
+        for (const token of partition) {
+          if (!whitelistDenoms.includes(token.denom)) continue
           const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
           sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
             'balanceOf', [neonUtils.reverseHex(account.scriptHash)])
