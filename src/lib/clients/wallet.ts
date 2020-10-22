@@ -92,8 +92,8 @@ export class WalletClient {
   }
 
   public static async connectLedger(cosmosLedger: any, net = 'TESTNET',
-                                    onRequestSign: OnRequestSignCallback,
-                                    onSignComplete: OnSignCompleteCallback) {
+    onRequestSign: OnRequestSignCallback,
+    onSignComplete: OnSignCompleteCallback) {
     const network = getNetwork(net)
     const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
     const pubKey = await cosmosLedger.getPubKey()
@@ -588,20 +588,27 @@ export class WalletClient {
     // the gas limit on the RPC node and error out otherwise
     const promises: Promise<{}>[] = // tslint:disable-line
       chunk(tokens, 75).map(async (partition: ReadonlyArray<TokenObject>) => {
-        const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
-        partition.forEach((token: TokenObject) => {
+        let acc = {}
+        for (const index in partition) {
+          const token = partition[index]
+          const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
           sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
             'balanceOf', [neonUtils.reverseHex(account.scriptHash)])
-        })
 
-        const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
+          try {
+            const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
+            acc[token.denom.toUpperCase()] = response.stack[index].type === 'Integer' // Happens on polychain devnet
+              ? response.stack[index].value
+              : this.parseHexNum(response.stack[index].value)
 
-        return partition.reduce((acc: {}, symbol: any, index: number) => {
-          acc[symbol.denom.toUpperCase()] = response.stack[index].type === 'Integer' // Happens on polychain devnet
-            ? response.stack[index].value
-            : this.parseHexNum(response.stack[index].value)
-          return acc
-        }, {})
+          } catch (err) {
+               console.error('Could not retrieve external balance for ', token.denom)
+               console.error(err)
+          }
+        
+        }
+
+        return acc
       })
 
     const result = await Promise.all(promises).then((results: any[]) => {
