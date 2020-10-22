@@ -591,7 +591,7 @@ export class WalletClient {
         
         let acc = {}
         for (const token of partition) {
-          if (!whitelistDenoms.includes(token.denom)) continue
+          if (whitelistDenoms && !whitelistDenoms.includes(token.denom)) continue
           const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
           sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
             'balanceOf', [neonUtils.reverseHex(account.scriptHash)])
