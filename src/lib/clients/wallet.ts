@@ -597,9 +597,9 @@ export class WalletClient {
 
           try {
             const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
-            acc[token.denom.toUpperCase()] = response.stack[index].type === 'Integer' // Happens on polychain devnet
-              ? response.stack[index].value
-              : this.parseHexNum(response.stack[index].value)
+            acc[token.denom.toUpperCase()] = response.stack[0].type === 'Integer' // Happens on polychain devnet
+              ? response.stack[0].value
+              : this.parseHexNum(response.stack[0].value)
 
           } catch (err) {
                console.error('Could not retrieve external balance for ', token.denom)
