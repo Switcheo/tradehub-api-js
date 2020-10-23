@@ -11,30 +11,30 @@ function sleep(ms) {
   
 
 async function trade() {
-    const minterWallet = await WalletClient.connectMnemonic(process.env.MNEMONICS, network)
-    const minterClient = new RestClient({ wallet: minterWallet, network })
-    const wallet = await WalletClient.connectMnemonic(mnemonic, network)
-    const client = new RestClient({ wallet, network })
-    
-    // mints token so we can perform trading functions
-    const tokenReq = {
-      toAddress: wallet.pubKeyBech32,
-      mint: [
-        {
-          amount: '100000',
-          denom: 'swth',
-        },
-        {
-          amount: '100000',
-          denom: 'eth',
-        },
-        {
-          amount: '100000',
-          denom: 'iusd',
-        }
-      ],
-    }
-    const mintResult = await minterClient.mintMultipleTestnetTokens(tokenReq)
+  const minterWallet = await WalletClient.connectMnemonic(process.env.MNEMONICS, network)
+  const minterClient = new RestClient({ wallet: minterWallet, network })
+  const wallet = await WalletClient.connectMnemonic(mnemonic, network)
+  const client = new RestClient({ wallet, network })
+  
+  // mints token so we can perform trading functions
+  const tokenReq = {
+    toAddress: wallet.pubKeyBech32,
+    mint: [
+      {
+        amount: '100000',
+        denom: 'swth',
+      },
+      {
+        amount: '100000',
+        denom: 'eth',
+      },
+      {
+        amount: '100000',
+        denom: 'iusd',
+      }
+    ],
+  }
+  const mintResult = await minterClient.mintMultipleTestnetTokens(tokenReq)
     // console.log('mintResult', mintResult)
 
     // create order
@@ -42,16 +42,14 @@ async function trade() {
     console.log('=== CREATING ORDER ===')
     console.log('')
     const createRes = await client.createOrder({
-        market: 'swth_eth',
-        side: 'sell',
-        quantity: '200',
-        price: '1.01',
+        market: 'btc_z29',
+        side: 'buy',
+        quantity: '0.1',
+        price: '20000',
         type: 'limit',
     })
     const createOrderLog = JSON.parse(createRes.logs[0].log)
     console.log('CREATE ORDER:', createOrderLog.status)
-
-    // await sleep(3000)
 
     // edit order
     console.log('')
@@ -108,6 +106,28 @@ async function trade() {
     })
     const cancelAllLog = JSON.parse(cancelAllRes.logs[0].log)
     console.log('CANCEL ALL:', cancelAllLog.status)
+
+  // change leverage
+  console.log('')
+  console.log('=== CHANGE LEVERAGE ===')
+  console.log('')
+  const leverageRes = await client.setLeverage({
+      market: 'btc_z29',
+      leverage: '1.1',
+  })
+  const changeLeverageLog = JSON.parse(leverageRes.logs[0].log)
+  console.log('CHANGE LEVERAGE:', changeLeverageLog.status)
+
+  // edit margin
+  console.log('')
+  console.log('=== EDIT POSITION MARGIN ===')
+  console.log('')
+  const editMarginRes = await client.editMargin({
+      market: 'btc_z29',
+      margin: '1900',
+  })
+  const editMarginLog = JSON.parse(editMarginRes.logs[0].log)
+  console.log('EDIT MARGIN:', editMarginLog.status)
 
 }
 
