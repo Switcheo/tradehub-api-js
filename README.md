@@ -47,3 +47,9 @@ Head over to [Tradehub Faucet](https://t.me/the_tradehub_bot) get receive free T
 
   run()
 ```
+
+## Examples
+
+>Examples are still under heavy development.
+
+Trading related examples can be found at [/examples/trading.js](https://github.com/Switcheo/tradehub-api-js/blob/master/examples/trading.js)
