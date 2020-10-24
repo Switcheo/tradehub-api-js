@@ -658,15 +658,19 @@ export class WalletClient {
         getBech32Prefix(this.network, 'main'), // BECH32PREFIX
       ).connect()
       this.onRequestSign && this.onRequestSign(stdSignMsg)
-      const sigData = await ledger.sign(sortAndStringifyJSON(stdSignMsg))
-      const signatureBase64 = Buffer.from(sigData as number[]).toString('base64')
-      this.onSignComplete && this.onSignComplete(signatureBase64.toString())
-      return {
-        pub_key: {
-          type: 'tendermint/PubKeySecp256k1',
-          value: this.pubKeyBase64,
-        },
-        signature: signatureBase64,
+      let signatureBase64
+      try {
+        const sigData = await ledger.sign(sortAndStringifyJSON(stdSignMsg))
+        signatureBase64 = Buffer.from(sigData as number[]).toString('base64')
+        return {
+          pub_key: {
+            type: 'tendermint/PubKeySecp256k1',
+            value: this.pubKeyBase64,
+          },
+          signature: signatureBase64,
+        }
+      } finally {
+        this.onSignComplete && this.onSignComplete(signatureBase64 && signatureBase64.toString())
       }
     }
     return this.sign(marshalJSON(stdSignMsg))
@@ -694,6 +698,8 @@ export class WalletClient {
       await new Promise(resolve => setTimeout(resolve, 100))
       const result = this.broadcastResults[id]
       if (result !== undefined) {
+        if (result instanceof Error)
+          throw result
         delete this.broadcastResults[id]
         return result
       }
@@ -758,21 +764,32 @@ export class WalletClient {
     const options = { sequence: currSequence, memo, mode: 'block' }
     this.sequenceCounter++
 
-    const signature = await this.signMessage(allConcreteMsgs, options)
-    const broadcastTxBody = new Transaction(allConcreteMsgs, [signature], options)
-
-    const response = await this.broadcast(broadcastTxBody)
-    response.sequence = currSequence
-
-    let rawLogs
+    let response, rawLogs, error
     try {
-      rawLogs = JSON.parse(response.raw_log)
+      const signature = await this.signMessage(allConcreteMsgs, options)
+      const broadcastTxBody = new Transaction(allConcreteMsgs, [signature], options)
+  
+      response = await this.broadcast(broadcastTxBody)
+      response.sequence = currSequence
+
+      try {
+        rawLogs = JSON.parse(response.raw_log)
+      } catch (e) {
+        // ignore parsing error
+      }
+
     } catch (e) {
-      // ignore parsing error
+      error = e
     }
 
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i]
+      if (error) {
+        // store error as result as workaround
+        // need to develop better error handling structure
+        this.broadcastResults[id] = error
+        continue
+      }
       const responseCopy = JSON.parse(JSON.stringify(response))
       if (response.logs !== undefined) {
         responseCopy.logs = [response.logs[i]]
@@ -783,10 +800,12 @@ export class WalletClient {
       this.broadcastResults[id] = responseCopy
     }
 
-    const isInvalidSequence = response.raw_log === 'unauthorized: signature verification failed; verify correct account sequence and chain-id'
-    if (isInvalidSequence) {
-      // reset sequenceCounter
-      this.sequenceCounter = undefined
+    if (response) {
+      const isInvalidSequence = response.raw_log === 'unauthorized: signature verification failed; verify correct account sequence and chain-id'
+      if (isInvalidSequence) {
+        // reset sequenceCounter
+        this.sequenceCounter = undefined
+      }
     }
 
     this.isBroadcastQueuePaused = false
