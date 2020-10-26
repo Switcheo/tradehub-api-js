@@ -7,7 +7,7 @@ import { ethers } from 'ethers'
 import { CONFIG, getBech32Prefix, getNetwork, Network } from '../config'
 import { Fee, StdSignDoc, Transaction } from '../containers'
 import { marshalJSON, sortAndStringifyJSON } from '../utils/encoder'
-import { Address, getPath, getPathArray, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
+import { Address, getPath, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
 import { ConcreteMsg } from '../containers/Transaction'
 import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
@@ -45,6 +45,7 @@ export interface WalletConstructorParams {
   privateKey?: string
   gas?: string // default CONFIG.default_gas
   signerType?: SignerType // default privateKey
+  ledger?: CosmosLedger
   onRequestSign?: OnRequestSignCallback
   onSignComplete?: OnSignCompleteCallback
 }
@@ -91,7 +92,7 @@ export class WalletClient {
     })
   }
 
-  public static async connectLedger(cosmosLedger: any, net = 'TESTNET',
+  public static async connectLedger(cosmosLedger: CosmosLedger, net = 'TESTNET',
     onRequestSign: OnRequestSignCallback,
     onSignComplete: OnSignCompleteCallback) {
     const network = getNetwork(net)
@@ -102,6 +103,7 @@ export class WalletClient {
       .then(res => res.json())
     return new WalletClient({
       accountNumber: value.account_number.toString(),
+      ledger: cosmosLedger,
       network,
       pubKey,
       pubKeyBech32,
@@ -136,6 +138,7 @@ export class WalletClient {
   public readonly consensusBech32: string
   public readonly gas: string
   public readonly signerType: SignerType
+  public readonly ledger?: CosmosLedger
   public readonly network: Network
   public readonly feeMultiplier: ethers.BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
   public accountNumber: string
@@ -164,6 +167,7 @@ export class WalletClient {
       useSequenceCounter = true,
       privateKey,
       signerType,
+      ledger,
       gas = CONFIG.DEFAULT_GAS,
       onRequestSign,
       onSignComplete,
@@ -206,6 +210,7 @@ export class WalletClient {
     this.accountNumber = accountNumber
     this.network = network
     this.depositAddresses = {}
+    this.ledger = ledger
     this.onRequestSign = onRequestSign
     this.onSignComplete = onSignComplete
     this.feeMultiplier = ethers.BigNumber.from(2)
@@ -653,14 +658,13 @@ export class WalletClient {
     })
 
     if (this.signerType === 'ledger') {
-      const ledger = await new CosmosLedger({},
-        getPathArray(), // HDPATH
-        getBech32Prefix(this.network, 'main'), // BECH32PREFIX
-      ).connect()
+      if (!this.ledger) {
+        throw new Error('Ledger connection not found, please refresh the page and try again')
+      }
       this.onRequestSign && this.onRequestSign(stdSignMsg)
       let signatureBase64
       try {
-        const sigData = await ledger.sign(sortAndStringifyJSON(stdSignMsg))
+        const sigData = await this.ledger.sign(sortAndStringifyJSON(stdSignMsg))
         signatureBase64 = Buffer.from(sigData as number[]).toString('base64')
         return {
           pub_key: {
