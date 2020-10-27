@@ -532,6 +532,7 @@ export interface LiquidityPoolResponse {
   amount_a: string
   weight_a: string
   denom_b: string
+  amount_b: string
   weight_b: string
   swap_fee: string
   creator_address: string
