@@ -31,7 +31,7 @@ export interface REST {
   getInsuranceFundBalance(): Promise<Array<object>>
   getLeaderboard(params: types.MarketOnlyGetterParams): Promise<Array<object>>
   getLeverage(params: types.MarketAndAddressGetterParams): Promise<object>
-  getLiquidityPools(): Promise<any>
+  getLiquidityPools(): Promise<null | types.GetLiquidityPoolsResponse>
   getLiquidationTrades(): Promise<Array<object>>
   getMarkets(): Promise<Array<object>>
   getMarket(params: types.MarketOnlyGetterParams): Promise<object>
@@ -423,7 +423,7 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_liquidations`)
   }
 
-  public async getLiquidityPools(): Promise<any> {
+  public async getLiquidityPools(): Promise<null | types.GetLiquidityPoolsResponse> {
     return this.fetchJson(`/get_liquidity_pools`)
   }
 

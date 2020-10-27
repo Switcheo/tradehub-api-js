@@ -523,3 +523,20 @@ export interface MintTokenRequest {
 }
 
 export interface Options extends SignMessageOptions, TransactionOptions { }
+
+export interface LiquidityPoolResponse {
+  pool_id: string
+  name: string
+  denom: string
+  denom_a: string
+  amount_a: string
+  weight_a: string
+  denom_b: string
+  weight_b: string
+  swap_fee: string
+  creator_address: string
+  block_height: number
+  shares_amount: string
+}
+
+export type GetLiquidityPoolsResponse = LiquidityPoolResponse[]
