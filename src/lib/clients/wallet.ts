@@ -25,7 +25,7 @@ import {
 import { chunk } from 'lodash'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 
-export type SignerType = 'ledger' | 'mnemonic' | 'privateKey'
+export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
 export type OnSignCompleteCallback = (signature: string) => void
 
@@ -122,7 +122,8 @@ export class WalletClient {
     return new WalletClient({
       accountNumber: value.account_number.toString(),
       network,
-      pubKeyBech32
+      pubKeyBech32,
+      signerType: 'nosign',
     })
   }
 
@@ -194,6 +195,8 @@ export class WalletClient {
       this.pubKeySecp256k1 = this.privKey.toPubKey()
       address = this.pubKeySecp256k1.toAddress()
       this.pubKeyBase64 = this.pubKeySecp256k1.pubKey.toString('base64')
+    } else if (signerType === 'nosign') {
+      address = Address.fromBech32(getBech32Prefix(network, 'main'), pubKeyBech32)
     } else {
       this.pubKeySecp256k1 = new PubKeySecp256k1(Buffer.from(pubKey as number[]))
       this.pubKeyBase64 = this.pubKeySecp256k1.pubKey.toString('base64')
