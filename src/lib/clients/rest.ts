@@ -26,6 +26,7 @@ export interface REST {
   getAccountTrades(params: types.GetTradesGetterParams): Promise<Array<object>>
   getActiveWallets(params: types.TokenOnlyGetterParams): Promise<string>
   getAllValidators(): Promise<Array<object>>
+  getAMMRewardPercentage(): Promise<null | types.GetAMMRewardPercentageResponse>
   getAverageBlocktime(): Promise<string>
   getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
   getInsuranceFundBalance(): Promise<Array<object>>
@@ -504,6 +505,10 @@ export class RestClient implements REST {
       url = url + `?page=${params.page}`
     }
     return this.fetchJson(url)
+  }
+
+  public async getAMMRewardPercentage(): Promise<null | types.GetAMMRewardPercentageResponse> {
+    return this.fetchJson('/get_amm_reward_percentage')
   }
 
   public async getTransfers(params?: types.AddressOnlyGetterParams) {

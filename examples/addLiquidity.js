@@ -20,7 +20,7 @@ async function addLiquidity() {
     toAddress: account.pubKeyBech32,
     mint: [
       {
-        amount: '10000',
+        amount: '100000000',
         denom: 'swth',
       },
       {
@@ -46,10 +46,15 @@ async function addLiquidity() {
   .then(res => {
       const spotPrice = res.result.price * 10
       console.log('adding liquidity')
+      // const addParams = {
+      //   pool_id: '2',
+      //   amount_a: '10',
+      //   amount_b: spotPrice.toString(),
+      // }
       const addParams = {
-        pool_id: '2',
-        amount_a: '10',
-        amount_b: spotPrice.toString(),
+        pool_id: '1',
+        amount_a: '1946345.0666215',
+        amount_b: '100',
       }
       mainClient.addLiquidity(addParams).then(console.log)
     })

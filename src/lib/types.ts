@@ -541,3 +541,8 @@ export interface LiquidityPoolResponse {
 }
 
 export type GetLiquidityPoolsResponse = LiquidityPoolResponse[]
+
+export interface GetAMMRewardPercentageResponse {
+  height: string
+  result: string
+}
