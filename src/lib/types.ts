@@ -538,6 +538,8 @@ export interface LiquidityPoolResponse {
   creator_address: string
   block_height: number
   shares_amount: string
+  market: string
+  rewards_weight: string
 }
 
 export type GetLiquidityPoolsResponse = LiquidityPoolResponse[]
