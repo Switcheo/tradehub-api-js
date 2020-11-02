@@ -1,3 +1,7 @@
+export * from './address'
+export * from './encoder'
+export * from './wallet'
+
 const { BigNumber } = require('bignumber.js')
 export { Address, PrivKeySecp256k1, getPathArray, getPath } from './wallet'
 

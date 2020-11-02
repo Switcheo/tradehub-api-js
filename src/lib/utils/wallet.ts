@@ -90,7 +90,7 @@ export class Address {
   }
 }
 
-class BIP44 {
+export class BIP44 {
   public readonly purpose: number
   public readonly coinType: number
   public readonly account: number

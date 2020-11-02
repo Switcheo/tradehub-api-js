@@ -1,3 +1,5 @@
+import { Bech32Type } from "./types"
+
 export interface Network {
   NAME: string,
   REST_URL: string,
@@ -110,8 +112,6 @@ const BECH32_PREFIXES = {
   consensus: 'cons',
   public: 'pub',
 }
-
-type Bech32Type = 'main' | 'validator' | 'consensus'
 
 export function getBech32Prefix(net: Network, type: Bech32Type = 'main') {
   const mainPrefix = net.BECH32_PREFIX

@@ -59,6 +59,7 @@ export enum Network {
   DevNet = 'DEVNET',
 }
 
+export type Bech32Type = 'main' | 'validator' | 'consensus'
 
 export interface PriceLevel {
   price: string
