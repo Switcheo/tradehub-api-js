@@ -114,6 +114,7 @@ export interface REST {
   activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options): Promise<any>
   createWithdrawal(msg: types.CreateWithdrawalMsg, blockchain: string, options?: types.Options): Promise<any>
   mintTokens(msg: types.MintTokenRequest): Promise<any>
+  setRewardsWeights(msg: types.SetRewardsWeightsMsg, options?: types.Options): Promise<any>
 }
 
 export class RestClient implements REST {
@@ -807,6 +808,12 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], options)
+  }
+  public async setRewardsWeights(msg: types.SetRewardsWeightsMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.SET_REWARDS_WEIGHTS_MSG_TYPE], options)
   }
 
   public async submitProposal<T>(msg: types.SubmitProposalMsg<T>, options?: types.Options) {

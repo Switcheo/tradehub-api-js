@@ -43,6 +43,7 @@ export const CREATE_POOL_MSG_TYPE = 'amm/CreatePool'
 export const CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE = 'amm/CreatePoolWithLiquidity'
 export const LINK_POOL_MSG_TYPE = 'amm/LinkPool'
 export const UNLINK_POOL_MSG_TYPE = 'amm/UnlinkPool'
+export const SET_REWARDS_WEIGHTS_MSG_TYPE = 'amm/setRewardsWeights'
 
 // Gov
 export const SUBMIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgSubmitProposal'
@@ -270,6 +271,14 @@ export interface LinkPoolMsg {
 
 export interface UnlinkPoolMsg {
   pool_id: string,
+  originator?: string,
+}
+export interface RewardsWeight {
+  pool_id: string,
+  weight: string,
+}
+export interface SetRewardsWeightsMsg {
+  weights: RewardsWeight[],
   originator?: string,
 }
 
