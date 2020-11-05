@@ -1,6 +1,6 @@
 import * as BIP32 from 'bip32'
 import * as BIP39 from 'bip39'
-import * as bip44Constants from 'bip44-constants'
+import bip44Constants from 'bip44-constants'
 import { BIP44 } from './wallet'
 import * as secp256r1 from 'secp256r1'
 import * as secp256k1 from 'secp256k1'

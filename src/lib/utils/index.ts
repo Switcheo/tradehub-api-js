@@ -2,8 +2,7 @@ export * from './address'
 export * from './encoder'
 export * from './wallet'
 
-const { BigNumber } = require('bignumber.js')
-export { Address, PrivKeySecp256k1, getPathArray, getPath } from './wallet'
+import BigNumber from 'bignumber.js'
 
 export function bn(n) {
   return new BigNumber(n)

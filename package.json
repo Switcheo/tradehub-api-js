@@ -55,9 +55,8 @@
     "node": ">=8.9"
   },
   "dependencies": {
-    "@cityofzion/neon-core": "^4.8.1",
+    "@cityofzion/neon-core": "^4.8.0",
     "@cityofzion/neon-js": "^4.8.0",
-    "@cityofzion/neon-ledger": "^4.8.1",
     "@ledgerhq/hw-transport-webusb": "^5.28.0",
     "@lunie/cosmos-ledger": "^0.1.8",
     "@maticnetwork/eth-dagger": "0.0.3",

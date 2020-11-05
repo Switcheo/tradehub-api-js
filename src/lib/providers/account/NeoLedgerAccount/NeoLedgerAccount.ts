@@ -1,11 +1,8 @@
-import NeonCore from '@cityofzion/neon-core'
-import NeonLedger from '@cityofzion/neon-ledger'
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb'
 
-import { AddressOptions, NEOAddress } from "../../utils";
-import { AccountProvider } from "./AccountProvider";
-
-const NeonJs = NeonLedger(NeonCore)
+import { AddressOptions, NEOAddress } from "../../../utils";
+import NeonLedger, { getNEOBIP44String } from './NeonLedger'
+import { AccountProvider } from "../AccountProvider";
 
 const CONNECT_POLL_INTERVAL = 3000 // ms
 const CONNECT_POLL_ATTEMPTS = 10 // attempts
@@ -96,11 +93,11 @@ export class NeoLedgerAccount extends AccountProvider {
    * on USB device to detect NEO app connection
    */
   private static async tryConnect(usbDevice: string): Promise<[TransportWebUSB, string]> {
-    const bipString = NeonJs.ledger.BIP44()
+    const bipString = getNEOBIP44String()
     const ledger = await TransportWebUSB.open(usbDevice)
 
     // get public key to assert that NEO app is open
-    const publicKey = await NeonJs.ledger.getPublicKey(ledger, bipString)
+    const publicKey = await NeonLedger.getPublicKey(ledger, bipString)
 
     return [ledger, publicKey]
   }
@@ -114,12 +111,13 @@ export class NeoLedgerAccount extends AccountProvider {
   }
 
   async sign(msg: string) {
+    const bipString = getNEOBIP44String()
     const ledger = this.useLedger()
-    return await NeonJs.ledger.getSignature(ledger, msg, NeonJs.ledger.BIP44())
+    return await NeonLedger.getSignature(ledger, msg, bipString)
   }
 
   private static async getUSBDevices() {
-    const devices = await NeonJs.ledger.getDevicePaths(TransportWebUSB as any)
+    const devices = await NeonLedger.getDevicePaths(TransportWebUSB as any)
 
     return devices
   }
