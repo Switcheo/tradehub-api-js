@@ -258,8 +258,8 @@ export interface CreatePoolMsg {
 }
 
 export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
-  a_amount?: string
-  b_amount?: string
+  amount_a?: string
+  amount_b?: string
 }
 
 export interface LinkPoolMsg {
