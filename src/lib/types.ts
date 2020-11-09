@@ -37,16 +37,6 @@ export const ACTIVATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgActivateSubAccountV1
 // Profile
 export const UPDATE_PROFILE_MSG_TYPE = 'profile/UpdateProfile'
 
-export const ADD_LIQUIDITY_MSG_TYPE = 'amm/AddLiquidity'
-export const REMOVE_LIQUIDITY_MSG_TYPE = 'amm/RemoveLiquidity'
-export const CREATE_POOL_MSG_TYPE = 'amm/CreatePool'
-export const CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE = 'amm/CreatePoolWithLiquidity'
-export const LINK_POOL_MSG_TYPE = 'amm/LinkPool'
-export const UNLINK_POOL_MSG_TYPE = 'amm/UnlinkPool'
-export const SET_REWARDS_WEIGHTS_MSG_TYPE = 'amm/SetRewardsWeights'
-export const STAKE_POOL_TOKEN_MSG_TYPE = 'amm/StakePoolToken'
-export const UNSTAKE_POOL_TOKEN_MSG_TYPE = 'amm/UnstakePoolToken'
-export const CLAIM_POOL_REWARDS_MSG_TYPE = 'amm/ClaimPoolRewards'
 
 // Gov
 export const SUBMIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgSubmitProposal'
@@ -54,7 +44,22 @@ export const DEPOSIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgDeposit'
 export const VOTE_PROPOSAL_TYPE = 'cosmos-sdk/MsgVote'
 
 // AMM
-export const LINK_POOL_PROPOSAL_TYPE = 'amm/LinkPoolProposal'
+export const ADD_LIQUIDITY_MSG_TYPE = 'liquiditypool/AddLiquidity'
+export const REMOVE_LIQUIDITY_MSG_TYPE = 'liquiditypool/RemoveLiquidity'
+export const CREATE_POOL_MSG_TYPE = 'liquiditypool/CreatePool'
+export const CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE = 'liquiditypool/CreatePoolWithLiquidity'
+export const LINK_POOL_MSG_TYPE = 'liquiditypool/LinkPool'
+export const UNLINK_POOL_MSG_TYPE = 'liquiditypool/UnlinkPool'
+export const SET_REWARDS_WEIGHTS_MSG_TYPE = 'liquiditypool/SetRewardsWeights'
+export const SET_REWARD_CURVE_MSG_TYPE = 'liquiditypool/SetRewardCurve'
+export const SET_COMMITMENT_CURVE_MSG_TYPE = 'liquiditypool/SetCommitmentCurve'
+export const STAKE_POOL_TOKEN_MSG_TYPE = 'liquiditypool/StakePoolToken'
+export const UNSTAKE_POOL_TOKEN_MSG_TYPE = 'liquiditypool/UnstakePoolToken'
+export const CLAIM_POOL_REWARDS_MSG_TYPE = 'liquiditypool/ClaimPoolRewards'
+export const LINK_POOL_PROPOSAL_TYPE = 'liquiditypool/LinkPoolProposal'
+export const SET_REWARD_CURVE_PROPOSAL_TYPE = 'liquiditypool/SetRewardCurveProposal'
+export const SET_REWARDS_WEIGHT_PROPOSAL_TYPE = 'liquiditypool/SetRewardsWeightsProposal'
+export const SET_COMMITMENT_CURVE_PROPOSAL_TYPE = 'liquiditypool/SetCommitmentCurveProposal'
 
 export enum Network {
   LocalHost = 'LOCALHOST',
@@ -282,6 +287,21 @@ export interface RewardsWeight {
 }
 export interface SetRewardsWeightsMsg {
   weights: RewardsWeight[],
+  originator?: string,
+}
+
+export interface SetRewardCurveMsg {
+  start_time: number,
+  initial_reward_bps: number
+  reduction_multiplier_bps: number
+  reduction_interval_seconds: number
+  reductions: number
+  final_reward_bps: number
+  originator?: string,
+}
+export interface SetCommitmentCurveMsg {
+  max_duration: number,
+  max_reward_multiplier: number
   originator?: string,
 }
 

@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-const { RestClient, Network, newAccount, WalletClient, LINK_POOL_PROPOSAL_TYPE } = require("../build/main")
+const { RestClient, Network, newAccount, WalletClient, LINK_POOL_PROPOSAL_TYPE, SET_REWARDS_WEIGHTS_MSG_TYPE, SET_REWARD_CURVE_PROPOSAL_TYPE, SET_COMMITMENT_CURVE_PROPOSAL_TYPE } = require("../build/main")
 const setupAccount = require("./setupAccount")
 require('dotenv').config()
 
@@ -53,16 +53,64 @@ async function submit() {
   // }
 
   console.log('submitting proposal')
+
+  // SET REWARDS WEIGHT
+//   const proposalMsg = {
+//     content: {
+//       type: SET_REWARDS_WEIGHTS_MSG_TYPE,
+//       value: {
+//         title: 'my title',
+//         description: 'what a description',
+//         msg: [
+//             {
+//               pool_id: '2',
+//               weight: '1',
+//               originator: accountWallet.pubKeyBech32,
+//             },
+//         ],
+//       },
+//     },
+//     initial_deposit: [{
+//       amount: '100000000',
+//       denom: 'swth',
+//     }],
+//   }
+
+  // SET REWARD CURVE
+//   const proposalMsg = {
+//     content: {
+//       type: SET_REWARD_CURVE_PROPOSAL_TYPE,
+//       value: {
+//         title: 'my title',
+//         description: 'what a description',
+//         msg: {
+//             start_time: '2020-12-12T07:28:30Z',
+//             initial_reward_bps: 6000,
+//             reduction_multiplier_bps: 500,
+//             reduction_interval_seconds: 53,
+//             reductions: 53,
+//             final_reward_bps: 400,
+//             originator: accountWallet.pubKeyBech32,
+//         },
+//       },
+//     },
+//     initial_deposit: [{
+//       amount: '100000000',
+//       denom: 'swth',
+//     }],
+//   }
+
+  // SET COMMITMENT CURVE
   const proposalMsg = {
     content: {
-      type: LINK_POOL_PROPOSAL_TYPE,
+      type: SET_COMMITMENT_CURVE_PROPOSAL_TYPE,
       value: {
         title: 'my title',
         description: 'what a description',
         msg: {
-          pool_id: '3',
-          market: 'eth_btc',
-          originator: accountWallet.pubKeyBech32,
+            max_duration: 31557600,
+            max_reward_multiplier: 600,
+            originator: accountWallet.pubKeyBech32,
         },
       },
     },

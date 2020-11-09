@@ -115,6 +115,8 @@ export interface REST {
   createWithdrawal(msg: types.CreateWithdrawalMsg, blockchain: string, options?: types.Options): Promise<any>
   mintTokens(msg: types.MintTokenRequest): Promise<any>
   setRewardsWeights(msg: types.SetRewardsWeightsMsg, options?: types.Options): Promise<any>
+  setRewardCurve(msg: types.SetRewardCurveMsg, options?: types.Options): Promise<any>
+  setCommitmentCurve(msg: types.SetCommitmentCurveMsg, options?: types.Options): Promise<any>
   stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options): Promise<any>
   unstakePoolToken(msg: types.UnstakePoolTokenMsg, options?: types.Options): Promise<any>
   claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options): Promise<any>
@@ -817,6 +819,20 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.SET_REWARDS_WEIGHTS_MSG_TYPE], options)
+  }
+
+  public async setRewardCurve(msg: types.SetRewardCurveMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.SET_REWARD_CURVE_MSG_TYPE], options)
+  }
+
+  public async setCommitmentCurve(msg: types.SetCommitmentCurveMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.SET_COMMITMENT_CURVE_MSG_TYPE], options)
   }
 
   public async stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options) {
