@@ -115,6 +115,9 @@ export interface REST {
   createWithdrawal(msg: types.CreateWithdrawalMsg, blockchain: string, options?: types.Options): Promise<any>
   mintTokens(msg: types.MintTokenRequest): Promise<any>
   setRewardsWeights(msg: types.SetRewardsWeightsMsg, options?: types.Options): Promise<any>
+  stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options): Promise<any>
+  unstakePoolToken(msg: types.UnstakePoolTokenMsg, options?: types.Options): Promise<any>
+  claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options): Promise<any>
 }
 
 export class RestClient implements REST {
@@ -814,6 +817,27 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.SET_REWARDS_WEIGHTS_MSG_TYPE], options)
+  }
+
+  public async stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.STAKE_POOL_TOKEN_MSG_TYPE], options)
+  }
+
+  public async unstakePoolToken(msg: types.UnstakePoolTokenMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.UNSTAKE_POOL_TOKEN_MSG_TYPE], options)
+  }
+
+  public async claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.CLAIM_POOL_REWARDS_MSG_TYPE], options)
   }
 
   public async submitProposal<T>(msg: types.SubmitProposalMsg<T>, options?: types.Options) {

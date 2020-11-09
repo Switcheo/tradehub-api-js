@@ -1,8 +1,6 @@
 // const SDK = require('switcheo-chain-js-sdk') // use this instead if running this sdk as a library
 const { RestClient, Network, newAccount, WalletClient } = require("../.")
 const setupAccount = require("./setupAccount")
-// const { WalletClient, RestClient, newAccount } = require('tradehub-api-js')
-// const setupAccount = require("./setupAccount")
 require('dotenv').config()
 
 function sleep(ms) {
@@ -49,9 +47,9 @@ async function set() {
           },
       ],
   }
-  const res = await mainClient.setRewardsWeights(accountWallet, params)
+  const res = await mainClient.setRewardsWeights(params)
   console.log('set', res)
-
+  process.exit()
 }
 
 set()

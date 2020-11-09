@@ -43,7 +43,10 @@ export const CREATE_POOL_MSG_TYPE = 'amm/CreatePool'
 export const CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE = 'amm/CreatePoolWithLiquidity'
 export const LINK_POOL_MSG_TYPE = 'amm/LinkPool'
 export const UNLINK_POOL_MSG_TYPE = 'amm/UnlinkPool'
-export const SET_REWARDS_WEIGHTS_MSG_TYPE = 'amm/setRewardsWeights'
+export const SET_REWARDS_WEIGHTS_MSG_TYPE = 'amm/SetRewardsWeights'
+export const STAKE_POOL_TOKEN_MSG_TYPE = 'amm/StakePoolToken'
+export const UNSTAKE_POOL_TOKEN_MSG_TYPE = 'amm/UnstakePoolToken'
+export const CLAIM_POOL_REWARDS_MSG_TYPE = 'amm/ClaimPoolRewards'
 
 // Gov
 export const SUBMIT_PROPOSAL_TYPE = 'cosmos-sdk/MsgSubmitProposal'
@@ -279,6 +282,22 @@ export interface RewardsWeight {
 }
 export interface SetRewardsWeightsMsg {
   weights: RewardsWeight[],
+  originator?: string,
+}
+
+export interface StakePoolTokenMsg {
+  denom: string,
+  amount: string,
+  duration: string, // seconds
+  originator?: string,
+}
+export interface UnstakePoolTokenMsg {
+  denom: string,
+  amount: string,
+  originator?: string,
+}
+export interface ClaimPoolRewardsMsg {
+  pool_id: string,
   originator?: string,
 }
 
