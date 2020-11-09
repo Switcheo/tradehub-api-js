@@ -259,10 +259,7 @@ export interface CreatePoolMsg {
 
 export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
   a_amount?: string
-  a_max_amount?: string
   b_amount?: string
-  b_max_amount?: string
-  swap_fee: string,
 }
 
 export interface LinkPoolMsg {
@@ -280,6 +277,7 @@ export interface AddLiquidityMsg {
   pool_id: string
   amount_a?: string
   amount_b?: string
+  min_shares?: string
   originator?: string
 }
 
