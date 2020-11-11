@@ -9,7 +9,7 @@ const CONTRACT_HASH = {
   [Network.TestNet]: '0x50dA4013276bcC645c67DFaBaeC9221cB87d51b0',
   [Network.DevNet]: '0x50dA4013276bcC645c67DFaBaeC9221cB87d51b0',
   [Network.LocalHost]: '0x50dA4013276bcC645c67DFaBaeC9221cB87d51b0',
-  [Network.MainNet]: undefined,
+  [Network.MainNet]: '0x9E1b7a4AAF8f7Ad0390bADBa72E2a614E7a1f83B',
 }
 
 const ETH_CHAIN_NAMES = {
