@@ -13,18 +13,18 @@ const CONTRACT_HASH = {
 }
 
 const ETH_CHAIN_NAMES = {
-  '0x1': 'MainNet',
-  '0x3': 'Ropsten',
+  1: 'MainNet',
+  3: 'Ropsten',
 } as const
 
 const ENCRYPTION_VERSION = 'x25519-xsalsa20-poly1305'
 
 const getRequiredEthChain = (network: Network) => {
   if (network === Network.MainNet) {
-    return '0x1'
+    return 1
   }
 
-  return '0x3'
+  return 3
 }
 
 interface RequestArguments {
@@ -177,14 +177,12 @@ export class MetaMask {
     const cipherTextHex: string | undefined = await this.getStoredMnemonicCipher(defaultAccount)
 
     const chainIdHex = await metamaskAPI.request({ method: 'eth_chainId' }) as string
+    const chainId = parseInt(chainIdHex, 16)
 
     const requiredChainId = getRequiredEthChain(this.network)
-    if (chainIdHex !== requiredChainId) {
+    if (chainId !== requiredChainId) {
       const requiredNetworkName = ETH_CHAIN_NAMES[requiredChainId] || ETH_CHAIN_NAMES['0x3']
       throw new Error(`MetaMask not connected to correct network, please use ${requiredNetworkName}`)
-    }
-    if (chainIdHex !== '0x3') {
-      throw new Error('MetaMask login only supports ETH Ropsten for the time being.')
     }
 
     if (!cipherTextHex || !cipherTextHex.length) {
