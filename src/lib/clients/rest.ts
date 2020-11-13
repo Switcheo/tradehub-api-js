@@ -60,6 +60,7 @@ export interface REST {
   getPosition(params: types.MarketAndAddressGetterParams): Promise<object>
   getPositions(params?: types.AddressOnlyGetterParams): Promise<Array<object>>
   getWalletBalance(params?: types.AddressOnlyGetterParams): Promise<types.WalletBalance>
+  getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null>
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -627,6 +628,11 @@ export class RestClient implements REST {
     return this.fetchCosmosJson(`/distribution/delegators/${address}/rewards`)
   }
 
+  public async getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null> {
+    const { poolID, address } = params
+    return this.fetchJson(`/get_staked_pool_token?=pool_id=${poolID}&account=${address}`)
+  }
+
   // PRIVATE METHODS
   public async createOrder(msg: types.CreateOrderMsg, options?: types.Options) {
     return this.createOrders([msg], options)
@@ -686,7 +692,7 @@ export class RestClient implements REST {
   }
 
   public async updateProfile(msg: types.UpdateProfileMsg, options?: types.Options) {
-    if (!msg.Originator) msg.Originator = this.wallet.pubKeyBech32
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], options)
   }
 
@@ -777,6 +783,9 @@ export class RestClient implements REST {
   public async addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options) {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
+    }
+    if (!msg.min_shares) {
+      msg.min_shares = '0'
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], options)
   }

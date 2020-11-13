@@ -182,9 +182,9 @@ export interface SendTokensMsg {
 }
 
 export interface UpdateProfileMsg {
-  Username: string,
-  Twitter: string,
-  Originator?: string,
+  username: string,
+  twitter: string,
+  originator?: string,
 }
 
 export interface SetLeverageMsg {
@@ -554,6 +554,12 @@ export interface UsernameGetterParams {
   username: string
 }
 
+export interface PoolIDAndAddressGetter {
+  address: string
+  poolID: string
+}
+
+
 export interface CreateWithdrawalMsg {
   to_address: string,
   denom: string,
@@ -596,4 +602,18 @@ export type GetLiquidityPoolsResponse = LiquidityPoolResponse[]
 export interface GetAMMRewardPercentageResponse {
   height: string
   result: string
+}
+
+export interface GetStakedPoolTokenInfoResult {
+  denom: string
+  amount: string
+  start_time: string
+  end_time: string
+  duration: string
+  is_locked: boolean
+  boost_factor: string
+}
+export interface GetStakedPoolTokenInfoResponse {
+  height: string
+  result: GetStakedPoolTokenInfoResult
 }
