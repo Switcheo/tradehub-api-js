@@ -950,7 +950,7 @@ export class RestClient implements REST {
       }
       const isContract = await this.wallet.isEthContract(address)
       if (isContract) {
-        throw new Error('cannot withdraw to a contract address: ' + address)
+        throw new Error('Cannot withdraw to a contract address: ' + address)
       }
       return address.substr(2)
     }

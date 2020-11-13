@@ -268,6 +268,7 @@ export class WalletClient {
 
   public async watchDepositAddresses(whitelistDenoms?: string[]) {
     this.watchNeoDepositAddress(whitelistDenoms)
+    this.watchEthDepositAddress(whitelistDenoms)
   }
 
   public async watchNeoDepositAddress(whitelistDenoms?: string[]) {
@@ -377,26 +378,26 @@ export class WalletClient {
     })
   }
 
-  public async watchEthDepositAddress() {
+  public async watchEthDepositAddress(whitelistDenoms?: string[]) {
     const address = await this.getDepositAddress(Blockchain.Ethereum)
     // do an initial check
-    await this.sendEthDeposits(address)
+    await this.sendEthDeposits(address, whitelistDenoms)
 
     const dagger = new Dagger(this.network.ETH_WS_URL)
     // watch for Ethereum transfers
     dagger.on(`latest:addr/${address}/tx/in`, () => {
-      this.sendEthDeposits(address)
+      this.sendEthDeposits(address, whitelistDenoms)
     })
 
     // watch for Ethereum token transfers
     const transferKey = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
     dagger.on(`latest:log/+/filter/${transferKey}/+/${address}/#`, () => {
-      this.sendEthDeposits(address)
+      this.sendEthDeposits(address, whitelistDenoms)
     })
   }
 
-  public async sendEthDeposits(address) {
-    const tokens = await this.getEthExternalBalances(address)
+  public async sendEthDeposits(address, whitelistDenoms?: string[]) {
+    const tokens = await this.getEthExternalBalances(address, whitelistDenoms)
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       if (!token.externalBalance.isZero()) {
@@ -416,7 +417,7 @@ export class WalletClient {
   }
 
   public async isEthContract(address) {
-    const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
+    const provider = this.getEthProvider()
     const code = await provider.getCode(address)
     // non-contract addresses should return 0x
     return code != '0x'
@@ -540,7 +541,7 @@ export class WalletClient {
     const privateKey = this.hdWallet[Blockchain.Ethereum]
     const owner = (new ethers.Wallet('0x' + privateKey)).address
 
-    const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
+    const provider = this.getEthProvider()
     const contractAddress = this.network.ETH_LOCKPROXY
     const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, provider)
     const walletAddress = await contract.getWalletAddress(owner, swthAddress, ETH_WALLET_BYTECODE)
@@ -548,15 +549,23 @@ export class WalletClient {
     return walletAddress
   }
 
-  public async getEthExternalBalances(address: string) {
+  public getEthProvider() {
+    if (this.network.ETH_URL.length > 0) {
+      return new ethers.providers.JsonRpcProvider(this.network.ETH_URL)
+    }
+    return ethers.getDefaultProvider(this.network.ETH_ENV)
+  }
+
+  public async getEthExternalBalances(address: string, whitelistDenoms?: string[]) {
     const tokenList = await this.getTokens()
     const tokens = tokenList.filter(token =>
       token.blockchain == Blockchain.Ethereum &&
       token.asset_id.length == 40 &&
-      ('0x' + token.lock_proxy_hash).toLowerCase() == this.network.ETH_LOCKPROXY
+      ('0x' + token.lock_proxy_hash).toLowerCase() == this.network.ETH_LOCKPROXY &&
+      (!whitelistDenoms || whitelistDenoms.includes(token.denom))
     )
     const assetIds = tokens.map(token => '0x' + token.asset_id)
-    const provider = ethers.getDefaultProvider(this.network.ETH_ENV)
+    const provider = this.getEthProvider()
     const contractAddress = this.network.ETH_BALANCE_READER
     const contract = new ethers.Contract(contractAddress, BALANCE_READER_ABI, provider)
 
@@ -596,7 +605,7 @@ export class WalletClient {
     // the gas limit on the RPC node and error out otherwise
     const promises: Promise<{}>[] = // tslint:disable-line
       chunk(tokens, 75).map(async (partition: ReadonlyArray<TokenObject>) => {
-        
+
         let acc = {}
         for (const token of partition) {
           if (whitelistDenoms && !whitelistDenoms.includes(token.denom)) continue
@@ -614,7 +623,7 @@ export class WalletClient {
                console.error('Could not retrieve external balance for ', token.denom)
                console.error(err)
           }
-        
+
         }
 
         return acc
@@ -775,7 +784,7 @@ export class WalletClient {
     try {
       const signature = await this.signMessage(allConcreteMsgs, options)
       const broadcastTxBody = new Transaction(allConcreteMsgs, [signature], options)
-  
+
       response = await this.broadcast(broadcastTxBody)
       response.sequence = currSequence
 
