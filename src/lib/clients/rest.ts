@@ -62,6 +62,8 @@ export interface REST {
   getPositions(params?: types.AddressOnlyGetterParams): Promise<Array<object>>
   getWalletBalance(params?: types.AddressOnlyGetterParams): Promise<types.WalletBalance>
   getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null>
+  getWeeklyRewards(): Promise<number | null>
+  getWeeklyPoolRewards(): Promise<number | null> 
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -650,9 +652,14 @@ export class RestClient implements REST {
     }
 
     return INITIAL_SUPPLY.div(52).times(inflationRate).toNumber()
-
   }
 
+  public async getWeeklyPoolRewards(): Promise<number | null> {
+    const total = await this.getWeeklyRewards()
+    const distribution = await this.fetchCosmosJson(`/distribution/parameters`)
+    const poolAllocation = new BigNumber(distribution.result.liquidity_provider_reward)
+    return new BigNumber(total).times(poolAllocation).dp(8).toNumber()
+  }
 
   // PRIVATE METHODS
   public async createOrder(msg: types.CreateOrderMsg, options?: types.Options) {
