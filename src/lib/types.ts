@@ -617,3 +617,8 @@ export interface GetStakedPoolTokenInfoResponse {
   height: string
   result: GetStakedPoolTokenInfoResult
 }
+
+export interface GetInflationStartTimeResponse {
+  height: string
+  block_time: string
+}

@@ -2,6 +2,7 @@ import { BigNumber } from 'bignumber.js'
 import { ethers } from 'ethers'
 import fetch from '../utils/fetch'
 import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
+import dayjs from 'dayjs'
 
 import { getNetwork } from '../config'
 import { WalletClient } from './wallet'
@@ -632,6 +633,26 @@ export class RestClient implements REST {
     const { poolID, address } = params
     return this.fetchJson(`/get_staked_pool_token?=pool_id=${poolID}&account=${address}`)
   }
+
+  public async getWeeklyRewards(): Promise<number | null> {
+    const startTime: types.GetInflationStartTimeResponse = await this.fetchJson(`/get_inflation_start_time`)
+    const WEEKLY_DECAY = new BigNumber(0.9835)
+    const MIN_RATE = new BigNumber(0.0003)
+    const INITIAL_SUPPLY = new BigNumber(1000000000)
+    const SECONDS_IN_A_WEEK = new BigNumber(604800)
+    
+    const difference = new BigNumber(dayjs().diff(dayjs(startTime.block_time), 'second'))
+    const currentWeek = difference.div(SECONDS_IN_A_WEEK).dp(0, BigNumber.ROUND_DOWN)
+
+    let inflationRate = WEEKLY_DECAY.pow(currentWeek)
+    if (inflationRate.lt(MIN_RATE)) {
+      inflationRate = MIN_RATE
+    }
+
+    return INITIAL_SUPPLY.div(52).times(inflationRate).toNumber()
+
+  }
+
 
   // PRIVATE METHODS
   public async createOrder(msg: types.CreateOrderMsg, options?: types.Options) {

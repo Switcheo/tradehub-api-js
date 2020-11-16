@@ -11,3 +11,5 @@ coverage
 examples/.env
 mnemonics.json
 .env
+examples/starter.js
+examples/test.js
