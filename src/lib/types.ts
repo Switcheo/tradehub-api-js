@@ -6,7 +6,8 @@ export const CREATE_ORDER_MSG_TYPE = 'order/MsgCreateOrder'
 export const CANCEL_ORDER_MSG_TYPE = 'order/MsgCancelOrder'
 export const CANCEL_ALL_MSG_TYPE = 'order/MsgCancelAll'
 export const EDIT_ORDER_MSG_TYPE = 'order/MsgEditOrder'
-export const ADD_MARKET_MSG_TYPE = 'market/MsgCreateMarket'
+export const CREATE_MARKET_MSG_TYPE = 'market/MsgCreateMarket'
+export const UPDATE_MARKET_MSG_TYPE = 'market/MsgUpdateMarket'
 export const INITIATE_SETTLEMENT_MSG_TYPE = 'broker/MsgInitiateSettlement'
 
 // Positions
@@ -219,6 +220,14 @@ export interface CreateMarketMsg {
   originator?: string,
 }
 
+export interface UpdateMarketMsg {
+  name: string,
+  display_name: string,
+  description: string,
+  max_liquidation_order_ticket: string,
+  originator?: string,
+}
+
 export interface InitiateSettlementMsg {
   market: string,
   originator?: string,
@@ -323,9 +332,9 @@ export interface ClaimPoolRewardsMsg {
 
 export interface AddLiquidityMsg {
   pool_id: string
-  amount_a?: string
-  amount_b?: string
-  min_shares?: string
+  amount_a: string
+  amount_b: string
+  min_shares: string
   originator?: string
 }
 

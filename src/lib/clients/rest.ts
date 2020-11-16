@@ -91,6 +91,7 @@ export interface REST {
   setLeverages(msgs: types.SetLeverageMsg[], options?: types.Options): Promise<any>
   createMarket(msg: types.CreateMarketMsg, options?: types.Options): Promise<any>
   createMarkets(msgs: types.CreateMarketMsg[], options?: types.Options): Promise<any>
+  updateMarket(msg: types.UpdateMarketMsg, options?: types.Options): Promise<any>
   initiateSettlement(msg: types.InitiateSettlementMsg, options?: types.Options): Promise<any>
   initiateSettlements(msgs: types.InitiateSettlementMsg[], options?: types.Options): Promise<any>
   editMargin(params: types.EditMarginMsg, options?: types.Options): Promise<any>
@@ -748,7 +749,12 @@ export class RestClient implements REST {
       if (!msg.originator) msg.originator = address
       return msg
     })
-    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.ADD_MARKET_MSG_TYPE), options)
+    return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_MARKET_MSG_TYPE), options)
+  }
+
+  public updateMarket(msg: types.UpdateMarketMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.UPDATE_MARKET_MSG_TYPE], options)
   }
 
   public async initiateSettlement(msg: types.InitiateSettlementMsg, options?: types.Options) {
