@@ -6,10 +6,11 @@ import { NETWORK } from '../../config'
 
 const CONTRACT_HASH = {
   // use same ropsten contract for all non-mainnet uses
-  [Network.TestNet]: '0x50dA4013276bcC645c67DFaBaeC9221cB87d51b0',
-  [Network.DevNet]: '0x50dA4013276bcC645c67DFaBaeC9221cB87d51b0',
-  [Network.LocalHost]: '0x50dA4013276bcC645c67DFaBaeC9221cB87d51b0',
-  [Network.MainNet]: '0x9E1b7a4AAF8f7Ad0390bADBa72E2a614E7a1f83B',
+  [Network.TestNet]: '0x993BfA4b13b5a0F25ea36fC962803431D944271A',
+  [Network.DevNet]: '0x993BfA4b13b5a0F25ea36fC962803431D944271A',
+  [Network.LocalHost]: '0x993BfA4b13b5a0F25ea36fC962803431D944271A',
+
+  [Network.MainNet]: '0x41500944FE7401a202C3344548eD8Dc668DE46e8',
 }
 
 const ETH_CHAIN_NAMES = {
@@ -181,7 +182,7 @@ export class MetaMask {
 
     const requiredChainId = getRequiredEthChain(this.network)
     if (chainId !== requiredChainId) {
-      const requiredNetworkName = ETH_CHAIN_NAMES[requiredChainId] || ETH_CHAIN_NAMES['0x3']
+      const requiredNetworkName = ETH_CHAIN_NAMES[requiredChainId] || ETH_CHAIN_NAMES[3]
       throw new Error(`MetaMask not connected to correct network, please use ${requiredNetworkName}`)
     }
 
