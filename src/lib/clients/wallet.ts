@@ -282,29 +282,9 @@ export class WalletClient {
   }
 
   public async sendNeoDeposits(address, whitelistDenoms?: string[]) {
-    const urls = this.network.NEO_URLS
+    const url = await this.getNeoRpcUrl()
 
-    // shuffle urls
-    for (let i = urls.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * i)
-      const temp = urls[i]
-      urls[i] = urls[j]
-      urls[j] = temp
-    }
-
-    let tokens = []
-    for (let i = 0; i < urls.length; i++) {
-      const url = urls[i]
-      try {
-        tokens = await this.getNeoExternalBalances(address, url, whitelistDenoms)
-        break
-      } catch (e) {
-        console.error(e)
-        console.log('could not fetch balance, will try another endpoint, current endpoint', url)
-        continue
-      }
-    }
-
+    let tokens = await this.getNeoExternalBalances(address, url, whitelistDenoms)
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       if (token.external_balance !== undefined && token.external_balance !== '0') {
@@ -364,7 +344,7 @@ export class WalletClient {
       nonce
     ])
 
-    const rpcUrl = this.getRandomNeoRpcUrl()
+    const rpcUrl = await this.getNeoRpcUrl()
     const apiProvider = this.network.NAME === 'mainnet' ?
       new api.neonDB.instance('https://api.switcheo.network')
       : new api.neoCli.instance(rpcUrl)
@@ -577,7 +557,18 @@ export class WalletClient {
     return tokens
   }
 
-  public getRandomNeoRpcUrl() {
+  public async getNeoRpcUrl(): Promise<string> {
+    try {
+      const response = await fetch(`https://api.switcheo.network/v2/network/best_node`)
+        .then(res => res.json())
+      console.log("nice")
+      return response.node
+    } catch {
+      return this.getRandomNeoRpcUrl()
+    }
+  }
+
+  public getRandomNeoRpcUrl(): string {
     const urls = this.network.NEO_URLS
     const index = Math.floor(Math.random() * urls.length)
     return urls[index]

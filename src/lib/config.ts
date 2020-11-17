@@ -85,6 +85,9 @@ export const NETWORK: NetworkInterface = {
     FEE_URL: 'https://fees.switcheo.org',
     COSMOS_URL: 'https://tradescan.switcheo.org',
     NEO_URLS: [
+      "https://seed1.switcheo.network:443", // Switcheo seed1
+      "https://seed2.switcheo.network:443", // Switcheo seed2
+      "https://seed3.switcheo.network:443", // Switcheo seed3
       "https://vlqvfsx107.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed1
       "https://qtl81e9fhb.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed2
       "https://vonfbyseb2.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed3
