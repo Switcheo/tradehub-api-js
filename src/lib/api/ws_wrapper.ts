@@ -122,6 +122,10 @@ export type WsSubscribeParams =
   WsSubscribeLeveragesParams |
   WsUnsubscribeCandlesticksParams
 
+/**
+ * @deprecated 
+ * use WSConnector
+ */
 export class WsWrapper {
   serverWsUrl: string
   socket: any
