@@ -561,7 +561,6 @@ export class WalletClient {
     try {
       const response = await fetch(`https://api.switcheo.network/v2/network/best_node`)
         .then(res => res.json())
-      console.log("nice")
       return response.node
     } catch {
       return this.getRandomNeoRpcUrl()
