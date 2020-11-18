@@ -273,6 +273,7 @@ export interface CreatePoolMsg {
   token_b_weight?: string,
   swap_fee?: string,
   originator?: string,
+  num_quotes?: string,
 }
 
 export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {

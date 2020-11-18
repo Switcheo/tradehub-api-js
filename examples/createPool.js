@@ -36,10 +36,11 @@ async function createPool() {
   console.log('creating pool')
   const params = {
     token_a_denom: 'eth',
-    token_a_weight: '90',
+    token_a_weight: '0.9',
     token_b_denom: 'btc',
-    token_b_weight: '10',
+    token_b_weight: '0.1',
     swap_fee: '0.03',
+    num_quotes: '10',
   }
   mainClient.createPool(params).then(console.log)
 }
