@@ -269,18 +269,18 @@ export interface MintTokenMsg {
 }
 
 export interface CreatePoolMsg {
-  token_a_denom?: string,
-  token_b_denom?: string,
-  token_a_weight?: string,
-  token_b_weight?: string,
-  swap_fee?: string,
+  token_a_denom: string,
+  token_b_denom: string,
+  token_a_weight: string,
+  token_b_weight: string,
+  swap_fee: string,
+  num_quotes: string,
   originator?: string,
-  num_quotes?: string,
 }
 
 export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
-  amount_a?: string
-  amount_b?: string
+  amount_a: string
+  amount_b: string
 }
 
 export interface LinkPoolMsg {
