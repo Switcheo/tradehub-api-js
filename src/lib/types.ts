@@ -62,6 +62,7 @@ export const SET_REWARD_CURVE_PROPOSAL_TYPE = 'liquiditypool/SetRewardCurvePropo
 export const SET_REWARDS_WEIGHT_PROPOSAL_TYPE = 'liquiditypool/SetRewardsWeightsProposal'
 export const SET_COMMITMENT_CURVE_PROPOSAL_TYPE = 'liquiditypool/SetCommitmentCurveProposal'
 export const CHANGE_SWAP_FEE_PROPOSAL_TYPE = 'liquiditypool/ChangeSwapFeeProposal'
+export const CHANGE_NUM_QUOTES_PROPOSAL_TYPE = 'liquiditypool/ChangeNumQuotesProposal'
 
 export enum Network {
   LocalHost = 'LOCALHOST',
