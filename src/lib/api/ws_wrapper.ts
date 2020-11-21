@@ -318,7 +318,7 @@ export class WsWrapper {
     }
   }
 
-  public parseChannelId = (rawChannelId: string): any => {
+  public static parseChannelId = (rawChannelId: string): any => {
     const [channel, market, resolution, address] = rawChannelId.split(".")
     switch (channel) {
       case 'candlesticks':
