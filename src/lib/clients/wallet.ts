@@ -289,7 +289,6 @@ export class WalletClient {
       const token = tokens[i]
       if (token.external_balance !== undefined && token.external_balance !== '0') {
         const res = this.sendNeoDeposit(token)
-        console.log(res)
       }
     }
   }
@@ -630,7 +629,7 @@ export class WalletClient {
     return tokens
   }
 
-  public async signMessage(msgs: ConcreteMsg[], options: SignMessageOptions = {}) {
+  public async signMessage(msgs: ConcreteMsg[], options: any = {}) {
     let sequence: string = options.sequence
 
     if (sequence === undefined || sequence === null) { // no sequence override, we get latest from blockchain
@@ -647,12 +646,16 @@ export class WalletClient {
     }
 
     const memo = options.memo || ''
+    let feeAmount = (new BigNumber(msgs.length)).shiftedBy(8).toString()
+    if (options && options.fee) {
+      feeAmount = options.fee.amount[0].amount
+    }
     const stdSignMsg = new StdSignDoc({
       accountNumber: this.accountNumber,
       chainId: this.network.CHAIN_ID,
       fee: new Fee([{
         denom: 'swth',
-        amount: (new BigNumber(msgs.length)).shiftedBy(8).toString()
+        amount: feeAmount,
       }], this.gas),
       memo,
       msgs,
@@ -730,6 +733,7 @@ export class WalletClient {
     const ids = []
     let allConcreteMsgs = []
     let memo
+    let fee
 
     while (true) {
       if (this.broadcastQueue.length === 0) {
@@ -740,6 +744,12 @@ export class WalletClient {
       }
 
       const { id, concreteMsgs, options } = this.broadcastQueue[0]
+      
+      if (options && options.fee) {
+        fee = options.fee
+      } else {
+        fee = undefined
+      }
 
       // there can only be one memo per txn
       // so if there is a memo, we want to put it in a queue by itself
@@ -767,7 +777,10 @@ export class WalletClient {
     }
 
     const currSequence = this.sequenceCounter.toString()
-    const options = { sequence: currSequence, memo, mode: 'block' }
+    const options = { sequence: currSequence, memo, mode: 'block', fee }
+    // if (fee !== null) {
+    //   options.fee = fee
+    // }
     this.sequenceCounter++
 
     let response, rawLogs, error

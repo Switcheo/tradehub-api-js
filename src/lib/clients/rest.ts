@@ -793,7 +793,6 @@ export class RestClient implements REST {
       if (!msg.originator) msg.originator = address
       return msg
     })
-    console.log(this.wallet, this.wallet.signAndBroadcast)
 
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_TOKEN_MSG_TYPE), options)
   }
@@ -836,12 +835,18 @@ export class RestClient implements REST {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
+    if (!options) {
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], { fee: new Fee([{denom: "swth", amount: (new BigNumber(1000)).shiftedBy(8).toString()}], '100000000000')})
+    }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], options)
   }
 
   public async createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options) {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
+    }
+    if (!options) {
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], { fee: new Fee([{denom: "swth", amount: (new BigNumber(1000)).shiftedBy(8).toString()}], '100000000000')})
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], options)
   }
@@ -883,11 +888,10 @@ export class RestClient implements REST {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
-
     if (!options) {
-      options.fee = new Fee([{denom: "swth", amount: (new BigNumber(30)).shiftedBy(8).toString()}], '100000000000')
+      return this.wallet.signAndBroadcast([msg], [types.STAKE_POOL_TOKEN_MSG_TYPE], { fee: new Fee([{denom: "swth", amount: (new BigNumber(30)).shiftedBy(8).toString()}], '100000000000')})
     }
-    
+
     return this.wallet.signAndBroadcast([msg], [types.STAKE_POOL_TOKEN_MSG_TYPE], options)
   }
 
@@ -895,12 +899,18 @@ export class RestClient implements REST {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
+    if (!options) {
+      return this.wallet.signAndBroadcast([msg], [types.UNSTAKE_POOL_TOKEN_MSG_TYPE], { fee: new Fee([{denom: "swth", amount: (new BigNumber(30)).shiftedBy(8).toString()}], '100000000000')})
+    }
     return this.wallet.signAndBroadcast([msg], [types.UNSTAKE_POOL_TOKEN_MSG_TYPE], options)
   }
 
   public async claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options) {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
+    }
+    if (!options) {
+      return this.wallet.signAndBroadcast([msg], [types.CLAIM_POOL_REWARDS_MSG_TYPE], { fee: new Fee([{denom: "swth", amount: (new BigNumber(30)).shiftedBy(8).toString()}], '100000000000')})
     }
     return this.wallet.signAndBroadcast([msg], [types.CLAIM_POOL_REWARDS_MSG_TYPE], options)
   }
