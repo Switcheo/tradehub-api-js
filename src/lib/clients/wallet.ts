@@ -289,6 +289,7 @@ export class WalletClient {
       const token = tokens[i]
       if (token.external_balance !== undefined && token.external_balance !== '0') {
         const res = this.sendNeoDeposit(token)
+        console.log(res)
       }
     }
   }
