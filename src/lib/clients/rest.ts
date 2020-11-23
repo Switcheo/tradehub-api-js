@@ -9,6 +9,7 @@ import { WalletClient } from './wallet'
 import { Blockchain } from '../constants'
 
 import * as types from '../types'
+import { Fee } from '../containers'
 
 
 export enum Direction {
@@ -882,6 +883,11 @@ export class RestClient implements REST {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
+
+    if (!options) {
+      options.fee = new Fee([{denom: "swth", amount: (new BigNumber(30)).shiftedBy(8).toString()}], '100000000000')
+    }
+    
     return this.wallet.signAndBroadcast([msg], [types.STAKE_POOL_TOKEN_MSG_TYPE], options)
   }
 
