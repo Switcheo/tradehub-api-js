@@ -2,16 +2,26 @@ import { EventEmitter } from 'events'
 import { getNetwork } from '../config'
 import WebSocket from 'isomorphic-ws'
 
+/**
+ * @deprecated use WSConnector
+ */
 export enum MarketEvent {
   SUB_MARKET_STATS = 'market:sub:market_stats',
 }
 
+/**
+ * @deprecated use WSConnector
+ */
 export enum ClientEvent {
   Connected = 'connected',
   Disconnected = 'disconnected',
   Message = 'message'
 }
 
+
+/**
+ * @deprecated use WSConnector
+ */
 export class WsClient extends EventEmitter {
   private socket: WebSocket
   protected baseUrl: string
