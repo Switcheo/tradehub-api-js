@@ -1014,6 +1014,11 @@ export class RestClient implements REST {
     return this.wallet.signAndBroadcast([msg], [types.CREATE_WITHDRAWAL_TYPE], options)
   }
 
+  public async mintTokensDirect(msg: types.MintTokenDirectMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], options)
+  }
+
   public async mintTokens(msg: types.MintTokenRequest) {
     return fetch(`${this.baseUrl}/mint_tokens`, { method: 'POST', body: JSON.stringify(msg) }).then(res => res.json())
   }

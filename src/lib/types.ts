@@ -587,6 +587,13 @@ export interface MintTokenRequest {
   denom: string,
 }
 
+export interface MintTokenDirectMsg {
+  originator: string,
+  to_address: string,
+  amount: string,
+  denom: string,
+}
+
 export interface Options extends SignMessageOptions, TransactionOptions { }
 
 export interface LiquidityPoolResponse {
