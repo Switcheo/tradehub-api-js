@@ -635,7 +635,7 @@ export class RestClient implements REST {
 
   public async getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null> {
     const { poolID, address } = params
-    return this.fetchJson(`/get_staked_pool_token?=pool_id=${poolID}&account=${address}`)
+    return this.fetchJson(`/get_staked_pool_token?pool_id=${poolID}&account=${address}`)
   }
 
   public async getWeeklyRewards(): Promise<number | null> {
