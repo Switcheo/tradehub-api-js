@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import { SignMessageOptions } from './clients/wallet'
 import { TransactionOptions } from './containers/Transaction'
 
@@ -571,6 +572,14 @@ export interface PoolIDAndAddressGetter {
   poolID: string
 }
 
+export interface PoolIDAndBlockHeightGetter {
+  blockheight: string
+  poolID: string
+}
+
+export interface blockHeightGetter {
+  blockheight: string
+}
 
 export interface CreateWithdrawalMsg {
   to_address: string,
@@ -611,6 +620,7 @@ export interface LiquidityPoolResponse {
   pool_address: string
   block_height: number
   shares_amount: string
+  total_commitment: string
   market: string
   rewards_weight: string
   volume: string
@@ -631,6 +641,7 @@ export interface GetStakedPoolTokenInfoResult {
   duration: string
   is_locked: boolean
   boost_factor: string
+  commitment_power: string
 }
 export interface GetStakedPoolTokenInfoResponse {
   height: string
@@ -640,4 +651,8 @@ export interface GetStakedPoolTokenInfoResponse {
 export interface GetInflationStartTimeResponse {
   height: string
   block_time: string
+}
+
+export interface AccruedRewardsResponse {
+  [key: string]: BigNumber
 }

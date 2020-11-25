@@ -17,6 +17,22 @@ export enum Direction {
   short = 'short',
 }
 
+function getPool(pools, id) {
+  for (let i=0; i <pools.length; i++) {
+      if (pools[i].pool_id === id) {
+          return pools[i]
+      }
+  }
+  return null
+}
+function getTotalWeight(pools) {
+  let total = 0
+  for (let i=0; i <pools.length; i++) {
+      total = total + parseInt(pools[i].rewards_weight)
+  }
+  return total
+}
+
 // TODO: include optional params such as pagination and limit
 // TODO: response typings
 // TODO: support all POST methods
@@ -31,6 +47,7 @@ export interface REST {
   getAMMRewardPercentage(): Promise<null | types.GetAMMRewardPercentageResponse>
   getAverageBlocktime(): Promise<string>
   getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
+  getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any>
   getInsuranceFundBalance(): Promise<Array<object>>
   getLeaderboard(params: types.MarketOnlyGetterParams): Promise<Array<object>>
   getLeverage(params: types.MarketAndAddressGetterParams): Promise<object>
@@ -65,6 +82,7 @@ export interface REST {
   getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null>
   getWeeklyRewards(): Promise<number | null>
   getWeeklyPoolRewards(): Promise<number | null> 
+  estimateUnclaimedRewards(params: types.PoolIDAndAddressGetter): Promise<types.AccruedRewardsResponse>
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -126,6 +144,8 @@ export interface REST {
   stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options): Promise<any>
   unstakePoolToken(msg: types.UnstakePoolTokenMsg, options?: types.Options): Promise<any>
   claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options): Promise<any>
+  getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
+  getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
 }
 
 export class RestClient implements REST {
@@ -519,6 +539,10 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
+  public async getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any> {
+    return this.fetchCosmosJson(`/blocks/${params.blockheight}`)
+  }
+
   public async getAMMRewardPercentage(): Promise<null | types.GetAMMRewardPercentageResponse> {
     return this.fetchJson('/get_amm_reward_percentage')
   }
@@ -633,7 +657,7 @@ export class RestClient implements REST {
     return this.fetchCosmosJson(`/distribution/delegators/${address}/rewards`)
   }
 
-  public async getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null> {
+  public async getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse> {
     const { poolID, address } = params
     return this.fetchJson(`/get_staked_pool_token?pool_id=${poolID}&account=${address}`)
   }
@@ -652,18 +676,92 @@ export class RestClient implements REST {
     if (inflationRate.lt(MIN_RATE)) {
       inflationRate = MIN_RATE
     }
-
     return INITIAL_SUPPLY.div(52).times(inflationRate).toNumber()
   }
 
-  public async getWeeklyPoolRewards(): Promise<number | null> {
+  public async getWeeklyPoolRewards(): Promise<number> {
     const total = await this.getWeeklyRewards()
     const distribution = await this.fetchCosmosJson(`/distribution/parameters`)
     const poolAllocation = new BigNumber(distribution.result.liquidity_provider_reward)
     return new BigNumber(total).times(poolAllocation).dp(8).toNumber()
   }
 
+  public async getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any> {
+    return this.fetchCosmosJson(`/liquiditypool/get_last_claim/${params.poolID}/${params.address}`)
+  }
+
+  public async getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any> {
+    return this.fetchCosmosJson(`/liquiditypool/get_reward_history/${params.poolID}/${params.blockheight}`)
+  }
+
+
+
+  public async estimateUnclaimedRewards(params: types.PoolIDAndAddressGetter): Promise<types.AccruedRewardsResponse> {
+    const accruedRewards: types.AccruedRewardsResponse = {}
+    const { poolID, address } = params
+    const lastClaimed = await this.getLastClaimedPoolReward({ poolID, address })
+    let lastHeight = lastClaimed.result
+
+    const allocation = await this.getRewardHistory({ poolID, blockheight: new BigNumber(lastClaimed.result).plus(1).toString() })
+
+    // get current share
+    const shares = await this.getStakedPoolTokenInfo({ poolID, address })
+
+    const commitmentPower = new BigNumber(shares.result.commitment_power)
+
+    // calculate accrued rewards based on history
+    if (!commitmentPower.isZero() && allocation && allocation.result) {
+        allocation.result.forEach(period => {
+            lastHeight = period.BlockHeight
+            const totalCommit = new BigNumber(period.TotalCommitment)
+            const ratio = commitmentPower.div(totalCommit)
+            period.Rewards.forEach(reward => {
+                const rewardCut = new BigNumber(reward.amount).times(ratio).integerValue(BigNumber.ROUND_DOWN)
+                if (reward.denom in accruedRewards) {
+                  accruedRewards[reward.denom] = accruedRewards[reward.denom].plus(rewardCut)
+                } else {
+                  accruedRewards[reward.denom] = rewardCut
+                }
+            })
+        })
+    }
+    // Estimate rewards from last allocated rewards
+    // the current logic will under estimate the rewards as the current weekly reward rate is used across the full period
+    // instead of deriving the reward rate for each week since the last reward allocation
+    
+    if (!commitmentPower.isZero()) {
+      const weeklyRewards = await this.getWeeklyPoolRewards()
+      const pools = await this.getLiquidityPools()
+      const pool = getPool(pools, parseInt(poolID))
+      const currentTotalCommitmentPower = new BigNumber(pool.total_commitment)
+      const total = getTotalWeight(pools)
+      const poolWeight = parseInt(pool.rewards_weight)
+      const poolWeekRewards = poolWeight/total * weeklyRewards
+
+      // get time from last height
+      const blockInfo = await this.getCosmosBlockInfo({ blockheight: (parseInt(lastHeight) + 1).toString() })
+
+      const estimatedStart = dayjs(blockInfo.block.header.time)
+
+      const now = dayjs()
+      const WEEKS_IN_SECONDS = 604800
+      const diff = now.diff(estimatedStart, 'second')
+
+      const estimatedRewards = new BigNumber(diff / WEEKS_IN_SECONDS * poolWeekRewards)
+        .times(commitmentPower).div(currentTotalCommitmentPower)
+        .shiftedBy(8).integerValue(BigNumber.ROUND_DOWN)
+      if ('swth' in accruedRewards) {
+        accruedRewards['swth'] = accruedRewards['swth'].plus(estimatedRewards)
+      } else {
+        accruedRewards['swth'] = estimatedRewards
+      }
+    }
+    return accruedRewards
+  }
+
+  //
   // PRIVATE METHODS
+  //
   public async createOrder(msg: types.CreateOrderMsg, options?: types.Options) {
     return this.createOrders([msg], options)
   }
