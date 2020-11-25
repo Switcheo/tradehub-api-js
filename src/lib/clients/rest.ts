@@ -563,7 +563,7 @@ export class RestClient implements REST {
   }
 
   public async getVaultTypes() {
-    return this.fetchJson(`/get_vaults_types`)
+    return this.fetchJson(`/get_vault_types`)
   }
 
   public async getVaults(params?: types.AddressOnlyGetterParams) {
