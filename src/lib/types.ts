@@ -65,6 +65,12 @@ export const SET_COMMITMENT_CURVE_PROPOSAL_TYPE = 'liquiditypool/SetCommitmentCu
 export const CHANGE_SWAP_FEE_PROPOSAL_TYPE = 'liquiditypool/ChangeSwapFeeProposal'
 export const CHANGE_NUM_QUOTES_PROPOSAL_TYPE = 'liquiditypool/ChangeNumQuotesProposal'
 
+// CDP
+export const ADD_COLLATERAL_MSG_TYPE = 'collateralizeddebtposition/AddCollateral'
+export const REMOVE_COLLATERAL_MSG_TYPE = 'collateralizeddebtposition/RemoveCollateral'
+export const ADD_DEBT_MSG_TYPE = 'collateralizeddebtposition/AddDebt'
+export const REMOVE_DEBT_MSG_TYPE = 'collateralizeddebtposition/RemoveDebt'
+
 export enum Network {
   LocalHost = 'LOCALHOST',
   TestNet = 'TESTNET',
@@ -346,6 +352,30 @@ export interface RemoveLiquidityMsg {
   pool_id: string,
   shares: string,
   originator?: string,
+}
+
+export interface AddCollateralMsg {
+  vault_type_id: string
+  amount: string
+  originator?: string
+}
+
+export interface RemoveCollateralMsg {
+  vault_type_id: string
+  amount: string
+  originator?: string
+}
+
+export interface AddDebtMsg {
+  vault_type_id: string
+  amount: string
+  originator?: string
+}
+
+export interface RemoveDebtMsg {
+  vault_type_id: string
+  amount: string
+  originator?: string
 }
 
 export type ProposalValue = ProposalParameterChangeValue | ProposalTokenValue |

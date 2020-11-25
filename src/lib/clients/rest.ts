@@ -83,6 +83,8 @@ export interface REST {
   getWeeklyRewards(): Promise<number | null>
   getWeeklyPoolRewards(): Promise<number | null> 
   estimateUnclaimedRewards(params: types.PoolIDAndAddressGetter): Promise<types.AccruedRewardsResponse>
+  getVaultTypes(): Promise<Array<object>>
+  getVaults(params: types.AddressOnlyGetterParams): Promise<Array<object>>
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -560,6 +562,23 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_external_transfers?account=${address}`)
   }
 
+  public async getVaultTypes() {
+    return this.fetchJson(`/get_vaults_types`)
+  }
+
+  public async getVaults(params?: types.AddressOnlyGetterParams) {
+    let address = ''
+    if (!params) {
+      if (!this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      address = this.wallet.pubKeyBech32
+    } else {
+      address = params.address
+    }
+    return this.fetchJson(`/get_vaults?address=${address}`)
+  }
+
   // cosmos
   public async getStakingValidators(): Promise<any> {
     return this.fetchCosmosJson(`/staking/validators`)
@@ -910,6 +929,37 @@ export class RestClient implements REST {
   public async mintTestnetTokens(msg: types.MintTokenMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], options)
+  }
+
+  public async addCollateral(msg: types.AddCollateralMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.ADD_COLLATERAL_MSG_TYPE], options)
+  }
+
+
+  public async removeCollateral(msg: types.RemoveCollateralMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.REMOVE_COLLATERAL_MSG_TYPE], options)
+  }
+
+
+  public async addDebt(msg: types.AddDebtMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.ADD_DEBT_MSG_TYPE], options)
+  }
+
+
+  public async removeDebt(msg: types.RemoveDebtMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.REMOVE_DEBT_MSG_TYPE], options)
   }
 
   public async addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options) {
