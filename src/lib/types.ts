@@ -66,6 +66,7 @@ export const CHANGE_SWAP_FEE_PROPOSAL_TYPE = 'liquiditypool/ChangeSwapFeeProposa
 export const CHANGE_NUM_QUOTES_PROPOSAL_TYPE = 'liquiditypool/ChangeNumQuotesProposal'
 
 // CDP
+export const CREATE_VAULT_TYPE_MSG_TYPE = 'collateralizeddebtposition/CreateVaultType'
 export const ADD_COLLATERAL_MSG_TYPE = 'collateralizeddebtposition/AddCollateral'
 export const REMOVE_COLLATERAL_MSG_TYPE = 'collateralizeddebtposition/RemoveCollateral'
 export const ADD_DEBT_MSG_TYPE = 'collateralizeddebtposition/AddDebt'
@@ -352,6 +353,13 @@ export interface RemoveLiquidityMsg {
   pool_id: string,
   shares: string,
   originator?: string,
+}
+
+export interface CreateVaultTypeMsg {
+  collateral_denom: string
+  debt_denom: string
+  collateralization_ratio: string
+  originator?: string
 }
 
 export interface AddCollateralMsg {

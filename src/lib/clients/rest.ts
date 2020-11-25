@@ -119,6 +119,11 @@ export interface REST {
   editMargins(msgs: types.EditMarginMsg[], options?: types.Options): Promise<any>
   createToken(msg: types.CreateTokenMsg, options?: types.Options): Promise<any>
   createTokens(msgs: types.CreateTokenMsg[], options?: types.Options): Promise<any>
+  createVaultType(msg: types.CreateVaultTypeMsg, options?: types.Options): Promise<any>
+  addCollateral(msg: types.AddCollateralMsg, options?: types.Options): Promise<any>
+  removeCollateral(msg: types.RemoveCollateralMsg, options?: types.Options): Promise<any>
+  addDebt(msg: types.AddDebtMsg, options?: types.Options): Promise<any>
+  removeDebt(msg: types.RemoveDebtMsg, options?: types.Options): Promise<any>
   addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options): Promise<any>
   removeLiquidity(msg: types.RemoveLiquidityMsg, options?: types.Options): Promise<any>
   createPool(msg: types.CreatePoolMsg, options?: types.Options): Promise<any>
@@ -931,13 +936,19 @@ export class RestClient implements REST {
     return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], options)
   }
 
+  public async createVaultType(msg: types.CreateVaultTypeMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    return this.wallet.signAndBroadcast([msg], [types.CREATE_VAULT_TYPE_MSG_TYPE], options)
+  }
+
   public async addCollateral(msg: types.AddCollateralMsg, options?: types.Options) {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_COLLATERAL_MSG_TYPE], options)
   }
-
 
   public async removeCollateral(msg: types.RemoveCollateralMsg, options?: types.Options) {
     if (!msg.originator) {
@@ -946,14 +957,12 @@ export class RestClient implements REST {
     return this.wallet.signAndBroadcast([msg], [types.REMOVE_COLLATERAL_MSG_TYPE], options)
   }
 
-
   public async addDebt(msg: types.AddDebtMsg, options?: types.Options) {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_DEBT_MSG_TYPE], options)
   }
-
 
   public async removeDebt(msg: types.RemoveDebtMsg, options?: types.Options) {
     if (!msg.originator) {
