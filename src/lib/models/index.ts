@@ -1,3 +1,4 @@
+export * from './balances/Fees'
 export * from './balances/NeoBalances'
 export * from './orderHistory/AcountTrades'
 export * from './orderHistory/OrderHistory'

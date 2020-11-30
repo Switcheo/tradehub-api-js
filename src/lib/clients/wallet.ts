@@ -23,6 +23,7 @@ import {
   u as neonUtils
 } from '@cityofzion/neon-core'
 import { chunk } from 'lodash'
+import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
@@ -332,8 +333,7 @@ export class WalletClient {
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       if (token.external_balance !== undefined && token.external_balance !== '0') {
-        const res = this.sendNeoDeposit(token)
-        console.log(res)
+        await this.sendNeoDeposit(token)
       }
     }
   }
@@ -346,12 +346,10 @@ export class WalletClient {
     return addressHex
   }
 
-  public async getFeeInfo(token) {
-    const url = this.network.FEE_URL + '/fees?denom=' + token.denom
-    const result = await fetch(url).then(res => res.json())
-    if (result && result.details) {
-      return result.details
-    }
+  public async getFeeInfo(denom: string) {
+    const url = this.network.FEE_URL + '/fees?denom=' + denom
+    const result = await fetch(url).then(res => res.json()) as FeeResult
+    return result
   }
 
   public async sendNeoDeposit(token, _privateKey = null) {
@@ -449,16 +447,16 @@ export class WalletClient {
   }
 
   public async getDepositFeeAmount(token, depositAddress) {
-    const feeInfo = await this.getFeeInfo(token)
-    if (!feeInfo || !feeInfo.deposit || !feeInfo.deposit.fee) {
+    const feeInfo = await this.getFeeInfo(token.denom)
+    if (!feeInfo.details?.deposit?.fee) {
       throw new Error('unsupported token')
     }
 
-    let feeAmount = ethers.BigNumber.from(feeInfo.deposit.fee)
+    let feeAmount = ethers.BigNumber.from(feeInfo.details.deposit.fee)
     if (token.blockchain == Blockchain.Ethereum) {
       const walletContractDeployed = await this.isEthContract(depositAddress)
       if (!walletContractDeployed) {
-        feeAmount = feeAmount.add(ethers.BigNumber.from(feeInfo.createWallet.fee))
+        feeAmount = feeAmount.add(ethers.BigNumber.from(feeInfo.details.createWallet.fee))
       }
     }
 
@@ -466,12 +464,12 @@ export class WalletClient {
   }
 
   public async getWithdrawalFeeAmount(token) {
-    const feeInfo = await this.getFeeInfo(token)
-    if (!feeInfo || !feeInfo.withdrawal || !feeInfo.withdrawal.fee) {
+    const feeInfo = await this.getFeeInfo(token.denom)
+    if (!feeInfo.details?.withdrawal?.fee) {
       throw new Error('unsupported token')
     }
 
-    return ethers.BigNumber.from(feeInfo.withdrawal.fee)
+    return ethers.BigNumber.from(feeInfo.details.withdrawal.fee)
   }
 
   public async getMinDepositAmount(token, depositAddress) {
