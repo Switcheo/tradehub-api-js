@@ -72,6 +72,10 @@ export const REMOVE_COLLATERAL_MSG_TYPE = 'collateralizeddebtposition/RemoveColl
 export const ADD_DEBT_MSG_TYPE = 'collateralizeddebtposition/AddDebt'
 export const REMOVE_DEBT_MSG_TYPE = 'collateralizeddebtposition/RemoveDebt'
 
+// Fee
+export const SET_MESSAGE_FEE_TYPE = 'fee/SetMsgFee'
+export const SET_MESSAGE_FEE_PROPOSAL_TYPE = 'fee/SetMsgFeeProposal'
+
 export enum Network {
   LocalHost = 'LOCALHOST',
   TestNet = 'TESTNET',
@@ -639,6 +643,12 @@ export interface MintTokenDirectMsg {
   to_address: string,
   amount: string,
   denom: string,
+}
+
+export interface SetMsgFeeMsg {
+  msg_type: string,
+  fee: string,
+  originator?: string,
 }
 
 export interface Options extends SignMessageOptions, TransactionOptions { }

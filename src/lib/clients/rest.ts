@@ -151,8 +151,10 @@ export interface REST {
   stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options): Promise<any>
   unstakePoolToken(msg: types.UnstakePoolTokenMsg, options?: types.Options): Promise<any>
   claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options): Promise<any>
+  setMsgFee(msg: types.SetMsgFeeMsg, options?: types.Options): Promise<any>
   getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
+  getGasFees() : Promise<any>
 }
 
 export class RestClient implements REST {
@@ -548,6 +550,10 @@ export class RestClient implements REST {
 
   public async getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any> {
     return this.fetchCosmosJson(`/blocks/${params.blockheight}`)
+  }
+
+  public async getGasFees() : Promise<any> {
+    return this.fetchCosmosJson(`/fee/get_msg_fees`)
   }
 
   public async getAMMRewardPercentage(): Promise<null | types.GetAMMRewardPercentageResponse> {
@@ -1178,5 +1184,10 @@ export class RestClient implements REST {
 
   public async mintTokens(msg: types.MintTokenRequest) {
     return fetch(`${this.baseUrl}/mint_tokens`, { method: 'POST', body: JSON.stringify(msg) }).then(res => res.json())
+  }
+
+  public async setMsgFee(msg: types.SetMsgFeeMsg, options?: types.Options) {
+    if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
+    return this.wallet.signAndBroadcast([msg], [types.SET_MESSAGE_FEE_TYPE], options)
   }
 }
