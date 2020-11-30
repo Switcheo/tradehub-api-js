@@ -169,6 +169,8 @@ export interface CreateOrderMsg {
   originator?: string,
 }
 
+export type CreateOrder = "create_order"
+
 export interface CancelOrderMsg {
   id: string,
   originator?: string,
@@ -288,6 +290,16 @@ export interface CreatePoolMsg {
   swap_fee: string,
   num_quotes: string,
   originator?: string,
+}
+
+export const FEE_TYPES = {
+  'order/MsgCreateOrder': 'create_order',
+  'liquiditypool/ClaimPoolRewards': 'claim_pool_rewards',
+  'oracle/MsgCreateOracle': 'create_oracle_vote',
+  'liquiditypool/CreatePool': 'create_pool',
+  'liquiditypool/StakePoolToken': 'stake_pool_token',
+  'liquiditypool/UnstakePoolToken': 'unstake_pool_token',
+  Default: 'default_fee'
 }
 
 export interface CreatePoolWithLiquidityMsg extends CreatePoolMsg {
