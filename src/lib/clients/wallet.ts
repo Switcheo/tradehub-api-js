@@ -424,7 +424,8 @@ export class WalletClient {
     const tokens = await this.getEthExternalBalances(address, whitelistDenoms)
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      if (!token.externalBalance.isZero()) {
+      const balance = ethers.BigNumber.from(token.external_balance)
+      if (!balance.isZero()) {
         // send the deposit in 30 seconds to avoid problems with block re-orgs
         // if the deposit is sent too early, and there is a block re-org then the
         // ethpayer service might check and see that there is no token balance and
@@ -485,7 +486,7 @@ export class WalletClient {
 
   public async sendEthDeposit(token, depositAddress) {
     const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
-    const amount = token.externalBalance
+    const amount = ethers.BigNumber.from(token.external_balance)
     if (amount.lt(feeAmount.mul(this.feeMultiplier))) {
       return 'insufficient balance'
     }
@@ -595,7 +596,7 @@ export class WalletClient {
 
     const balances = await contract.getBalances(address, assetIds)
     for (let i = 0; i < tokens.length; i++) {
-      tokens[i].externalBalance = balances[i]
+      tokens[i].external_balance = balances[i].toString()
     }
 
     return tokens

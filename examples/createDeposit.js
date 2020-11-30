@@ -19,7 +19,7 @@ async function createDeposit() {
     lock_proxy_hash: '206a5dfd13955c4d66a012d748bba4bbee79b7bb',
     delegated_supply: '0',
     originator: 'swth1phsut994s4e9apdc25vdln02g9rz7exz2fr92n',
-    externalBalance: '8800000000' // 88.00000000
+    external_balance: '8800000000' // 88.00000000
   }
   await wallet.sendNeoDeposit(params, process.env.PRIVATE_KEY).then(console.log) // this is the sending addr
 }
