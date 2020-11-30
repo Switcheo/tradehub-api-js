@@ -108,7 +108,7 @@ export interface WalletBalance {
 }
 
 export interface GetOrdersGetterParams {
-  address?: string
+  account?: string
   market?: string
   limit?: number
   beforeId?: number

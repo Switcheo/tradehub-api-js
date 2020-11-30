@@ -266,7 +266,7 @@ export class RestClient implements REST {
 
   public async getOrders(params: types.GetOrdersGetterParams) {
     const {
-      address,
+      account,
       market,
       limit,
       beforeId,
@@ -277,12 +277,12 @@ export class RestClient implements REST {
 
     let url = '/get_orders?'
 
-    if (!address) {
+    if (!account) {
       if (!this.wallet) {
-        url += `address=${this.wallet.pubKeyBech32}&`
+        url += `account=${this.wallet.pubKeyBech32}&`
       }
     } else {
-      url += `address=${address}&`
+      url += `account=${account}&`
     }
 
     if (market) {
@@ -308,7 +308,7 @@ export class RestClient implements REST {
 
   public async getOpenOrders(params: types.GetOrdersGetterParams) {
     const {
-      address,
+      account,
       market,
       limit,
       beforeId,
@@ -318,8 +318,8 @@ export class RestClient implements REST {
 
     let url = '/get_orders?'
 
-    if (address) {
-      url += `account=${address}&`
+    if (account) {
+      url += `account=${account}&`
     } else {
       url += `account=${this.wallet.pubKeyBech32}&`
     }
