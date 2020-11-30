@@ -85,6 +85,8 @@ export interface REST {
   estimateUnclaimedRewards(params: types.PoolIDAndAddressGetter): Promise<types.AccruedRewardsResponse>
   getVaultTypes(): Promise<Array<object>>
   getVaults(params: types.AddressOnlyGetterParams): Promise<Array<object>>
+  getCommitmentCurve(): Promise<any>
+  getRewardCurve(): Promise<any>
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -731,8 +733,6 @@ export class RestClient implements REST {
     return this.fetchCosmosJson(`/liquiditypool/get_reward_history/${params.poolID}/${params.blockheight}`)
   }
 
-
-
   public async estimateUnclaimedRewards(params: types.PoolIDAndAddressGetter): Promise<types.AccruedRewardsResponse> {
     const accruedRewards: types.AccruedRewardsResponse = {}
     const { poolID, address } = params
@@ -795,6 +795,15 @@ export class RestClient implements REST {
     }
     return accruedRewards
   }
+
+  public async getRewardCurve(): Promise<any> {
+    return this.fetchCosmosJson(`/liquiditypool/get_reward_curve`)
+  }
+
+  public async getCommitmentCurve(): Promise<any> {
+    return this.fetchCosmosJson(`/liquiditypool/get_commitment_curve`)
+  }
+
 
   //
   // PRIVATE METHODS
