@@ -34,6 +34,10 @@ export interface SignMessageOptions {
   sequence?: string
 }
 
+export interface GasFees {
+  [msgType: string]: string,
+}
+
 export interface WalletConstructorParams {
   accountNumber: string
   network: Network
@@ -46,6 +50,7 @@ export interface WalletConstructorParams {
   gas?: string // default CONFIG.default_gas
   signerType?: SignerType // default privateKey
   ledger?: CosmosLedger
+  fees?: GasFees
   onRequestSign?: OnRequestSignCallback
   onSignComplete?: OnSignCompleteCallback
 }
@@ -71,11 +76,20 @@ export class WalletClient {
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
     const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
+    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
+    .then(res => res.json())
+    const fees: GasFees = {}
+    if (getFeesResponse.result) {
+      getFeesResponse.result.forEach((result: any) => {
+        fees[result.msg_type] = result.fee
+      })
+    } 
     return new WalletClient({
       mnemonic,
       accountNumber: value.account_number.toString(),
       network,
-      signerType: 'mnemonic'
+      signerType: 'mnemonic',
+      fees,
     })
   }
 
@@ -84,11 +98,20 @@ export class WalletClient {
     const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
     const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
+    const fees: GasFees = {}
+    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
+    .then(res => res.json())
+    if (getFeesResponse.result) {
+      getFeesResponse.result.forEach((result: any) => {
+        fees[result.msg_type] = result.fee
+      })
+    } 
     return new WalletClient({
       privateKey,
       accountNumber: value.account_number.toString(),
       network,
-      signerType: 'privateKey'
+      signerType: 'privateKey',
+      fees,
     })
   }
 
@@ -101,6 +124,14 @@ export class WalletClient {
 
     const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
+    const fees: GasFees = {}
+    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
+    .then(res => res.json())
+    if (getFeesResponse.result) {
+      getFeesResponse.result.forEach((result: any) => {
+        fees[result.msg_type] = result.fee
+      })
+    } 
     return new WalletClient({
       accountNumber: value.account_number.toString(),
       ledger: cosmosLedger,
@@ -110,6 +141,7 @@ export class WalletClient {
       signerType: 'ledger',
       onRequestSign,
       onSignComplete,
+      fees,
     })
   }
 
@@ -119,11 +151,20 @@ export class WalletClient {
 
     const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
       .then(res => res.json())
+    const fees: GasFees = {}
+    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
+    .then(res => res.json())
+    if (getFeesResponse.result) {
+      getFeesResponse.result.forEach((result: any) => {
+        fees[result.msg_type] = result.fee
+      })
+    } 
     return new WalletClient({
       accountNumber: value.account_number.toString(),
       network,
       pubKeyBech32,
       signerType: 'nosign',
+      fees,
     })
   }
 
@@ -142,6 +183,7 @@ export class WalletClient {
   public readonly ledger?: CosmosLedger
   public readonly network: Network
   public readonly feeMultiplier: ethers.BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
+  public readonly fees: GasFees
   public accountNumber: string
   public broadcastMode: string
   public depositAddresses: { [key: string]: string }
@@ -172,6 +214,7 @@ export class WalletClient {
       gas = CONFIG.DEFAULT_GAS,
       onRequestSign,
       onSignComplete,
+      fees,
     } = params
     if (!mnemonic && signerType === 'mnemonic') {
       throw new Error('Signer Type is mnemonic but mnemonic is not passed in')
@@ -202,6 +245,7 @@ export class WalletClient {
       this.pubKeyBase64 = this.pubKeySecp256k1.pubKey.toString('base64')
       address = Address.fromBech32(getBech32Prefix(network, 'main'), pubKeyBech32)
     }
+    this.fees = fees
     this.address = address.toBytes()
     this.addressHex = stripHexPrefix(ethers.utils.hexlify(this.address))
     this.pubKeyBech32 = address.toBech32(getBech32Prefix(network, 'main'))
