@@ -752,7 +752,7 @@ export class RestClient implements REST {
     // get current share
     const shares = await this.getStakedPoolTokenInfo({ poolID, address })
 
-    const commitmentPower = new BigNumber(shares.result.commitment_power)
+    const commitmentPower = new BigNumber(shares.result?.commitment_power || '0')
 
     // calculate accrued rewards based on history
     if (!commitmentPower.isZero() && allocation && allocation.result) {
