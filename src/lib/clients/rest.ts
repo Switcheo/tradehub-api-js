@@ -5,7 +5,7 @@ import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
 import dayjs from 'dayjs'
 
 import { getNetwork } from '../config'
-import { WalletClient } from './wallet'
+import { GasFees, WalletClient } from './wallet'
 import { Blockchain } from '../constants'
 
 import * as types from '../types'
@@ -156,7 +156,7 @@ export interface REST {
   setMsgFee(msg: types.SetMsgFeeMsg, options?: types.Options): Promise<any>
   getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
-  getGasFees() : Promise<any>
+  getGasFees() : Promise<GasFees>
 }
 
 export class RestClient implements REST {
@@ -561,8 +561,16 @@ export class RestClient implements REST {
     return this.fetchCosmosJson(`/blocks/${params.blockheight}`)
   }
 
-  public async getGasFees() : Promise<any> {
-    return this.fetchCosmosJson(`/fee/get_msg_fees`)
+  public async getGasFees() {
+    const response = await this.fetchCosmosJson(`/fee/get_msg_fees`)
+    const fees: GasFees = {}
+    if (response.result) {
+      response.result.forEach((result: any) => {
+        fees[result.msg_type] = result.fee
+      })
+    } 
+
+    return fees
   }
 
   public async getAMMRewardPercentage(): Promise<null | types.GetAMMRewardPercentageResponse> {

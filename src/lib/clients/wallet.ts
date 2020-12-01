@@ -40,7 +40,7 @@ export interface GasFees {
 }
 
 export interface WalletConstructorParams {
-  accountNumber: string
+  accountNumber?: string
   network: Network
   useSequenceCounter?: boolean // default true
   broadcastQueueIntervalTime?: number // default 100 (ms)
@@ -54,6 +54,11 @@ export interface WalletConstructorParams {
   fees?: GasFees
   onRequestSign?: OnRequestSignCallback
   onSignComplete?: OnSignCompleteCallback
+}
+
+export interface InitParams {
+  accountNumber?: string
+  fees?: GasFees
 }
 
 export interface BroadcastQueueItem {
@@ -73,46 +78,19 @@ interface ScriptResult {
 export class WalletClient {
   public static async connectMnemonic(mnemonic: string, net?: string) {
     const network = getNetwork(net)
-    const privateKey = getPrivKeyFromMnemonic(mnemonic)
-    const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
-    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
-      .then(res => res.json())
-    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
-    .then(res => res.json())
-    const fees: GasFees = {}
-    if (getFeesResponse.result) {
-      getFeesResponse.result.forEach((result: any) => {
-        fees[result.msg_type] = result.fee
-      })
-    } 
     return new WalletClient({
       mnemonic,
-      accountNumber: value.account_number.toString(),
       network,
       signerType: 'mnemonic',
-      fees,
     })
   }
 
   public static async connectPrivateKey(privateKey: string, net?: string) {
     const network = getNetwork(net)
-    const pubKeyBech32 = new PrivKeySecp256k1(Buffer.from(privateKey, 'hex')).toPubKey().toAddress().toBech32(getBech32Prefix(network, 'main'))
-    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
-      .then(res => res.json())
-    const fees: GasFees = {}
-    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
-    .then(res => res.json())
-    if (getFeesResponse.result) {
-      getFeesResponse.result.forEach((result: any) => {
-        fees[result.msg_type] = result.fee
-      })
-    } 
     return new WalletClient({
       privateKey,
-      accountNumber: value.account_number.toString(),
       network,
       signerType: 'privateKey',
-      fees,
     })
   }
 
@@ -123,18 +101,7 @@ export class WalletClient {
     const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
     const pubKey = await cosmosLedger.getPubKey()
 
-    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
-      .then(res => res.json())
-    const fees: GasFees = {}
-    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
-    .then(res => res.json())
-    if (getFeesResponse.result) {
-      getFeesResponse.result.forEach((result: any) => {
-        fees[result.msg_type] = result.fee
-      })
-    } 
     return new WalletClient({
-      accountNumber: value.account_number.toString(),
       ledger: cosmosLedger,
       network,
       pubKey,
@@ -142,30 +109,16 @@ export class WalletClient {
       signerType: 'ledger',
       onRequestSign,
       onSignComplete,
-      fees,
     })
   }
 
   // for debug view
   public static async connectPublicKey(pubKeyBech32: string, net?: string) {
     const network = getNetwork(net)
-
-    const { result: { value } } = await fetch(`${network.REST_URL}/get_account?account=${pubKeyBech32}`)
-      .then(res => res.json())
-    const fees: GasFees = {}
-    const getFeesResponse = await fetch(`${network.COSMOS_URL}/fee/get_msg_fees`)
-    .then(res => res.json())
-    if (getFeesResponse.result) {
-      getFeesResponse.result.forEach((result: any) => {
-        fees[result.msg_type] = result.fee
-      })
-    } 
     return new WalletClient({
-      accountNumber: value.account_number.toString(),
       network,
       pubKeyBech32,
       signerType: 'nosign',
-      fees,
     })
   }
 
@@ -184,7 +137,7 @@ export class WalletClient {
   public readonly ledger?: CosmosLedger
   public readonly network: Network
   public readonly feeMultiplier: ethers.BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
-  public readonly fees: GasFees
+  public fees: GasFees
   public accountNumber: string
   public broadcastMode: string
   public depositAddresses: { [key: string]: string }
@@ -288,6 +241,16 @@ export class WalletClient {
         value: this.pubKeyBase64,
       },
       signature: signatureBase64,
+    }
+  }
+
+  public initialize(params: InitParams) {
+    if (params.fees) {
+      this.fees = params.fees
+    }
+
+    if (params.accountNumber) {
+      this.accountNumber = params.accountNumber
     }
   }
 
@@ -653,8 +616,8 @@ export class WalletClient {
               : this.parseHexNum(response.stack[0].value)
 
           } catch (err) {
-               console.error('Could not retrieve external balance for ', token.denom)
-               console.error(err)
+            console.error('Could not retrieve external balance for ', token.denom)
+            console.error(err)
           }
 
         }
@@ -681,7 +644,7 @@ export class WalletClient {
       sequence = result.value.sequence
     }
 
-    if (this.accountNumber === '0' || this.accountNumber === undefined || this.accountNumber === null) {
+    if (this.accountNumber === '0' || !this.accountNumber) {
       const { result } = await this.getAccount()
       this.accountNumber = result.value.account_number.toString()
       if (this.accountNumber === '0') {
@@ -788,7 +751,7 @@ export class WalletClient {
       }
 
       const { id, concreteMsgs, options } = this.broadcastQueue[0]
-      
+
       if (options && options.fee) {
         fee = options.fee
       } else {
