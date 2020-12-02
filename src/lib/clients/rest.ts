@@ -87,6 +87,9 @@ export interface REST {
   getVaults(params: types.AddressOnlyGetterParams): Promise<Array<object>>
   getCommitmentCurve(): Promise<any>
   getRewardCurve(): Promise<any>
+  getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
+  getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
+  getGasFees()
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -562,7 +565,7 @@ export class RestClient implements REST {
   }
 
   public async getGasFees() {
-    const response = await this.fetchCosmosJson(`/fee/get_msg_fees`)
+    const response = await this.fetchJson(`/get_msg_fees`)
     const fees: GasFees = {}
     if (response.result) {
       response.result.forEach((result: any) => {
@@ -805,11 +808,11 @@ export class RestClient implements REST {
   }
 
   public async getRewardCurve(): Promise<any> {
-    return this.fetchCosmosJson(`/liquiditypool/get_reward_curve`)
+    return this.fetchJson(`/get_reward_curve`)
   }
 
   public async getCommitmentCurve(): Promise<any> {
-    return this.fetchCosmosJson(`/liquiditypool/get_commitment_curve`)
+    return this.fetchJson(`/get_commitment_curve`)
   }
 
 
