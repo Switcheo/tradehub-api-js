@@ -89,7 +89,7 @@ export interface REST {
   getRewardCurve(): Promise<any>
   getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
-  getGasFees()
+  getGasFees() : Promise<GasFees>
 
   // cosmos
   getStakingValidators(): Promise<any>
