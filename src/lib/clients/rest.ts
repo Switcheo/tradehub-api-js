@@ -565,7 +565,7 @@ export class RestClient implements REST {
   }
 
   public async getGasFees() {
-    const response = await this.fetchJson(`/get_msg_fees`)
+    const response = await this.fetchJson(`/get_txns_fees`)
     const fees: GasFees = {}
     if (response.result) {
       response.result.forEach((result: any) => {
