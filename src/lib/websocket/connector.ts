@@ -4,10 +4,12 @@ import * as WSConnectorTypes from './types'
 import { logger } from '../utils'
 
 // delay between pings.
+// see WSConnector.intervalHeartbeat
 const DEFAULT_INTERVAL_HEARTBEAT = 3000
 
 // 2x DEFAULT_INTERVAL_HEARTBEAT to allow for missing
 // one heartbeat without triggering disconnect.
+// see WSConnector.timeoutHeartbeat
 const DEFAULT_TIMEOUT_HEARTBEAT = 6100
 
 // see WSConnector.timeoutConnect
@@ -20,6 +22,10 @@ export interface WSStatusChangeListener {
   (connected: boolean): void
 }
 
+/**
+ * See WSConnector class members for description of
+ * each configuration option.
+ */
 export interface WSConnectorOptions {
   endpoint: string
   onStatusChange?: WSStatusChangeListener
@@ -72,7 +78,39 @@ interface MessageSubscribers {
 }
 
 /**
+ * WSConnector is a wrapper class to manage websocket connections with the server. It makes use of
+ * WebSocket instances to connect to the server.
  *
+ * Provides a synchronised way of executing requests on websocket @see {WSConnector.request}.
+ *
+ * Multiple subscriptions to the same channel is not supported at the moment, but would be trival
+ * to implement.
+ *
+ * @example 
+ * (async () => {
+ *   const wsConnector = new WSConnector({
+ *     endpoint: WS_ENDPOINT,
+ *   });
+ *
+ *   // run connect before executing any request/subscription
+ *   await wsConnector.connect();
+ *
+ *   // request for data
+ *   const result: WSResult<RecentTradesBody> = await wsConnector.request<RecentTradesBody>("get_recent_trades", {
+ *      market: "swth_eth",
+ *   });
+ *
+ *   // subscribe to new channel
+ *   await wsConnector.subscribe(WSChannel.market_stats, (result: WSResult<MarketStats>) => {
+ *     console.log("received market stats", result);
+ *   });
+ *
+ *   // unsubscribe
+ *   await wsConnector.unsubscribe(WSChannel.market_stats);
+ *
+ *   // clean up
+ *   await wsConnector.disconnect();
+ * })();
  */
 export class WSConnector {
   // websocket endpoint
@@ -146,8 +184,8 @@ export class WSConnector {
   public static parseChannelId = parseChannelId
 
   /**
-   *
-   * @param options
+   * Initialises an instance of WSConnector with the specified options
+   * @param {WSConnectorOptions} options - options to configure the WSConnector instance
    */
   constructor(
     options: WSConnectorOptions,
@@ -172,7 +210,11 @@ export class WSConnector {
   }
 
   /**
-   *
+   * Starts a connection to the server via a WebSocket instance
+   * rejects the promise if connection cannot be established within WSConnector.timeoutConnect
+   * milliseconds.
+   * 
+   * @see WSConnector documentation for usage example
    */
   public async connect(): Promise<unknown> {
     if (this.shouldConnect) {
@@ -189,11 +231,25 @@ export class WSConnector {
     })
   }
 
+  /**
+   * Disconnects the WebSocket connection with endpoint, releases resources and reverse states.
+   * It is safe to call WSConnector.connect() again once WSConnector.disconnect() is called.
+   * 
+   * @see WSConnector documentation for usage example
+   */
   public disconnect() {
     this.shouldConnect = false
     this.disconnectWebsocket()
   }
 
+  /**
+   * Subscribes to the channels specified with the websocket. Sends a subscription data frame with
+   * channel ID to WebSocket server.
+   * @param {WSConnectorTypes.WsSubscriptionParams | WSConnectorTypes.WsSubscriptionParams[]} params a list of parameters specifying the channels to connect to
+   * @param {WSSubscriber} handler an event handler that subscribes to the websocket channels
+   * 
+   * @see WSConnector documentation for usage example
+   */
   public subscribe(
     params: WSConnectorTypes.WsSubscriptionParams | WSConnectorTypes.WsSubscriptionParams[],
     handler: WSSubscriber,
@@ -216,6 +272,13 @@ export class WSConnector {
     this.send('subscribe', { channels })
   }
 
+  /**
+   * Unsubscribes to the websocket channels indicated in the params, by broadcasting an unsubscribe
+   * message to these channels.
+   * @param {WSConnectorTypes.WsSubscriptionParams | WSConnectorTypes.WsSubscriptionParams[]} params - channel(s) to unsubcribe to
+   * 
+   * @see WSConnector documentation for usage example
+   */
   public unsubscribe(
     params: WSConnectorTypes.WsSubscriptionParams | WSConnectorTypes.WsSubscriptionParams[],
   ) {
@@ -234,6 +297,13 @@ export class WSConnector {
     })
   }
 
+  /**
+   * Sends a message to the websocket channels.
+   * @param {string} method - the type of message to send to the websocket channels. Available
+   * options: subscribe, unsubscribe, get_recent_trades, get_candlesticks, get_open_orders,
+   * get_account_trades, get_market_stats, get_leverages, get_open_positions, get_closed_positions
+   * @param {any} params - An object containing parameters based on the specified method
+   */
   public send(method: string, params: any) {
     this.sendMessage(JSON.stringify({
       id: `g${++this.requestIdCounter}`,
@@ -242,6 +312,17 @@ export class WSConnector {
     }))
   }
 
+  /**
+   * Requests data from the server endpoint
+   * @param {string} method - the type of message to send to the websocket channels. Available
+   * options: subscribe, unsubscribe, get_recent_trades, get_candlesticks, get_open_orders,
+   * get_account_trades, get_market_stats, get_leverages, get_open_positions, get_closed_positions
+   * @param {any} params - parameters based on the specified method
+   * 
+   * @returns {Promise<WSResult<T>>} - a Promise resolving to the response from the endpoint
+   * 
+   * @see WSConnector documentation for usage example
+   */
   public async request<T = unknown>(method: string, params: any): Promise<WSResult<T>> {
     const requestId = `r${++this.requestIdCounter}`
 
@@ -256,12 +337,20 @@ export class WSConnector {
     })
   }
 
+  /**
+   * Sends a message to the web socket
+   * @param {string | Buffer} data - the message sent to the web socket 
+   */
   private sendMessage(data: string | Buffer) {
     const socket = this.getSocket()
     this.debugLog('WSConnector.sendMessage', data)
     socket?.send(data)
   }
 
+  /**
+   * An event handler that is called when a connection is started with the WebSocket instance.
+   * @param {Event} ev - the event that is called with 
+   */
   private onOpen(ev: Event): any {
     this.debugLog('WSConnector.onOpen', ev)
 
@@ -276,6 +365,10 @@ export class WSConnector {
     this.startHeartbeat()
   }
 
+  /**
+   * An event handler that is called when a MessageEvent is emitted from the server
+   * @param {MessageEvent} ev - the MessageEvent that is emitted from the server
+   */
   private onMessage(ev: MessageEvent) {
     this.debugLog('WSConnector.onMessage', ev)
 
@@ -316,6 +409,10 @@ export class WSConnector {
     delete this.requestHandlers[message.requestId]
   }
 
+  /**
+   * An event listener that is called when an error occurs on the WebSocket connection
+   * @param {Event} ev - the error event occurring on the WebSocket connection
+   */
   private onError(ev: Event) {
     this.debugLog('WSConnector.onError', ev)
 
@@ -330,12 +427,19 @@ export class WSConnector {
     }
   }
 
+  /**
+   * An event handler that is triggered when the WebSocket connection is closed.
+   * @param {Event} ev - the event called with this event handler.
+   */
   private onClose(ev: Event) {
     this.debugLog('WSConnector.onClose', ev)
 
     this.disconnectWebsocket()
   }
 
+  /**
+   * An accessor to the WebSocket instance in this WSConnector instance
+   */
   private getSocket() {
     if (!this.connected) {
       throw new Error('WebSocket not connected')
@@ -344,6 +448,9 @@ export class WSConnector {
     return this.websocket
   }
 
+  /**
+   * Updates the connection status of the WebSocket instance
+   */
   private updateConnectStatus() {
     try {
       this.statusChangeListener?.(this.connected)
@@ -352,10 +459,16 @@ export class WSConnector {
     }
   }
 
+  /**
+   * Sends ping messages to the websocket to indicate to the server that the WebSocket connection with the server is still alive.
+   */
   private sendHeartbeat() {
     this.websocket?.send('ping')
   }
 
+  /**
+   * Resets the heartbeat timeout. (timeout: after a specified amount of time, if there are no heartbeats detected from the server, the connection with the server is considered to be lost and the WebSocket connection will be closed)
+   */
   private restartHeartbeatTimeout() {
     clearTimeout(this.heartbeatTimeout)
 
@@ -370,6 +483,9 @@ export class WSConnector {
     ) as unknown as number
   }
 
+  /**
+   * Disconnects the websocket connection when there is no heartbeat detected for more than the time specified in {@link WSConnector#timeoutHeartbeat}
+   */
   private onHeartbeatTimeout() {
     this.debugLog('heartbeat timed out')
     console.warn('ws heartbeat missed, killing zombie connection')
@@ -377,6 +493,9 @@ export class WSConnector {
     this.disconnect()
   }
 
+  /**
+   * Starts sending heartbeats to the server in regular intervals
+   */
   private startHeartbeat() {
     // call receive heartbeat to start timeout
     this.restartHeartbeatTimeout()
@@ -392,6 +511,11 @@ export class WSConnector {
     ) as unknown as number
   }
 
+  /**
+   * Parses messages sent from the server via the WebSocket connection
+   * @param {MessageEvent} ev - the MessageEvent emitted from the server
+   * @returns {WSMessage<T>} - the parsed message
+   */
   private parseWsMessage<T>(ev: MessageEvent): WSMessage<T> {
     try {
       const { id, sequence_number: sequenceNumber, error, channel, ...rest } = JSON.parse(ev.data)
@@ -419,6 +543,10 @@ export class WSConnector {
     }
   }
 
+  /**
+   * Rejects the WebSocket connection attempt when an error is encountered
+   * @param {Error} error - the error causing the failure to connect with the websocket 
+   */
   private rejectConnect(error: Error) {
     clearTimeout(this.initFailureTimeout)
 
@@ -427,7 +555,7 @@ export class WSConnector {
   }
 
   /**
-   *
+   * Disconnects the connection with the websocket
    */
   private disconnectWebsocket() {
     try {
@@ -449,7 +577,7 @@ export class WSConnector {
   }
 
   /**
-   *
+   * Initialises a new WebSocket instance with the specified endpoint.
    */
   private connectWebSocket() {
     this.disconnect()
@@ -476,6 +604,11 @@ export class WSConnector {
     }
   }
 
+  /**
+   * A helper message to log methods when they are called
+   * WSConnector#debugMode must be set to true to turn on logging.
+   * @param {any[]} args - items to be logged
+   */
   private debugLog(...args: any[]) {
     if (!this.debugMode) return
 
