@@ -37,7 +37,7 @@ export const CREATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgCreateSubAccountV1'
 export const ACTIVATE_SUB_ACCOUNT_MSG_TYPE = 'subaccount/MsgActivateSubAccountV1'
 
 // Profile
-export const UPDATE_PROFILE_MSG_TYPE = 'profile/UpdateProfile'
+export const UPDATE_PROFILE_MSG_TYPE = 'profile/MsgUpdateProfile'
 
 
 // Gov
