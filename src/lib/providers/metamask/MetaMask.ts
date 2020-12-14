@@ -20,12 +20,21 @@ const ETH_CHAIN_NAMES = {
 
 const ENCRYPTION_VERSION = 'x25519-xsalsa20-poly1305'
 
+const MNEMONIC_MATCH_REGEX = /==mnemonic: ([a-z\s]*)==/mi
+
 const getRequiredEthChain = (network: Network) => {
   if (network === Network.MainNet) {
     return 1
   }
 
   return 3
+}
+
+const getEncryptMessage = (input: string) => {
+  return `
+  ! Attention: Please make sure you are connecting to https://app.dem.exchange, do not confirm decrypt if you're connecting to untrusted sites.
+  ==mnemonic: ${input}==
+  `.trim().replaceAll(/^[\s\n]+/gm, '')
 }
 
 interface RequestArguments {
@@ -125,9 +134,10 @@ export class MetaMask {
       params: [defaultAccount],
     }) as string
 
+    const messageToEncrypt = getEncryptMessage(mnemonic);
 
     const cipher = ethSignUtils.encrypt(publicKey, {
-      data: mnemonic,
+      data: messageToEncrypt,
     }, ENCRYPTION_VERSION)
 
     const {
@@ -200,12 +210,20 @@ export class MetaMask {
       ciphertext,
     }
 
-    const privateKey = await metamaskAPI.request({
+    const decryptedCipherText = (await metamaskAPI.request({
       method: 'eth_decrypt',
       params: [JSON.stringify(cipher), defaultAccount],
-    }) as string
+    }) as string)?.trim()
 
-    return privateKey
+    // match line with prefix 'mnemonic: '
+    const match = decryptedCipherText.match(MNEMONIC_MATCH_REGEX)
+
+    // legacy encrypted mnemonic doesnt include warning message.
+    if (!match) {
+      return decryptedCipherText
+    }
+
+    return match[1]
   }
 
   private getContractHash() {
