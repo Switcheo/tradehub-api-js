@@ -20,7 +20,8 @@ const ETH_CHAIN_NAMES = {
 
 const ENCRYPTION_VERSION = 'x25519-xsalsa20-poly1305'
 
-const MNEMONIC_MATCH_REGEX = /==mnemonic: ([a-z\s]*)==/mi
+const MNEMONIC_MATCH_REGEX = /-----BEGIN MNEMONIC PHRASE-----([a-z\s]*)-----END MNEMONIC PHRASE-----/mi
+const MNEMONIC_MATCH_REGEX_LEGACY = /^[a-z\s]*$/i
 
 const getRequiredEthChain = (network: Network) => {
   if (network === Network.MainNet) {
@@ -32,9 +33,11 @@ const getRequiredEthChain = (network: Network) => {
 
 const getEncryptMessage = (input: string) => {
   return `
-  ! Attention: Please make sure you are connecting to https://app.dem.exchange, do not confirm decrypt if you're connecting to untrusted sites.
-  ==mnemonic: ${input}==
-  `.trim().replaceAll(/^[\s\n]+/gm, '')
+  !!! Attention !!! Please make sure you are connecting to https://app.dem.exchange, do not confirm decrypt if you're connecting to untrusted sites.
+  -----BEGIN MNEMONIC PHRASE-----
+  ${input}
+  -----END MNEMONIC PHRASE-----
+  `.trim().replaceAll(/^\s+/gm, '')
 }
 
 interface RequestArguments {
@@ -215,15 +218,22 @@ export class MetaMask {
       params: [JSON.stringify(cipher), defaultAccount],
     }) as string)?.trim()
 
-    // match line with prefix 'mnemonic: '
-    const match = decryptedCipherText.match(MNEMONIC_MATCH_REGEX)
-
     // legacy encrypted mnemonic doesnt include warning message.
-    if (!match) {
+    if (decryptedCipherText.match(MNEMONIC_MATCH_REGEX_LEGACY)) {
       return decryptedCipherText
     }
 
-    return match[1]
+    // match line with prefix 'mnemonic: '
+    const match = decryptedCipherText.match(MNEMONIC_MATCH_REGEX)
+
+    // invalid cipher
+    if (!match) {
+      console.error('invalid account info retrieved from contract')
+      console.error(decryptedCipherText)
+      throw new Error('Retrieved invalid account on blockchain, please check console for more information.')
+    }
+
+    return match[1]?.trim()
   }
 
   private getContractHash() {
