@@ -125,6 +125,18 @@ export interface GetTradesGetterParams {
   afterId?: number
 }
 
+export interface GetTransactionsGetterParams {
+  address?: string
+  msg_type?: string
+  height?: string
+  start_block?: string
+	end_block?: string
+	before_id?: string
+	after_id?: string
+	order_by?: string
+	limit?: string
+}
+
 export interface TokenOnlyGetterParams {
   token: string
 }

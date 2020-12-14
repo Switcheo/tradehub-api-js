@@ -70,7 +70,7 @@ export interface REST {
   getTokens(): Promise<any>
   getTx(params: types.GetIDOnlyGetterParams): Promise<object>
   getTransfers(params?: types.AddressOnlyGetterParams): Promise<object>
-  getTxs(): Promise<Array<object>>
+  getTxs(params?: types.GetTransactionsGetterParams): Promise<Array<object>>
   getTxLog(params: types.GetIDOnlyGetterParams): Promise<object>
   getTxTypes(): Promise<Array<string>>
   getPositionsWithHighestPnL(params: types.MarketOnlyGetterParams): Promise<Array<object>>
@@ -517,8 +517,17 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_transaction?hash=${id}`)
   }
 
-  public async getTxs() {
-    return this.fetchJson(`/get_transactions`)
+  public async getTxs(params: types.GetTransactionsGetterParams) {
+    const paramsArr = Object.keys(params) ?? []
+
+    let paramsStr = ''
+    if (paramsArr.length > 0) {
+      paramsStr = '?'
+    }
+    for (let item in paramsArr) {
+      paramsStr = `${paramsStr}&${item}=${params[item] || ''}`
+    }
+    return this.fetchJson(`/get_transactions${paramsStr}`)
   }
 
   public async getTxLog(params: types.GetIDOnlyGetterParams) {
