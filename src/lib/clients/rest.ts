@@ -524,8 +524,8 @@ export class RestClient implements REST {
     if (paramsArr.length > 0) {
       paramsStr = '?'
     }
-    for (let item in paramsArr) {
-      paramsStr = `${paramsStr}&${item}=${params[item] || ''}`
+    for (let item = 0; item < paramsArr.length; item++) {
+      paramsStr = `${paramsStr}&${paramsArr[item]}=${params[paramsArr[item]] || ''}`
     }
     return this.fetchJson(`/get_transactions${paramsStr}`)
   }
