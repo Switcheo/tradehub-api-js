@@ -395,7 +395,7 @@ export class WalletClient {
           try {
             await this.sendEthDeposit(token, address)
           } catch (e) {
-            console.log('could not send deposit', e)
+            console.error('could not send deposit', e)
           }
         }, 30)
       }
@@ -741,6 +741,7 @@ export class WalletClient {
     let allConcreteMsgs = []
     let memo
     let fee
+    const ONE_SWTH_FEE = "100000000"
 
     while (true) {
       if (this.broadcastQueue.length === 0) {
@@ -753,9 +754,17 @@ export class WalletClient {
       const { id, concreteMsgs, options } = this.broadcastQueue[0]
 
       if (options && options.fee) {
-        fee = options.fee
-      } else {
-        fee = undefined
+        if (fee?.amount?.[0]?.amount) {
+          // ugly hack to aggregate fees.
+          // ideally the tx should be typed as BigNumber and
+          // converted to string only during payload construction
+          // somewhere below.
+          const incomingFee = new BigNumber(options.fee.amount?.[0]?.amount ?? ONE_SWTH_FEE)
+          const newFeeAmount = new BigNumber(fee.amount?.[0]?.amount ?? ONE_SWTH_FEE).plus(incomingFee)
+          fee.amount[0].amount = newFeeAmount.toString(10)
+        } else {
+          fee = options.fee
+        }
       }
 
       // there can only be one memo per txn
@@ -788,7 +797,6 @@ export class WalletClient {
     // if (fee !== null) {
     //   options.fee = fee
     // }
-    this.sequenceCounter++
 
     let response, rawLogs, error
     try {
@@ -804,6 +812,10 @@ export class WalletClient {
         // ignore parsing error
       }
 
+      // increment sequence counter only if tx not added to chain
+      if (!response.code) {
+        this.sequenceCounter++
+      }
     } catch (e) {
       error = e
     }
