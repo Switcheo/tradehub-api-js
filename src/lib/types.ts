@@ -415,7 +415,8 @@ export interface RemoveDebtMsg {
 }
 
 export type ProposalValue = ProposalParameterChangeValue | ProposalTokenValue |
-  ProposalMarketValue | ProposalSettlementPriceValue | ProposalOracleValue | ProposalOracleResultValue
+  ProposalMarketValue | ProposalSettlementPriceValue | ProposalOracleValue | ProposalOracleResultValue |
+  ProposalLinkPoolValue | ProposalUnlinkPoolValue
 
 export interface ProposalParameterChangeValue {
   title: string,
@@ -507,6 +508,25 @@ export interface ProposalOracleResultValue {
     timestamp: string,
     data: string,
   },
+}
+
+export interface ProposalLinkPoolValue {
+  title: string
+  description: string
+  msg: {
+    pool_id: string
+    market: string
+    originator: string
+  }
+}
+
+export interface ProposalUnlinkPoolValue {
+  title: string
+  description: string
+  msg: {
+    pool_id: string
+    originator: string
+  }
 }
 
 export interface SubmitProposalMsg<ProposalValue> {
