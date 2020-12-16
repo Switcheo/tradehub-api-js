@@ -700,6 +700,13 @@ export interface LiquidityPoolResponse {
 
 export type GetLiquidityPoolsResponse = LiquidityPoolResponse[]
 
+export interface RewardsDistributed {
+  amount: string
+  denom: string
+}
+
+export type RewardsDistributedResponse = RewardsDistributed[]
+
 export interface GetAMMRewardPercentageResponse {
   height: string
   result: string

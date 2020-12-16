@@ -4,7 +4,7 @@ import fetch from '../utils/fetch'
 import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
 import dayjs from 'dayjs'
 
-import { getNetwork } from '../config'
+import { getNetwork, NETWORK as NET } from '../config'
 import { GasFees, WalletClient } from './wallet'
 import { Blockchain } from '../constants'
 
@@ -90,6 +90,7 @@ export interface REST {
   getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
   getGasFees() : Promise<GasFees>
+  getRewardsDistributed(): Promise<types.RewardsDistributedResponse>
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -822,6 +823,13 @@ export class RestClient implements REST {
 
   public async getCommitmentCurve(): Promise<any> {
     return this.fetchJson(`/get_commitment_curve`)
+  }
+
+  public async getRewardsDistributed(): Promise<types.RewardsDistributedResponse> {
+    if (this.baseUrl === NET.DEVNET.REST_URL || this.baseUrl === NET.MAINNET.REST_URL) {
+      return this.fetchJson(`/get_collections?account=swth1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8cpw26x`) // swth address
+    }
+    return this.fetchJson(`/get_collections?account=tswth1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8ukl6rr`) // tswth address
   }
 
 
