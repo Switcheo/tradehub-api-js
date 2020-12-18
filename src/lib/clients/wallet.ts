@@ -814,7 +814,7 @@ export class WalletClient {
       }
 
       // increment sequence counter only if tx not added to chain
-      if (!response.code) {
+      if (response.height && response.height !== '0') {
         this.sequenceCounter++
       }
     } catch (e) {
