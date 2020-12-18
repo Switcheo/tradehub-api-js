@@ -296,7 +296,8 @@ export class WalletClient {
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       if (token.external_balance !== undefined && token.external_balance !== '0') {
-        await this.sendNeoDeposit(token)
+        const feeAmount = ethers.BigNumber.from('100000000')
+        await this.sendNeoDeposit(token, feeAmount)
       }
     }
   }
@@ -315,7 +316,7 @@ export class WalletClient {
     return result
   }
 
-  public async sendNeoDeposit(token, _privateKey = null) {
+  public async sendNeoDeposit(token, feeAmountInput, _privateKey = null) {
     const privateKey = !!_privateKey ? _privateKey : this.hdWallet[Blockchain.Neo]
     const account = Neon.create.account(privateKey)
 
@@ -328,7 +329,7 @@ export class WalletClient {
     const toAddress = this.addressHex
 
     const amount = ethers.BigNumber.from(token.external_balance)
-    const feeAmount = ethers.BigNumber.from('100000000')
+    const feeAmount = ethers.BigNumber.from(feeAmountInput ?? '100000000')
     const feeAddress = this.network.FEE_ADDRESS
     const nonce = Math.floor(Math.random() * 1000000)
 
