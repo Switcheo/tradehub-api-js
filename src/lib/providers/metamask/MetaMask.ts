@@ -6,9 +6,9 @@ import { NETWORK } from '../../config'
 
 const CONTRACT_HASH = {
   // use same ropsten contract for all non-mainnet uses
-  [Network.TestNet]: '0x993BfA4b13b5a0F25ea36fC962803431D944271A',
-  [Network.DevNet]: '0x993BfA4b13b5a0F25ea36fC962803431D944271A',
-  [Network.LocalHost]: '0x993BfA4b13b5a0F25ea36fC962803431D944271A',
+  [Network.TestNet]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
+  [Network.DevNet]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
+  [Network.LocalHost]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
 
   [Network.MainNet]: '0x41500944FE7401a202C3344548eD8Dc668DE46e8',
 }
@@ -122,8 +122,8 @@ export class MetaMask {
     const provider = this.checkProvider()
     const contract = new ethers.Contract(contractHash, RegistryContract.abi, provider)
     const cipherTextHex: string | undefined = await contract.map(account)
-    if (!cipherTextHex || !cipherTextHex.length) {
-      // value would be '' if not initialized
+    if (!cipherTextHex?.length || cipherTextHex === '0x') {
+      // value would be '0x' if not initialized
       return undefined
     }
     return cipherTextHex
@@ -172,7 +172,8 @@ export class MetaMask {
     const provider = this.checkProvider()
     const contract = new ethers.Contract(contractHash, RegistryContract.abi, provider)
 
-    const unsignedTx = await contract.populateTransaction.Store(encryptedMnemonic)
+    const dataBytes = Buffer.from(encryptedMnemonic, 'hex')
+    const unsignedTx = await contract.populateTransaction.Store(dataBytes)
 
     const txHash = await metamaskAPI.request({
       method: 'eth_sendTransaction',
@@ -203,7 +204,7 @@ export class MetaMask {
       return null
     }
 
-    const cipherText = ethers.utils.toUtf8String(Buffer.from(cipherTextHex, 'hex'))
+    const cipherText = ethers.utils.toUtf8String(cipherTextHex)
     const [version, nonce, ephemPublicKey, ciphertext] = cipherText.split('.')
 
     const cipher = {

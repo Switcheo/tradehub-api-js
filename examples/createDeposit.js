@@ -21,7 +21,7 @@ async function createDeposit() {
     originator: 'swth1phsut994s4e9apdc25vdln02g9rz7exz2fr92n',
     external_balance: '8800000000' // 88.00000000
   }
-  await wallet.sendNeoDeposit(params, process.env.PRIVATE_KEY).then(console.log) // this is the sending addr
+  await wallet.sendNeoDeposit(params, '100000000', process.env.PRIVATE_KEY).then(console.log) // this is the sending addr
 }
 
 createDeposit()

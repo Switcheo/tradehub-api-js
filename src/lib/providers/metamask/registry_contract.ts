@@ -18,9 +18,9 @@ export default {
       "name": "map",
       "outputs": [
         {
-          "internalType": "string",
+          "internalType": "bytes",
           "name": "",
-          "type": "string"
+          "type": "bytes"
         }
       ],
       "payable": false,
@@ -31,9 +31,9 @@ export default {
       "constant": false,
       "inputs": [
         {
-          "internalType": "string",
+          "internalType": "bytes",
           "name": "ethEncKey",
-          "type": "string"
+          "type": "bytes"
         }
       ],
       "name": "Store",
