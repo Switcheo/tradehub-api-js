@@ -1,3 +1,5 @@
+import WebSocket from 'ws'
+
 import { generateChannelId, parseChannelId } from './channel'
 import * as WSConnectorTypes from './types'
 
