@@ -565,8 +565,8 @@ export interface ProposalSetCommitmentCurveValue {
     title: string,
     description: string,
     msg: {
-      max_duration: string,
-      max_reward_multiplier: string,
+      max_duration: number,
+      max_reward_multiplier: number,
       originator: string,
     }
 }
