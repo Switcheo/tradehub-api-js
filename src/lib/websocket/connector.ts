@@ -1,4 +1,4 @@
-import WebSocket from 'ws'
+import NodeWebSocket from 'ws'
 
 import { generateChannelId, parseChannelId } from './channel'
 import * as WSConnectorTypes from './types'
@@ -103,12 +103,12 @@ interface MessageSubscribers {
  *   });
  *
  *   // subscribe to new channel
- *   await wsConnector.subscribe(WSChannel.market_stats, (result: WSResult<MarketStats>) => {
+ *   await wsConnector.subscribe({ channel: WSChannel.market_stats }, (result: WSResult<MarketStats>) => {
  *     console.log("received market stats", result);
  *   });
  *
  *   // unsubscribe
- *   await wsConnector.unsubscribe(WSChannel.market_stats);
+ *   await wsConnector.unsubscribe({ channel: WSChannel.market_stats });
  *
  *   // clean up
  *   await wsConnector.disconnect();
@@ -585,13 +585,25 @@ export class WSConnector {
     this.disconnect()
 
     try {
-      const websocket = new WebSocket(this.endpoint)
-      websocket.onopen = this.onOpen.bind(this)
-      websocket.onclose = this.onClose.bind(this)
-      websocket.onerror = this.onError.bind(this)
-      websocket.onmessage = this.onMessage.bind(this)
+      if (typeof WebSocket !== 'undefined') {
+        // this works on browsers js vm
+        const websocket = new WebSocket(this.endpoint)
+        websocket.onopen = this.onOpen.bind(this)
+        websocket.onclose = this.onClose.bind(this)
+        websocket.onerror = this.onError.bind(this)
+        websocket.onmessage = this.onMessage.bind(this)
 
-      this.websocket = websocket
+        this.websocket = websocket
+      } else {
+        // and this works on nodejs vm
+        const websocket = new NodeWebSocket(this.endpoint)
+        websocket.on('open', this.onOpen.bind(this))
+        websocket.on('close', this.onClose.bind(this))
+        websocket.on('error', this.onError.bind(this))
+        websocket.on('message', (data: string) => this.onMessage({ data } as MessageEvent))
+
+        this.websocket = websocket
+      }
       this.requestHandlers = {}
 
       // set timeout to kill websocket instantiation attempt
@@ -602,6 +614,7 @@ export class WSConnector {
         this.rejectConnect(new Error('websocket connect time out'))
       }, this.timeoutConnect) as unknown as number
     } catch (error) {
+      console.error(error)
       this.rejectConnect(error)
     }
   }
@@ -614,6 +627,6 @@ export class WSConnector {
   private debugLog(...args: any[]) {
     if (!this.debugMode) return
 
-    logger(args)
+    logger(...args)
   }
 }
