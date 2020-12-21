@@ -130,11 +130,11 @@ export interface GetTransactionsGetterParams {
   msg_type?: string
   height?: string
   start_block?: string
-	end_block?: string
-	before_id?: string
-	after_id?: string
-	order_by?: string
-	limit?: string
+  end_block?: string
+  before_id?: string
+  after_id?: string
+  order_by?: string
+  limit?: string
 }
 
 export interface TokenOnlyGetterParams {
@@ -416,7 +416,8 @@ export interface RemoveDebtMsg {
 
 export type ProposalValue = ProposalParameterChangeValue | ProposalTokenValue |
   ProposalMarketValue | ProposalSettlementPriceValue | ProposalOracleValue | ProposalOracleResultValue |
-  ProposalLinkPoolValue | ProposalUnlinkPoolValue
+  ProposalLinkPoolValue | ProposalUnlinkPoolValue | ProposalCreateTokenValue | ProposalSetPoolRewardWeightsValue |
+  ProposalSetCommitmentCurveValue
 
 export interface ProposalParameterChangeValue {
   title: string,
@@ -527,6 +528,57 @@ export interface ProposalUnlinkPoolValue {
     pool_id: string
     originator: string
   }
+}
+
+export interface ProposalCreateTokenValue {
+  title: string
+  description: string
+  token: {
+    name: string
+    symbol: string
+    denom: string
+    decimals: string
+    native_decimals: string
+    blockchain: string
+    chain_id: string
+    asset_id: string
+    is_collateral: boolean
+    lock_proxy_hash: string
+    delegated_supply: string
+    originator: string
+  }
+}
+
+export interface ProposalSetPoolRewardWeightsValue {
+  title: string
+  description: string
+  msg: {
+    weights: [{
+      pool_id: string,
+      weight: string
+    }]
+    originator: string
+  }
+}
+
+export interface ProposalSetCommitmentCurveValue {
+    title: string,
+    description: string,
+    msg: {
+      max_duration: string,
+      max_reward_multiplier: string,
+      originator: string,
+    }
+}
+
+export interface ProposalSetCommitmentCurve {
+    "title": string
+    "description": string
+    "msg": {
+      "max_duration": string
+      "max_reward_multiplier": string
+      "originator": string
+    }
 }
 
 export interface SubmitProposalMsg<ProposalValue> {
