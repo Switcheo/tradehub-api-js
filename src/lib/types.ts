@@ -548,15 +548,17 @@ export interface ProposalCreateTokenValue {
     originator: string
   }
 }
+export interface PoolWeightObject {
+  pool_id: string
+  weight: string
+}
 
+interface PoolWeightObjectList extends Array<PoolWeightObject> { }
 export interface ProposalSetPoolRewardWeightsValue {
   title: string
   description: string
   msg: {
-    weights: [{
-      pool_id: string,
-      weight: string
-    }]
+    weights: PoolWeightObjectList
     originator: string
   }
 }
