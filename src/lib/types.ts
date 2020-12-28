@@ -113,7 +113,7 @@ export interface GetOrdersGetterParams {
   limit?: number
   beforeId?: number
   afterId?: number
-  status?: string
+  orderStatus?: string
   orderType?: string
 }
 
