@@ -81,7 +81,7 @@ export interface REST {
   getWalletBalance(params?: types.AddressOnlyGetterParams): Promise<types.WalletBalance>
   getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null>
   getWeeklyRewards(): Promise<number | null>
-  getWeeklyPoolRewards(): Promise<number | null> 
+  getWeeklyPoolRewards(): Promise<number | null>
   estimateUnclaimedRewards(params: types.PoolIDAndAddressGetter): Promise<types.AccruedRewardsResponse>
   getVaultTypes(): Promise<Array<object>>
   getVaults(params: types.AddressOnlyGetterParams): Promise<Array<object>>
@@ -103,6 +103,9 @@ export interface REST {
   getDelegatorRedelegations(params?: types.AddressOnlyGetterParams): Promise<any>
   getAllDelegatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
   getDelegatorDelegationRewards(params?: types.AddressOnlyGetterParams): Promise<any>
+
+  // private admin
+  setTradingFlag(msg: types.SetTradingFlagMsg, options?: types.Options): Promise<any>
 
   // private
   send(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
@@ -581,7 +584,7 @@ export class RestClient implements REST {
       response.result.forEach((result: any) => {
         fees[result.msg_type] = result.fee
       })
-    } 
+    }
 
     return fees
   }
@@ -728,7 +731,7 @@ export class RestClient implements REST {
     const MIN_RATE = new BigNumber(0.0003)
     const INITIAL_SUPPLY = new BigNumber(1000000000)
     const SECONDS_IN_A_WEEK = new BigNumber(604800)
-    
+
     const difference = new BigNumber(dayjs().diff(dayjs(startTime.block_time), 'second'))
     const currentWeek = difference.div(SECONDS_IN_A_WEEK).dp(0, BigNumber.ROUND_DOWN)
 
@@ -786,7 +789,7 @@ export class RestClient implements REST {
     // Estimate rewards from last allocated rewards
     // the current logic will under estimate the rewards as the current weekly reward rate is used across the full period
     // instead of deriving the reward rate for each week since the last reward allocation
-    
+
     if (!commitmentPower.isZero()) {
       const weeklyRewards = await this.getWeeklyPoolRewards()
       const pools = await this.getLiquidityPools()
@@ -1087,6 +1090,17 @@ export class RestClient implements REST {
       return this.wallet.signAndBroadcast([msg], [types.REMOVE_DEBT_MSG_TYPE], { fee: new Fee([{denom: "swth", amount }], '100000000000')})
     }
     return this.wallet.signAndBroadcast([msg], [types.REMOVE_DEBT_MSG_TYPE], options)
+  }
+
+  public async setTradingFlag(msg: types.SetTradingFlagMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    if ((!options || !options.fee) && this.wallet.fees) {
+      const amount = this.getFee(types.SET_TRADING_FLAG_MSG_TYPE)
+      return this.wallet.signAndBroadcast([msg], [types.SET_TRADING_FLAG_MSG_TYPE], { fee: new Fee([{denom: "swth", amount }], '100000000000')})
+    }
+    return this.wallet.signAndBroadcast([msg], [types.SET_TRADING_FLAG_MSG_TYPE], options)
   }
 
   public async addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options) {

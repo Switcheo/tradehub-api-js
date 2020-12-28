@@ -10,6 +10,7 @@ export const EDIT_ORDER_MSG_TYPE = 'order/MsgEditOrder'
 export const CREATE_MARKET_MSG_TYPE = 'market/MsgCreateMarket'
 export const UPDATE_MARKET_MSG_TYPE = 'market/MsgUpdateMarket'
 export const INITIATE_SETTLEMENT_MSG_TYPE = 'broker/MsgInitiateSettlement'
+export const SET_TRADING_FLAG_MSG_TYPE = 'order/MsgSetTradingFlag'
 
 // Positions
 export const SET_LEVERAGE_MSG_TYPE = 'leverage/MsgSetLeverage'
@@ -165,6 +166,12 @@ export interface GetActiveWalletsParams {
   limit?: number
   beforeId?: number
   afterId?: number
+}
+
+export interface SetTradingFlagMsg {
+  is_enabled: string
+  blockchain: string
+  originator?: string
 }
 
 export interface CreateOrderMsg {
