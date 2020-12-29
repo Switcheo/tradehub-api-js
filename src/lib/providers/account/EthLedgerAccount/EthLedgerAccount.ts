@@ -94,17 +94,25 @@ export class EthLedgerAccount extends AccountProvider {
 
   /**
    * Used to try connecting with ledger, executes a public key request
-   * on USB device to detect NEO app connection
+   * on USB device to detect ETH app connection
    */
   private static async tryConnect(usbDevice: string): Promise<[typeof EthApp, string, string]> {
-    const bipString = EthLedgerAccount.getETHBIP44String()
-    const ledger = await TransportWebUSB.open(usbDevice)
+    try {
+      const bipString = EthLedgerAccount.getETHBIP44String()
+      const ledger = await TransportWebUSB.open(usbDevice)
 
-    // get public key to assert that NEO app is open
-    const ethApp = new EthApp(ledger)
-    const { publicKey, address } = await ethApp.getAddress(bipString)
+      // get public key to assert that NEO app is open
+      const ethApp = new EthApp(ledger)
+      const { publicKey, address } = await ethApp.getAddress(bipString)
 
-    return [ethApp, publicKey, address]
+      return [ethApp, publicKey, address]
+    } catch (err) {
+      if (err.statusCode) {
+        throw new Error('ETH app is not open')
+      }
+
+      throw err
+    }
   }
 
   configureAddress(options: AddressOptions) {
@@ -122,7 +130,8 @@ export class EthLedgerAccount extends AccountProvider {
   async sign(msg: string) {
     const bipString = EthLedgerAccount.getETHBIP44String()
     const ethApp = this.useEthApp()
-    return await ethApp.signTransaction(bipString, msg)
+    const result = await ethApp.signPersonalMessage(bipString, msg)
+    return `${result.r}${result.s}${result.v.toString(16)}`
   }
 
   private static async getUSBDevices() {

@@ -446,7 +446,7 @@ export class WalletClient {
     return fee.mul(this.feeMultiplier)
   }
 
-  public async sendEthDeposit(token, depositAddress) {
+  public async sendEthDeposit(token, depositAddress, getSignatureCallback?: (msg: string) => Promise<{ address: string, signature: string }>) {
     const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
     const amount = ethers.BigNumber.from(token.external_balance)
     if (amount.lt(feeAmount.mul(this.feeMultiplier))) {
@@ -462,17 +462,44 @@ export class WalletClient {
       ['string', 'address', 'bytes', 'bytes', 'bytes', 'uint256', 'uint256', 'uint256'],
       ['sendTokens', assetId, targetProxyHash, toAssetHash, feeAddress, amount, feeAmount, nonce]
     )
-    const messageBytes = ethers.utils.arrayify(message)
 
-    const privateKey = this.hdWallet[Blockchain.Ethereum]
-    const etherWallet = new ethers.Wallet('0x' + privateKey)
-    const owner = etherWallet.address
-    const signature = await etherWallet.signMessage(messageBytes)
-    const rsv = ethers.utils.splitSignature(signature)
+    let signatureResult: {
+      owner: string
+      r: string
+      s: string
+      v: string
+    } | undefined
+
+    if (getSignatureCallback) {
+      const { address, signature } = await getSignatureCallback(message)
+      const signatureBytes = ethers.utils.arrayify('0x' + signature)
+      const rsv = ethers.utils.splitSignature(signatureBytes)
+
+      signatureResult = {
+        owner: address,
+        v: rsv.v.toString(),
+        r: rsv.r,
+        s: rsv.s,
+      }
+    } else {
+      const messageBytes = ethers.utils.arrayify(message)
+      const privateKey = this.hdWallet[Blockchain.Ethereum]
+      const etherWallet = new ethers.Wallet('0x' + privateKey)
+      const owner = etherWallet.address
+      const signature = await etherWallet.signMessage(messageBytes)
+      const rsv = ethers.utils.splitSignature(signature)
+
+      signatureResult = {
+        owner,
+        v: rsv.v.toString(),
+        r: rsv.r,
+        s: rsv.s,
+      }
+    }
 
     const swthAddress = ethers.utils.hexlify(this.address)
     const body = {
-      OwnerAddress: owner,
+      OwnerAddress: signatureResult.owner,
       SwthAddress: swthAddress,
       AssetHash: assetId,
       TargetProxyHash: targetProxyHash,
@@ -481,9 +508,9 @@ export class WalletClient {
       FeeAmount: feeAmount.toString(),
       FeeAddress: feeAddress,
       Nonce: nonce.toString(),
-      V: rsv.v.toString(),
-      R: rsv.r,
-      S: rsv.s,
+      V: signatureResult.v,
+      R: signatureResult.r,
+      S: signatureResult.s,
     }
 
     const result = await fetch(
@@ -523,15 +550,17 @@ export class WalletClient {
     return account.address
   }
 
-  public async getEthDepositAddress() {
+  public async getEthDepositAddress(ownerEthAddress?: string) {
     const swthAddress = ethers.utils.hexlify(this.address)
-    const privateKey = this.hdWallet[Blockchain.Ethereum]
-    const owner = (new ethers.Wallet('0x' + privateKey)).address
+    if (!ownerEthAddress) {
+      const privateKey = this.hdWallet[Blockchain.Ethereum]
+      ownerEthAddress = (new ethers.Wallet('0x' + privateKey)).address
+    }
 
     const provider = this.getEthProvider()
     const contractAddress = this.network.ETH_LOCKPROXY
     const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, provider)
-    const walletAddress = await contract.getWalletAddress(owner, swthAddress, ETH_WALLET_BYTECODE)
+    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, ETH_WALLET_BYTECODE)
 
     return walletAddress
   }
