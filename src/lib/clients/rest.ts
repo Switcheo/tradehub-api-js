@@ -287,7 +287,7 @@ export class RestClient implements REST {
       limit,
       beforeId,
       afterId,
-      status,
+      orderStatus,
       orderType,
     } = params
 
@@ -313,8 +313,8 @@ export class RestClient implements REST {
     if (afterId) {
       url += `after_id=${afterId}&`
     }
-    if (status) {
-      url += `status=${status}&`
+    if (orderStatus) {
+      url += `order_status=${orderStatus}&`
     }
     if (orderType) {
       url += `order_type=${orderType}&`
