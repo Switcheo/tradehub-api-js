@@ -28,5 +28,103 @@
     "stateMutability": "view",
     "type": "function",
     "constant": true
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_walletAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_assetHash",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_targetProxyHash",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_toAssetHash",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_feeAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_values",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "_rs",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "lockFromWallet",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_assetHash",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_targetProxyHash",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_toAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_toAssetHash",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_feeAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_values",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "lock",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
   }
 ]

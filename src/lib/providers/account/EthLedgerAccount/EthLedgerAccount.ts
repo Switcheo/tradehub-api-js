@@ -1,10 +1,10 @@
 import EthApp from '@ledgerhq/hw-app-eth';
 import Transport from "@ledgerhq/hw-transport";
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
+import { ethers } from 'ethers';
 
 import { AddressOptions, ETHAddress } from "../../../utils";
 import { AccountProvider } from "../AccountProvider";
-
 
 const CONNECT_POLL_INTERVAL = 3000 // ms
 const CONNECT_POLL_ATTEMPTS = 10 // attempts
@@ -131,7 +131,24 @@ export class EthLedgerAccount extends AccountProvider {
     const bipString = EthLedgerAccount.getETHBIP44String()
     const ethApp = this.useEthApp()
     const result = await ethApp.signPersonalMessage(bipString, msg)
-    return `${result.r}${result.s}${result.v.toString(16)}`
+    const signature = ethers.utils.joinSignature({
+      v: result.v,
+      r: `0x${result.r}`,
+      s: `0x${result.s}`,
+    })
+    return signature
+  }
+
+  async signTransaction(msg: string) {
+    const bipString = EthLedgerAccount.getETHBIP44String()
+    const ethApp = this.useEthApp()
+    const result = await ethApp.signTransaction(bipString, msg)
+    const signature = ethers.utils.joinSignature({
+      v: parseInt(result.v, 16),
+      r: `0x${result.r}`,
+      s: `0x${result.s}`,
+    })
+    return signature
   }
 
   private static async getUSBDevices() {
