@@ -12,6 +12,7 @@ import { ConcreteMsg } from '../containers/Transaction'
 import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
 import LOCK_PROXY_ABI from '../eth/abis/lockProxy.json'
+import ERC20_ABI from '../eth/abis/erc20.json'
 import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
 import Neon, { api, u } from '@cityofzion/neon-js'
 import stripHexPrefix from 'strip-hex-prefix'
@@ -67,7 +68,13 @@ export interface LockEthParams {
   gasLimit: BigNumber
   amount: BigNumber
   token: TokenObject
-  wallet: WalletClient
+  ledger: EthLedgerAccount
+  signCompleteCallback?: () => void
+}
+export interface ApproveERC20Params {
+  gasPriceGwei: BigNumber
+  gasLimit: BigNumber
+  token: TokenObject
   ledger: EthLedgerAccount
   signCompleteCallback?: () => void
 }
@@ -604,22 +611,54 @@ export class WalletClient {
     return tokens
   }
 
+  public async ledgerApproveERC20(params: ApproveERC20Params) {
+    const { token, gasPriceGwei, gasLimit, ledger } = params
+    const contractAddress = token.asset_id
+
+    const ethProvider = this.getEthProvider()
+    const ledgerSigner = new EthLedgerSigner(ethProvider, ledger)
+    const contract = new ethers.Contract(contractAddress, ERC20_ABI, ethProvider)
+    
+    const nonce = await ethProvider.getTransactionCount(ledger.displayAddress)
+    const approveResultTx = await contract.connect(ledgerSigner).approve( // eslint-disable-line no-await-in-loop
+      token.lock_proxy_hash,
+      ethers.constants.MaxUint256,
+      {
+        nonce,
+        gasPrice: ethers.BigNumber.from(gasPriceGwei.shiftedBy(9).toString()),
+        gasLimit: ethers.BigNumber.from(gasLimit.toString()),
+      },
+    )
+
+    return approveResultTx
+  }
+
+  public async checkAllowanceERC20(token: TokenObject, owner: string, spender: string) {
+    const contractAddress = token.asset_id
+    const ethProvider = this.getEthProvider()
+    const contract = new ethers.Contract(contractAddress, ERC20_ABI, ethProvider)
+
+    const allowance = await contract.allowance(owner, spender)
+
+    return allowance
+  }
+
   public async ledgerLockEthDeposit(params: LockEthParams) {
-    const { wallet, token, amount, gasPriceGwei, gasLimit, ledger } = params
+    const { token, amount, gasPriceGwei, gasLimit, ledger } = params
 
     if (gasLimit.lt(150000)) {
       throw new Error('Minimum gas required: 150,000')
     }
 
     const assetId = `0x${token.asset_id}`
-    const targetProxyHash = `0x${wallet.getTargetProxyHash(token)}`
-    const feeAddress = `0x${wallet.network.FEE_ADDRESS}`
+    const targetProxyHash = `0x${this.getTargetProxyHash(token)}`
+    const feeAddress = `0x${this.network.FEE_ADDRESS}`
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
 
-    const swthAddress = ethers.utils.hexlify(wallet.address)
-    const contractAddress = wallet.network.ETH_LOCKPROXY
+    const swthAddress = ethers.utils.hexlify(this.address)
+    const contractAddress = this.network.ETH_LOCKPROXY
 
-    const ethProvider = wallet.getEthProvider()
+    const ethProvider = this.getEthProvider()
     const ledgerSigner = new EthLedgerSigner(ethProvider, ledger)
 
     const nonce = await ethProvider.getTransactionCount(ledger.displayAddress)
