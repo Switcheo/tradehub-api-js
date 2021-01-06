@@ -25,6 +25,7 @@ import {
 import { chunk } from 'lodash'
 import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
+import { EthLedgerAccount, EthLedgerSigner } from '../providers'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -59,6 +60,16 @@ export interface WalletConstructorParams {
 export interface InitParams {
   accountNumber?: string
   fees?: GasFees
+}
+
+export interface LockEthParams {
+  gasPriceGwei: BigNumber
+  gasLimit: BigNumber
+  amount: BigNumber
+  token: TokenObject
+  wallet: WalletClient
+  ledger: EthLedgerAccount
+  signCompleteCallback?: () => void
 }
 
 export interface BroadcastQueueItem {
@@ -591,6 +602,53 @@ export class WalletClient {
     }
 
     return tokens
+  }
+
+  public async ledgerLockEthDeposit(params: LockEthParams) {
+    const { wallet, token, amount, gasPriceGwei, gasLimit, ledger } = params
+
+    if (gasLimit.lt(150000)) {
+      throw new Error('Minimum gas required: 150,000')
+    }
+
+    const assetId = `0x${token.asset_id}`
+    const targetProxyHash = `0x${wallet.getTargetProxyHash(token)}`
+    const feeAddress = `0x${wallet.network.FEE_ADDRESS}`
+    const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
+
+    const swthAddress = ethers.utils.hexlify(wallet.address)
+    const contractAddress = wallet.network.ETH_LOCKPROXY
+
+    const ethProvider = wallet.getEthProvider()
+    const ledgerSigner = new EthLedgerSigner(ethProvider, ledger)
+
+    const nonce = await ethProvider.getTransactionCount(ledger.displayAddress)
+    const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, ethProvider)
+    const lockResultTx = await contract.connect(ledgerSigner).lock( // eslint-disable-line no-await-in-loop
+      assetId, // _assetHash
+      targetProxyHash, // _targetProxyHash
+      swthAddress, // _toAddress
+      toAssetHash, // _toAssetHash
+      feeAddress, // _feeAddress
+      [ // _values
+        amount.toString(), // amount
+        '0', // feeAmount
+        amount.toString(), // callAmount
+      ],
+      {
+        nonce,
+        value: '0',
+        gasPrice: ethers.BigNumber.from(gasPriceGwei.shiftedBy(9).toString()),
+        gasLimit: ethers.BigNumber.from(gasLimit.toString()),
+
+        // add tx value for ETH deposits, omit if ERC20 token
+        ...token.asset_id === '0000000000000000000000000000000000000000' && {
+          value: amount.toString(),
+        },
+      },
+    )
+
+    return lockResultTx
   }
 
   public async getNeoRpcUrl(): Promise<string> {
