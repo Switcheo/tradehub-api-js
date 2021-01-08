@@ -510,7 +510,7 @@ export class RestClient implements REST {
     if (typeof from !== 'undefined') {
       url += `from=${from}&`
     }
-    if (typeof from !== 'undefined') {
+    if (typeof to !== 'undefined') {
       url += `to=${to}&`
     }
     return this.fetchJson(url)
