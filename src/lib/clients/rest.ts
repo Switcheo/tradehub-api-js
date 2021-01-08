@@ -49,7 +49,7 @@ export interface REST {
   getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
   getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any>
   getInsuranceFundBalance(): Promise<Array<object>>
-  getLeaderboard(params: types.MarketOnlyGetterParams): Promise<Array<object>>
+  getLeaderboard(params: types.GetLeaderboardParams): Promise<Array<object>>
   getLeverage(params: types.MarketAndAddressGetterParams): Promise<object>
   getLiquidityPools(): Promise<null | types.GetLiquidityPoolsResponse>
   getLiquidationTrades(): Promise<Array<object>>
@@ -487,8 +487,33 @@ export class RestClient implements REST {
 
   // Leaderboard
 
-  public async getLeaderboard(params: types.MarketOnlyGetterParams) {
-    return this.fetchJson(`/get_top_r_profits?market=${params.market}`)
+  public async getLeaderboard(params: types.GetLeaderboardParams) {
+    let url = '/get_leaderboard?'
+
+    const {
+      market,
+      limit,
+      offset,
+      from,
+      to,
+    } = params
+
+    if (market) {
+      url += `market=${market}&`
+    }
+    if (limit) {
+      url += `limit=${limit}&`
+    }
+    if (offset) {
+      url += `offset=${offset}&`
+    }
+    if (from) {
+      url += `from=${from}&`
+    }
+    if (to) {
+      url += `to=${to}&`
+    }
+    return this.fetchJson(url)
   }
 
   public async getPositionsWithHighestPnL(params: types.MarketOnlyGetterParams) {

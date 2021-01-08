@@ -168,6 +168,14 @@ export interface GetActiveWalletsParams {
   afterId?: number
 }
 
+export interface GetLeaderboardParams {
+  market?: string
+  from?: string
+  to?: string
+  offset?: string
+  limit?: string
+}
+
 export interface SetTradingFlagMsg {
   is_enabled: string
   blockchain: string
