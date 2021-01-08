@@ -494,8 +494,8 @@ export class RestClient implements REST {
       market,
       limit,
       offset,
-      from,
-      to,
+      from_block,
+      to_block,
     } = params
 
     if (market) {
@@ -507,11 +507,11 @@ export class RestClient implements REST {
     if (offset) {
       url += `offset=${offset}&`
     }
-    if (from) {
-      url += `from=${from}&`
+    if (from_block) {
+      url += `from=${from_block}&`
     }
-    if (to) {
-      url += `to=${to}&`
+    if (to_block) {
+      url += `to=${to_block}&`
     }
     return this.fetchJson(url)
   }

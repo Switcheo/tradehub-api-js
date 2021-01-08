@@ -170,8 +170,8 @@ export interface GetActiveWalletsParams {
 
 export interface GetLeaderboardParams {
   market?: string
-  from?: number
-  to?: number
+  from_block?: number
+  to_block?: number
   offset?: number
   limit?: number
 }
