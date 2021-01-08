@@ -844,3 +844,20 @@ export interface GetInflationStartTimeResponse {
 export interface AccruedRewardsResponse {
   [key: string]: BigNumber
 }
+
+export interface GetLeaderboardResponse {
+  count: string
+  data: LeaderboardDataResponse[]
+  from_block: string
+  limit: string
+  market: string
+  offset: string
+  to_block: string
+}
+
+export interface LeaderboardDataResponse {
+  address: string
+  denom: string
+  realized_pnl: string
+  username: string
+}
