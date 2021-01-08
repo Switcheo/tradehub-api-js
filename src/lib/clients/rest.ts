@@ -49,7 +49,7 @@ export interface REST {
   getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
   getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any>
   getInsuranceFundBalance(): Promise<Array<object>>
-  getLeaderboard(params: types.GetLeaderboardParams): Promise<Array<object>>
+  getLeaderboard(params?: types.GetLeaderboardParams): Promise<Array<object>>
   getLeverage(params: types.MarketAndAddressGetterParams): Promise<object>
   getLiquidityPools(): Promise<null | types.GetLiquidityPoolsResponse>
   getLiquidationTrades(): Promise<Array<object>>
@@ -487,7 +487,7 @@ export class RestClient implements REST {
 
   // Leaderboard
 
-  public async getLeaderboard(params: types.GetLeaderboardParams) {
+  public async getLeaderboard(params?: types.GetLeaderboardParams) {
     let url = '/get_leaderboard?'
 
     const {

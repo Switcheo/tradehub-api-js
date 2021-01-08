@@ -170,10 +170,10 @@ export interface GetActiveWalletsParams {
 
 export interface GetLeaderboardParams {
   market?: string
-  from?: string
-  to?: string
-  offset?: string
-  limit?: string
+  from?: number
+  to?: number
+  offset?: number
+  limit?: number
 }
 
 export interface SetTradingFlagMsg {
