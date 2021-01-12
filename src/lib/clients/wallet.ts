@@ -69,6 +69,7 @@ export interface LockEthParams {
   amount: BigNumber
   token: TokenObject
   ledger: EthLedgerAccount
+  bip44String?: string
   signCompleteCallback?: () => void
 }
 export interface ApproveERC20Params {
@@ -76,6 +77,7 @@ export interface ApproveERC20Params {
   gasLimit: BigNumber
   token: TokenObject
   ledger: EthLedgerAccount
+  bip44String?: string
   signCompleteCallback?: () => void
 }
 

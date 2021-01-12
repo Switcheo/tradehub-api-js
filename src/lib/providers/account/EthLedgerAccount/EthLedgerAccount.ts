@@ -1,10 +1,10 @@
-import EthApp from '@ledgerhq/hw-app-eth';
-import Transport from "@ledgerhq/hw-transport";
-import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
-import { ethers } from 'ethers';
+import EthApp from '@ledgerhq/hw-app-eth'
+import Transport from "@ledgerhq/hw-transport"
+import TransportWebUSB from '@ledgerhq/hw-transport-webusb'
+import { ethers } from 'ethers'
 
-import { AddressOptions, ETHAddress } from "../../../utils";
-import { AccountProvider } from "../AccountProvider";
+import { AddressOptions, ETHAddress } from "../../../utils"
+import { AccountProvider } from "../AccountProvider"
 
 const CONNECT_POLL_INTERVAL = 3000 // ms
 const CONNECT_POLL_ATTEMPTS = 10 // attempts
@@ -20,12 +20,16 @@ export class EthLedgerAccount extends AccountProvider {
 
   private static _connectPolling = false
 
-  private constructor(ethApp: typeof EthApp, publicKey: string, address: string) {
+  // private key derivation path specified under BIP 44
+  private bip44String?: string
+
+  private constructor(ethApp: typeof EthApp, publicKey: string, address: string, bip44String?: string) {
     super()
     this.ethApp = ethApp
     this.publicKey = publicKey
     this.scriptHash = ETHAddress.publicKeyToScriptHash(publicKey)
     this.displayAddress = address
+    this.bip44String = bip44String
   }
 
   static async connect() {
@@ -115,20 +119,40 @@ export class EthLedgerAccount extends AccountProvider {
     }
   }
 
+  async changeBIP44Path(bip44String: string) {
+    const { publicKey, address } = await this.ethApp.getAddress(bip44String)
+    return new EthLedgerAccount(this.ethApp, publicKey, address, bip44String)
+  }
+
+  getBIP44Path(): string {
+    return this.getBIP44String()
+  }
+
   configureAddress(options: AddressOptions) {
     this.options = options
   }
 
-  private static getETHBIP44String(address = 0, change = COIN_TYPE, account = 44): string {
+  async fetchAddress(bip44String?: string): Promise<string> {
+    const bipString = this.getBIP44String(bip44String)
+    const { address } = await this.useEthApp().getAddress(bipString)
+    return address
+  }
+
+  public static getETHBIP44String(address = 0, change = COIN_TYPE, account = 44): string {
+    // Ledger Live uses 44'/60'/x'/0/0
     return `${account}'/${change}'/${address}'/0/0`
+  }
+  public static getETHShortBIP44String(address = 0, change = COIN_TYPE, account = 44): string {
+    // Ledger MEW / MyCrypto uses 44'/60'/0'/x
+    return `${account}'/${change}'/0'/${address}`
   }
 
   async privateKey(): Promise<string> {
     throw new Error('Cannot retrieve private key from Ledger')
   }
 
-  async sign(msg: string) {
-    const bipString = EthLedgerAccount.getETHBIP44String()
+  async sign(msg: string, bip44String?: string) {
+    const bipString = this.getBIP44String(bip44String)
     const ethApp = this.useEthApp()
     const result = await ethApp.signPersonalMessage(bipString, msg)
     const signature = ethers.utils.joinSignature({
@@ -139,8 +163,8 @@ export class EthLedgerAccount extends AccountProvider {
     return signature
   }
 
-  async signTransaction(msg: string) {
-    const bipString = EthLedgerAccount.getETHBIP44String()
+  async signTransaction(msg: string, bip44String?: string) {
+    const bipString = this.getBIP44String(bip44String)
     const ethApp = this.useEthApp()
     const result = await ethApp.signTransaction(bipString, msg)
     const signature = ethers.utils.joinSignature({
@@ -149,6 +173,10 @@ export class EthLedgerAccount extends AccountProvider {
       s: `0x${result.s}`,
     })
     return signature
+  }
+
+  private getBIP44String(overrideBIP44?: string) {
+    return overrideBIP44 ?? this.bip44String ?? EthLedgerAccount.getETHBIP44String()
   }
 
   private static async getUSBDevices() {

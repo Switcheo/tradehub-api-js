@@ -1,5 +1,4 @@
 import { ethers } from 'ethers'
-import { ETHAddress } from '../../../utils'
 import { EthLedgerAccount } from './EthLedgerAccount'
 
 export class EthLedgerSigner extends ethers.Signer {
@@ -41,7 +40,7 @@ export class EthLedgerSigner extends ethers.Signer {
   async signTransaction(transaction: ethers.providers.TransactionRequest): Promise<string> {
     const tx = await ethers.utils.resolveProperties(transaction)
     const unsignedTx = this.serializeTx(tx)
-    const bipString = `44'/${ETHAddress.coinType()}'/0'/0/0`
+    const bipString = this.ledger.getBIP44Path()
     const signatureResult = await this.ledger.ethApp.signTransaction(bipString, unsignedTx.substring(2))
     const signature = ethers.utils.joinSignature({
       v: parseInt(signatureResult.v, 16),
