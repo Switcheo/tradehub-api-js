@@ -486,7 +486,14 @@ export class RestClient implements REST {
   }
 
   // Leaderboard
-
+  /**
+   * @param market market identifier
+   * @param limit the maximum number of records to return
+   * @param offset the amount of records to offset for pagination purposes
+   * @param from the starting block height that will included in the search
+   * @param to the ending block height that will included in the search
+   * @param order top/bottom, top returns the highest pnl while bottom returns the lowest pnl
+   */
   public async getLeaderboard(params?: types.GetLeaderboardParams) {
     let url = '/get_leaderboard?'
 
@@ -496,6 +503,7 @@ export class RestClient implements REST {
       offset,
       from,
       to,
+      order,
     } = params
 
     if (market) {
@@ -506,6 +514,9 @@ export class RestClient implements REST {
     }
     if (offset) {
       url += `offset=${offset}&`
+    }
+    if (order) {
+      url += `order=${order}&`
     }
     if (typeof from !== 'undefined') {
       url += `from=${from}&`

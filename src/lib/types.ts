@@ -174,6 +174,7 @@ export interface GetLeaderboardParams {
   to?: number
   offset?: number
   limit?: number
+  order?: string
 }
 
 export interface SetTradingFlagMsg {
