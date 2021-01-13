@@ -849,11 +849,13 @@ export interface AccruedRewardsResponse {
 export interface GetLeaderboardResponse {
   count: string
   data: LeaderboardDataResponse[]
-  from_block: string
   limit: string
   market: string
   offset: string
+  from_block: string
   to_block: string
+  from_time: string
+  to_time: string
 }
 
 export interface LeaderboardDataResponse {

@@ -49,7 +49,7 @@ export interface REST {
   getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
   getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any>
   getInsuranceFundBalance(): Promise<Array<object>>
-  getLeaderboard(params?: types.GetLeaderboardParams): Promise<object>
+  getLeaderboard(params?: types.GetLeaderboardParams): Promise<GetLeaderboardResponse>
   getLeverage(params: types.MarketAndAddressGetterParams): Promise<object>
   getLiquidityPools(): Promise<null | types.GetLiquidityPoolsResponse>
   getLiquidationTrades(): Promise<Array<object>>
@@ -494,7 +494,7 @@ export class RestClient implements REST {
    * @param to the ending block height that will included in the search
    * @param order top/bottom, top returns the highest pnl while bottom returns the lowest pnl
    */
-  public async getLeaderboard(params?: types.GetLeaderboardParams) {
+  public async getLeaderboard(params?: types.GetLeaderboardParams): Promise<types.GetLeaderboardResponse> {
     let url = '/get_leaderboard?'
 
     const {
