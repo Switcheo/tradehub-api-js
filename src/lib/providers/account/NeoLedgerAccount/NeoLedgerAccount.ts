@@ -1,6 +1,6 @@
-import TransportWebUSB from '@ledgerhq/hw-transport-webusb'
+import Transport from '@ledgerhq/hw-transport'
 
-import { AddressOptions, NEOAddress } from "../../../utils";
+import { AddressOptions, getLedgerTransport, NEOAddress } from "../../../utils";
 import NeonLedger, { getNEOBIP44String } from './NeonLedger'
 import { AccountProvider } from "../AccountProvider";
 
@@ -9,14 +9,14 @@ const CONNECT_POLL_ATTEMPTS = 10 // attempts
 
 export class NeoLedgerAccount extends AccountProvider {
 
-  public readonly ledger: TransportWebUSB
+  public readonly ledger: Transport
   public readonly publicKey: string
   public readonly scriptHash: string
   public readonly displayAddress: string
 
   private static _connectPolling = false
 
-  private constructor(ledger: TransportWebUSB, publicKey: string) {
+  private constructor(ledger: Transport, publicKey: string) {
     super()
     this.ledger = ledger
     this.publicKey = publicKey
@@ -25,14 +25,7 @@ export class NeoLedgerAccount extends AccountProvider {
   }
 
   static async connect() {
-    const usbDevices = await this.getUSBDevices()
-
-    if (!usbDevices.length) {
-      throw new Error('Could not connect to USB Ledger')
-    }
-
-    const usbDevice = usbDevices[0]
-    let connectResult: [TransportWebUSB, string] | null = null
+    let connectResult: [Transport, string] | null = null
     let connectionAttempts = 0
 
     NeoLedgerAccount._connectPolling = true
@@ -61,7 +54,7 @@ export class NeoLedgerAccount extends AccountProvider {
           resolve(null)
         }, CONNECT_POLL_INTERVAL)
 
-        NeoLedgerAccount.tryConnect(usbDevice).then(result => {
+        NeoLedgerAccount.tryConnect().then(result => {
           // check for timeout signal, abandon result if timed out
           if (timedOut) return
 
@@ -92,9 +85,9 @@ export class NeoLedgerAccount extends AccountProvider {
    * Used to try connecting with ledger, executes a public key request
    * on USB device to detect NEO app connection
    */
-  private static async tryConnect(usbDevice: string): Promise<[TransportWebUSB, string]> {
+  private static async tryConnect(): Promise<[Transport, string]> {
     const bipString = getNEOBIP44String()
-    const ledger = await TransportWebUSB.open(usbDevice)
+    const ledger = await getLedgerTransport()
 
     // get public key to assert that NEO app is open
     const publicKey = await NeonLedger.getPublicKey(ledger, bipString)
@@ -114,12 +107,6 @@ export class NeoLedgerAccount extends AccountProvider {
     const bipString = getNEOBIP44String()
     const ledger = this.useLedger()
     return await NeonLedger.getSignature(ledger, msg, bipString)
-  }
-
-  private static async getUSBDevices() {
-    const devices = await NeonLedger.getDevicePaths(TransportWebUSB as any)
-
-    return devices
   }
 
   private useLedger() {

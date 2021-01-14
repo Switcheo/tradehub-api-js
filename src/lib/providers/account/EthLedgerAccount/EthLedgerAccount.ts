@@ -1,9 +1,7 @@
 import EthApp from '@ledgerhq/hw-app-eth'
-import Transport from "@ledgerhq/hw-transport"
-import TransportWebUSB from '@ledgerhq/hw-transport-webusb'
 import { ethers } from 'ethers'
 
-import { AddressOptions, ETHAddress } from "../../../utils"
+import { AddressOptions, ETHAddress, getLedgerTransport } from "../../../utils"
 import { AccountProvider } from "../AccountProvider"
 
 const CONNECT_POLL_INTERVAL = 3000 // ms
@@ -33,13 +31,9 @@ export class EthLedgerAccount extends AccountProvider {
   }
 
   static async connect() {
-    const usbDevices = await this.getUSBDevices()
+    // const usbDevices = await this.getUSBDevices()
 
-    if (!usbDevices.length) {
-      throw new Error('Could not connect to USB Ledger')
-    }
-
-    const usbDevice = usbDevices[0]
+    // const usbDevice = usbDevices?.[0] ?? ''
     let connectResult: [typeof EthApp, string, string] | null = null
     let connectionAttempts = 0
 
@@ -69,7 +63,7 @@ export class EthLedgerAccount extends AccountProvider {
           resolve(null)
         }, CONNECT_POLL_INTERVAL)
 
-        EthLedgerAccount.tryConnect(usbDevice).then(result => {
+        EthLedgerAccount.tryConnect().then(result => {
           // check for timeout signal, abandon result if timed out
           if (timedOut) return
 
@@ -100,17 +94,18 @@ export class EthLedgerAccount extends AccountProvider {
    * Used to try connecting with ledger, executes a public key request
    * on USB device to detect ETH app connection
    */
-  private static async tryConnect(usbDevice: string): Promise<[typeof EthApp, string, string]> {
+  private static async tryConnect(): Promise<[typeof EthApp, string, string]> {
     try {
-      const bipString = EthLedgerAccount.getETHBIP44String()
-      const ledger = await TransportWebUSB.open(usbDevice)
+      const transport = await getLedgerTransport()
 
       // get public key to assert that NEO app is open
-      const ethApp = new EthApp(ledger)
+      const ethApp = new EthApp(transport)
+      const bipString = EthLedgerAccount.getETHBIP44String()
       const { publicKey, address } = await ethApp.getAddress(bipString)
 
       return [ethApp, publicKey, address]
     } catch (err) {
+      console.error(err)
       if (err.statusCode) {
         throw new Error('ETH app is not open')
       }
@@ -179,27 +174,11 @@ export class EthLedgerAccount extends AccountProvider {
     return overrideBIP44 ?? this.bip44String ?? EthLedgerAccount.getETHBIP44String()
   }
 
-  private static async getUSBDevices() {
-    const devices = await this.getDevicePaths(TransportWebUSB as any)
-
-    return devices
-  }
-
   private useEthApp() {
     if (!this.ethApp) {
       throw new Error('Ledger is not initialized')
     }
 
     return this.ethApp
-  }
-
-  private static async getDevicePaths(
-    ledgerLibrary: typeof Transport
-  ): Promise<ReadonlyArray<string>> {
-    const supported = await ledgerLibrary.isSupported();
-    if (!supported) {
-      throw new Error(`Your computer does not support the ledger!`);
-    }
-    return await ledgerLibrary.list();
   }
 }

@@ -2,6 +2,7 @@ export * from './address'
 export * from './encoder'
 export * from './wallet'
 export * from './logger'
+export * from './ledger'
 
 import BigNumber from 'bignumber.js'
 
