@@ -594,7 +594,7 @@ export class RestClient implements REST {
 
   public async getRichList(params: types.TokenOnlyGetterParams) {
     const { token } = params
-    return this.fetchJson(`/get_rich_list?=token=${token}`)
+    return this.fetchJson(`/get_rich_list?token=${token}`)
   }
 
   public async getAverageBlocktime() {
