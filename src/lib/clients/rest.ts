@@ -103,6 +103,7 @@ export interface REST {
   getDelegatorRedelegations(params?: types.AddressOnlyGetterParams): Promise<any>
   getAllDelegatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
   getDelegatorDelegationRewards(params?: types.AddressOnlyGetterParams): Promise<any>
+  getDistributionParams(): Promise<any>
 
   // private admin
   setTradingFlag(msg: types.SetTradingFlagMsg, options?: types.Options): Promise<any>
@@ -783,6 +784,10 @@ export class RestClient implements REST {
     const distribution = await this.fetchCosmosJson(`/distribution/parameters`)
     const poolAllocation = new BigNumber(distribution.result.liquidity_provider_reward)
     return new BigNumber(total).times(poolAllocation).dp(8).toNumber()
+  }
+
+  public async getDistributionParams(): Promise<any> {
+    return this.fetchCosmosJson(`/distribution/parameters`)
   }
 
   public async getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any> {
