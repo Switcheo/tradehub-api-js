@@ -385,7 +385,12 @@ export class WSConnector {
       const channelHandler = this.channelHandlers[message.channel]
       if (!channelHandler) {
         this.debugLog(`handler not found for channel: ${message.channel}`)
-        this.unsubscribe({ channel: message.channel as WSConnectorTypes.WSChannel })
+        try {
+          const params = parseChannelId(message.channel)
+          this.unsubscribe({ channel: params.channel as WSConnectorTypes.WSChannel })
+        } catch (error) {
+          // ignore error
+        }
         return
       }
 
