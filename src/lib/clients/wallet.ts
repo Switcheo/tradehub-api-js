@@ -27,10 +27,13 @@ import { chunk } from 'lodash'
 import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 import { EthLedgerAccount, EthLedgerSigner } from '../providers'
+import { logger } from '../utils'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
 export type OnSignCompleteCallback = (signature: string) => void
+
+const SEQ_NUM_ERROR = 'unauthorized: signature verification failed; verify correct account sequence and chain-id'
 
 export interface SignMessageOptions {
   memo?: string,
@@ -620,7 +623,7 @@ export class WalletClient {
     const ethProvider = this.getEthProvider()
     const ledgerSigner = new EthLedgerSigner(ethProvider, ledger)
     const contract = new ethers.Contract(contractAddress, ERC20_ABI, ethProvider)
-    
+
     const nonce = await ethProvider.getTransactionCount(ledger.displayAddress)
     const approveResultTx = await contract.connect(ledgerSigner).approve( // eslint-disable-line no-await-in-loop
       token.lock_proxy_hash,
@@ -822,6 +825,7 @@ export class WalletClient {
   }
 
   public async signAndBroadcast(msgs: object[], types: string[], options) {
+    logger("sign and broadcast", msgs, types, options)
     if (this.useSequenceCounter === true) {
       return await this.seqSignAndBroadcast(msgs, types, options)
     }
@@ -834,6 +838,7 @@ export class WalletClient {
   }
 
   public async seqSignAndBroadcast(msgs: object[], types: string[], options) {
+    logger("seq number", this.sequenceCounter)
     const concreteMsgs = this.constructConcreteMsgs(msgs, types)
     const id = Math.random().toString(36).substr(2, 9)
     this.broadcastQueue.push({ id, concreteMsgs, options })
@@ -929,11 +934,25 @@ export class WalletClient {
 
     let response, rawLogs, error
     try {
+      logger("sign tx with seq number", options.sequence)
       const signature = await this.signMessage(allConcreteMsgs, options)
       const broadcastTxBody = new Transaction(allConcreteMsgs, [signature], options)
 
       response = await this.broadcast(broadcastTxBody)
-      response.sequence = currSequence
+
+      if (response?.raw_log === SEQ_NUM_ERROR) {
+        logger("encountered unauthorized signature error")
+        // reset seq number and retry tx once
+        const { result } = await this.getAccount()
+        this.sequenceCounter = result.value.sequence
+        options.sequence = this.sequenceCounter.toString()
+        logger("retry sign tx with seq number", options.sequence)
+        const signature = await this.signMessage(allConcreteMsgs, options)
+        const broadcastTxBody = new Transaction(allConcreteMsgs, [signature], options)
+        response = await this.broadcast(broadcastTxBody)
+      }
+
+      response.sequence = options.sequence
 
       try {
         rawLogs = JSON.parse(response.raw_log)
@@ -967,12 +986,9 @@ export class WalletClient {
       this.broadcastResults[id] = responseCopy
     }
 
-    if (response) {
-      const isInvalidSequence = response.raw_log === 'unauthorized: signature verification failed; verify correct account sequence and chain-id'
-      if (isInvalidSequence) {
-        // reset sequenceCounter
-        this.sequenceCounter = undefined
-      }
+    if (response?.raw_log === SEQ_NUM_ERROR) {
+      // reset sequenceCounter
+      this.sequenceCounter = undefined
     }
 
     this.isBroadcastQueuePaused = false
