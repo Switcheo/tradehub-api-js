@@ -15,6 +15,7 @@ export * from './lib/providers'
 export * from './lib/types'
 export * from './lib/utils'
 export * from './lib/websocket'
+export * from './lib/tradehub'
 
 export {
   constants,
