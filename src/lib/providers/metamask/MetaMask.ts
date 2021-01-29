@@ -37,7 +37,7 @@ const getEncryptMessage = (input: string) => {
   -----BEGIN MNEMONIC PHRASE-----
   ${input}
   -----END MNEMONIC PHRASE-----
-  `.trim().replaceAll(/^\s+/gm, '')
+  `.trim().replace(/^\s+/gm, '')
 }
 
 interface RequestArguments {
