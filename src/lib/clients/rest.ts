@@ -817,7 +817,7 @@ export class RestClient implements REST {
             lastHeight = period.BlockHeight
             const totalCommit = new BigNumber(period.TotalCommitment)
             const ratio = commitmentPower.div(totalCommit)
-            period.Rewards.forEach(reward => {
+            period.Rewards?.forEach(reward => {
                 const rewardCut = new BigNumber(reward.amount).times(ratio).integerValue(BigNumber.ROUND_DOWN)
                 if (reward.denom in accruedRewards) {
                   accruedRewards[reward.denom] = accruedRewards[reward.denom].plus(rewardCut)
