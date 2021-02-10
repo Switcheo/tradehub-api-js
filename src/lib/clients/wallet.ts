@@ -26,7 +26,6 @@ import {
 import { chunk } from 'lodash'
 import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
-import { EthLedgerAccount, EthLedgerSigner } from '../providers'
 import { Fee } from '../types'
 import { logger } from '../utils'
 
@@ -62,21 +61,20 @@ export interface InitParams {
   fees?: GasFees
 }
 
-export interface LockEthParams {
+interface ETHTxParams {
   gasPriceGwei: BigNumber
   gasLimit: BigNumber
+  ethAddress: string
+  signer: ethers.Signer
+}
+
+export interface LockEthParams extends ETHTxParams {
   amount: BigNumber
   token: TokenObject
-  ledger: EthLedgerAccount
-  bip44String?: string
   signCompleteCallback?: () => void
 }
-export interface ApproveERC20Params {
-  gasPriceGwei: BigNumber
-  gasLimit: BigNumber
+export interface ApproveERC20Params extends ETHTxParams {
   token: TokenObject
-  ledger: EthLedgerAccount
-  bip44String?: string
   signCompleteCallback?: () => void
 }
 
@@ -612,16 +610,15 @@ export class WalletClient {
     return tokens
   }
 
-  public async ledgerApproveERC20(params: ApproveERC20Params) {
-    const { token, gasPriceGwei, gasLimit, ledger } = params
+  public async approveERC20(params: ApproveERC20Params) {
+    const { token, gasPriceGwei, gasLimit, ethAddress, signer } = params
     const contractAddress = token.asset_id
 
     const ethProvider = this.getEthProvider()
-    const ledgerSigner = new EthLedgerSigner(ethProvider, ledger)
     const contract = new ethers.Contract(contractAddress, ERC20_ABI, ethProvider)
 
-    const nonce = await ethProvider.getTransactionCount(ledger.displayAddress)
-    const approveResultTx = await contract.connect(ledgerSigner).approve( // eslint-disable-line no-await-in-loop
+    const nonce = await ethProvider.getTransactionCount(ethAddress)
+    const approveResultTx = await contract.connect(signer).approve( // eslint-disable-line no-await-in-loop
       token.lock_proxy_hash,
       ethers.constants.MaxUint256,
       {
@@ -644,8 +641,8 @@ export class WalletClient {
     return allowance
   }
 
-  public async ledgerLockEthDeposit(params: LockEthParams) {
-    const { token, amount, gasPriceGwei, gasLimit, ledger } = params
+  public async lockEthDeposit(params: LockEthParams) {
+    const { token, amount, gasPriceGwei, gasLimit, ethAddress, signer } = params
 
     if (gasLimit.lt(150000)) {
       throw new Error('Minimum gas required: 150,000')
@@ -660,11 +657,10 @@ export class WalletClient {
     const contractAddress = this.network.ETH_LOCKPROXY
 
     const ethProvider = this.getEthProvider()
-    const ledgerSigner = new EthLedgerSigner(ethProvider, ledger)
 
-    const nonce = await ethProvider.getTransactionCount(ledger.displayAddress)
+    const nonce = await ethProvider.getTransactionCount(ethAddress)
     const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, ethProvider)
-    const lockResultTx = await contract.connect(ledgerSigner).lock( // eslint-disable-line no-await-in-loop
+    const lockResultTx = await contract.connect(signer).lock( // eslint-disable-line no-await-in-loop
       assetId, // _assetHash
       targetProxyHash, // _targetProxyHash
       swthAddress, // _toAddress

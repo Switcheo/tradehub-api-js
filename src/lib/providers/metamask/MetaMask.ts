@@ -67,6 +67,8 @@ export class MetaMask {
   constructor(
     public readonly network: Network,
   ) {
+    this.metamaskAPI = (window as any).ethereum as MetaMaskAPI | undefined
+
     const providerUrl = NETWORK[network].ETH_URL
     if (providerUrl) {
       this.provider = new ethers.providers.JsonRpcProvider(providerUrl)
@@ -81,24 +83,28 @@ export class MetaMask {
     return this.provider
   }
 
+  async getSigner(): Promise<ethers.Signer> {
+    const ethereum = await this.getConnectedAPI()
+    return new ethers.providers.Web3Provider(ethereum).getSigner()
+  }
+
+  getAPI(): MetaMaskAPI | null {
+    return this.metamaskAPI
+  }
+
   async getConnectedAPI(): Promise<MetaMaskAPI> {
-    if (this.metamaskAPI && this.metamaskAPI.isConnected()) {
+    if (!this.metamaskAPI) {
+      this.metamaskAPI = (window as any).ethereum as MetaMaskAPI | null ?? null
+      if (!this.metamaskAPI) {
+        throw new Error('MetaMask not connected, please check that your extension is enabled')
+      }
+    }
+
+    if (this.metamaskAPI?.isConnected()) {
       return this.metamaskAPI
     }
 
-    const metamaskAPI = (window as any).ethereum as MetaMaskAPI
-
-    if (metamaskAPI === undefined) {
-      throw new Error('MetaMask not connected, please check that your extension is enabled')
-    }
-
-    if (metamaskAPI.isConnected()) {
-      return metamaskAPI
-    }
-
-    await metamaskAPI.request({ method: 'eth_requestAccounts' })
-
-    this.metamaskAPI = metamaskAPI
+    await this.metamaskAPI.request({ method: 'eth_requestAccounts' })
     return this.metamaskAPI
   }
 
