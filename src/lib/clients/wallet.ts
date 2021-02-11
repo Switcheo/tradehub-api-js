@@ -5,7 +5,7 @@ import { BigNumber } from 'bignumber.js'
 import Dagger from '@maticnetwork/eth-dagger'
 import { ethers } from 'ethers'
 import { CONFIG, getBech32Prefix, getNetwork, Network } from '../config'
-import { Fee, StdSignDoc, Transaction } from '../containers'
+import { StdSignDoc, Transaction } from '../containers'
 import { marshalJSON, sortAndStringifyJSON } from '../utils/encoder'
 import { Address, getPath, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
 import { ConcreteMsg } from '../containers/Transaction'
@@ -27,6 +27,7 @@ import { chunk } from 'lodash'
 import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 import { EthLedgerAccount, EthLedgerSigner } from '../providers'
+import { Fee } from '../types'
 import { logger } from '../utils'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
@@ -34,11 +35,6 @@ export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
 export type OnSignCompleteCallback = (signature: string) => void
 
 const SEQ_NUM_ERROR = 'unauthorized: signature verification failed; verify correct account sequence and chain-id'
-
-export interface SignMessageOptions {
-  memo?: string,
-  sequence?: string
-}
 
 export interface GasFees {
   [msgType: string]: string,

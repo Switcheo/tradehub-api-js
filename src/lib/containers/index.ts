@@ -1,2 +1,2 @@
 export { Transaction } from './Transaction'
-export { Fee, StdSignDoc } from './StdSignDoc'
+export { StdSignDoc } from './StdSignDoc'

@@ -25,13 +25,3 @@ export class StdSignDoc {
     this.memo = memo
   }
 }
-
-export class Fee {
-  public readonly amount: string
-  public readonly gas: string
-
-  constructor(amount, gas) {
-    this.amount = amount
-    this.gas = gas
-  }
-}

@@ -1,13 +1,8 @@
 import { BigNumber } from 'bignumber.js'
 
 import { CONFIG } from '../config'
-import { Fee } from './StdSignDoc'
+import { TransactionOptions, Fee } from '../types'
 
-export interface TransactionOptions {
-  fee?: Fee
-  mode?: string
-  memo?: string
-}
 export interface ConcreteMsg {
   type: string
   value: object

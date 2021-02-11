@@ -1,6 +1,4 @@
 import BigNumber from 'bignumber.js'
-import { SignMessageOptions } from './clients/wallet'
-import { TransactionOptions } from './containers/Transaction'
 
 // Orders
 export const CREATE_ORDER_MSG_TYPE = 'order/MsgCreateOrder'
@@ -85,6 +83,28 @@ export enum Network {
 }
 
 export type Bech32Type = 'main' | 'validator' | 'consensus'
+
+export interface SignMessageOptions {
+  memo?: string,
+  sequence?: string
+}
+
+
+export class Fee {
+  public readonly amount: string
+  public readonly gas: string
+
+  constructor(amount, gas) {
+    this.amount = amount
+    this.gas = gas
+  }
+}
+
+export interface TransactionOptions {
+  fee?: Fee
+  mode?: string
+  memo?: string
+}
 
 export interface PriceLevel {
   price: string
