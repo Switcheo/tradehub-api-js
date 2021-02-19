@@ -687,6 +687,49 @@ export class WalletClient {
     return lockResultTx
   }
 
+  public async lockBscDeposits(params: LockEthParams) {
+    const { token, amount, gasPriceGwei, gasLimit, ethAddress, signer } = params
+
+    if (gasLimit.lt(150000)) {
+      throw new Error('Minimum gas required: 150,000')
+    }
+
+    const assetId = `0x${token.asset_id}`
+    const targetProxyHash = `0x${this.getTargetProxyHash(token)}`
+    const feeAddress = `0x${this.network.FEE_ADDRESS}`
+    const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
+    const swthAddress = ethers.utils.hexlify(this.address)
+    const contractAddress = this.network.BSC_LOCKPROXY
+    const ethProvider = this.getEthProvider()
+    const nonce = await ethProvider.getTransactionCount(ethAddress)
+    const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, ethProvider)
+    const lockResultTx = await contract.connect(signer).lock( // eslint-disable-line no-await-in-loop
+      assetId, // _assetHash
+      targetProxyHash, // _targetProxyHash
+      swthAddress, // _toAddress
+      toAssetHash, // _toAssetHash
+      feeAddress, // _feeAddress
+      [ // _values
+        amount.toString(), // amount
+        '0', // feeAmount
+        amount.toString(), // callAmount
+      ],
+      {
+        nonce,
+        value: '0',
+        gasPrice: ethers.BigNumber.from(gasPriceGwei.shiftedBy(9).toString()),
+        gasLimit: ethers.BigNumber.from(gasLimit.toString()),
+
+        // add tx value for ETH deposits, omit if ERC20 token
+        ...token.asset_id === '0000000000000000000000000000000000000000' && {
+          value: amount.toString(),
+        },
+      },
+    )
+
+    return lockResultTx
+  }
+
   public async getNeoRpcUrl(): Promise<string> {
     try {
       const response = await fetch(`https://api.switcheo.network/v2/network/best_node`)
