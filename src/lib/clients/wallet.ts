@@ -610,6 +610,45 @@ export class WalletClient {
     return tokens
   }
 
+  public async getBscExternalBalances(address: string) {
+    // const tokenList = await this.getTokens()
+    // const tokens = tokenList.filter(token =>
+    //   token.blockchain == Blockchain.Ethereum &&
+    //   token.asset_id.length == 40 &&
+    //   ('0x' + token.lock_proxy_hash).toLowerCase() == this.network.ETH_LOCKPROXY &&
+    //   (!whitelistDenoms || whitelistDenoms.includes(token.denom))
+    // )
+    // const assetIds = tokens.map(token => '0x' + token.asset_id)
+    const provider = this.getEthProvider()
+    const tokens = [
+      {
+        asset_id: 'e3DA12B4999453ADc7a9FBDb8a07C191eE0a4bA7',
+        blockchain: 'bsc',
+        chain_id: 97,
+        decimals: 8,
+        delegated_supply: '100000000000000000',
+        denom: 'swth',
+        is_active: true,
+        is_collateral: false,
+        lock_proxy_hash: '0xB7B777722145221B61Ffc6D969643FCE7bE44929',
+        name: 'Switcheo',
+        originator: 'swth1mw90en8tcqnvdjhp64qmyhuq4qasvhy25dpmvw',
+        symbol: 'swth',
+        external_balance: '1',
+      }
+    ]
+    const assetIds = tokens.map(token => '0x' + token.asset_id)
+    const contractAddress = this.network.BSC_BALANCE_READER
+    const contract = new ethers.Contract(contractAddress, BALANCE_READER_ABI, provider)
+
+    const balances = await contract.getBalances(address, assetIds)
+    for (let i = 0; i < tokens.length; i++) {
+      tokens[i].external_balance = balances[i].toString()
+    }
+
+    return tokens
+  }
+
   public async approveERC20(params: ApproveERC20Params) {
     const { token, gasPriceGwei, gasLimit, ethAddress, signer } = params
     const contractAddress = token.asset_id
