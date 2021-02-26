@@ -3,33 +3,38 @@ import RegistryContract from './registry_contract'
 import { ethers } from 'ethers'
 import { Network } from '../../types'
 import { NETWORK } from '../../config'
+import { Blockchain } from '../../constants'
 
 const CONTRACT_HASH = {
-  // use same ropsten contract for all non-mainnet uses
-  [Network.TestNet]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
-  [Network.DevNet]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
-  [Network.LocalHost]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
+  [Blockchain.Ethereum]: {
+    // use same ropsten contract for all non-mainnet uses
+    [Network.TestNet]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
+    [Network.DevNet]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
+    [Network.LocalHost]: '0x23629C94F4e8b719094f5D1Ae1c1AA8d6d687966',
 
-  [Network.MainNet]: '0xf4552877A40c1527D38970F170993660084D4541',
-}
+    [Network.MainNet]: '0xf4552877A40c1527D38970F170993660084D4541',
+  } as const,
+  [Blockchain.BinanceSmartChain]: {
+    // use same testnet contract for all non-mainnet uses
+    [Network.TestNet]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
+    [Network.DevNet]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
+    [Network.LocalHost]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
 
-const ETH_CHAIN_NAMES = {
+    [Network.MainNet]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
+  } as const
+} as const
+
+const CHAIN_NAMES = {
   1: 'MainNet',
   3: 'Ropsten',
+  56: 'BSC MainNet',
+  97: 'BSC TestNet',
 } as const
 
 const ENCRYPTION_VERSION = 'x25519-xsalsa20-poly1305'
 
 const MNEMONIC_MATCH_REGEX = /-----BEGIN MNEMONIC PHRASE-----([a-z\s]*)-----END MNEMONIC PHRASE-----/mi
 const MNEMONIC_MATCH_REGEX_LEGACY = /^[a-z\s]*$/i
-
-const getRequiredEthChain = (network: Network) => {
-  if (network === Network.MainNet) {
-    return 1
-  }
-
-  return 3
-}
 
 const getEncryptMessage = (input: string) => {
   return `
@@ -61,6 +66,7 @@ export interface CallContractArgs {
  */
 export class MetaMask {
   private metamaskAPI: MetaMaskAPI | null = null
+  private blockchain: Blockchain = Blockchain.Ethereum
 
   public readonly provider: ethers.providers.Provider | null = null
 
@@ -81,6 +87,10 @@ export class MetaMask {
     }
 
     return this.provider
+  }
+
+  public getBlockchain(): Blockchain {
+    return this.blockchain
   }
 
   async getSigner(): Promise<ethers.Signer> {
@@ -143,7 +153,7 @@ export class MetaMask {
       params: [defaultAccount],
     }) as string
 
-    const messageToEncrypt = getEncryptMessage(mnemonic);
+    const messageToEncrypt = getEncryptMessage(mnemonic)
 
     const cipher = ethSignUtils.encrypt(publicKey, {
       data: messageToEncrypt,
@@ -200,10 +210,10 @@ export class MetaMask {
     const chainIdHex = await metamaskAPI.request({ method: 'eth_chainId' }) as string
     const chainId = parseInt(chainIdHex, 16)
 
-    const requiredChainId = getRequiredEthChain(this.network)
+    const requiredChainId = this.getRequiredChain(this.network, chainId)
     if (chainId !== requiredChainId) {
-      const requiredNetworkName = ETH_CHAIN_NAMES[requiredChainId] || ETH_CHAIN_NAMES[3]
-      throw new Error(`MetaMask not connected to correct network, please use ${requiredNetworkName}`)
+      const requiredNetworkName = CHAIN_NAMES[requiredChainId] || CHAIN_NAMES[3]
+      throw new Error(`MetaMask not connected to correct network, please use ${requiredNetworkName} (Chain ID: ${requiredChainId})`)
     }
 
     if (!cipherTextHex || !cipherTextHex.length) {
@@ -243,10 +253,35 @@ export class MetaMask {
     return match[1]?.trim()
   }
 
+  private getRequiredChain(network: Network, currentChainId: number) {
+    // set correct blockchain given the chain ID
+    if (network === Network.MainNet) {
+      if (currentChainId === 1) {
+        this.blockchain = Blockchain.Ethereum
+        return currentChainId
+      }
+      if (currentChainId === 56) {
+        this.blockchain = Blockchain.BinanceSmartChain
+        return currentChainId
+      }
+      return 1
+    }
+
+    if (currentChainId === 3) {
+      this.blockchain = Blockchain.Ethereum
+      return currentChainId
+    }
+    if (currentChainId === 97) {
+      this.blockchain = Blockchain.BinanceSmartChain
+      return currentChainId
+    }
+    return 3
+  }
+
   private getContractHash() {
-    const contractHash = CONTRACT_HASH[this.network]
+    const contractHash = CONTRACT_HASH[this.blockchain][this.network]
     if (!contractHash) {
-      throw new Error(`MetaMask login is not supported on ${this.network}`)
+      throw new Error(`MetaMask login is not supported on ${this.network} on ${this.blockchain}`)
     }
 
     return contractHash
