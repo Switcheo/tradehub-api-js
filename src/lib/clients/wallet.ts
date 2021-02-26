@@ -589,6 +589,13 @@ export class WalletClient {
     return ethers.getDefaultProvider(this.network.ETH_ENV)
   }
 
+  public getBscProvider() {
+    if (this.network.BSC_URL.length > 0) {
+      return new ethers.providers.JsonRpcProvider(this.network.BSC_URL)
+    }
+    throw new Error(`BSC_URL for network: ${this.network}, not provided`)
+  }
+
   public async getEthExternalBalances(address: string, whitelistDenoms?: string[]) {
     const tokenList = await this.getTokens()
     const tokens = tokenList.filter(token =>
@@ -739,9 +746,9 @@ export class WalletClient {
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
     const swthAddress = ethers.utils.hexlify(this.address)
     const contractAddress = this.network.BSC_LOCKPROXY
-    const ethProvider = this.getEthProvider()
-    const nonce = await ethProvider.getTransactionCount(ethAddress)
-    const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, ethProvider)
+    const bscProvider = this.getBscProvider()
+    const nonce = await bscProvider.getTransactionCount(ethAddress)
+    const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, bscProvider)
     const lockResultTx = await contract.connect(signer).lock( // eslint-disable-line no-await-in-loop
       assetId, // _assetHash
       targetProxyHash, // _targetProxyHash
