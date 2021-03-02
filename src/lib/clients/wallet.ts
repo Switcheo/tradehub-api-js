@@ -629,7 +629,7 @@ export class WalletClient {
     const provider = this.getEthProvider()
     const tokens = [
       {
-        asset_id: 'e3DA12B4999453ADc7a9FBDb8a07C191eE0a4bA7',
+        asset_id: 'D8c2F5ec90ef36552FaEfb3F700Eb3474B5A8c38',
         blockchain: 'bsc',
         chain_id: 97,
         decimals: 8,
@@ -637,7 +637,7 @@ export class WalletClient {
         denom: 'swth',
         is_active: true,
         is_collateral: false,
-        lock_proxy_hash: '0xB7B777722145221B61Ffc6D969643FCE7bE44929',
+        lock_proxy_hash: 'C42FC45Ad5D50e0a3bFDB4E58cdEEb4B0A3B11BF',
         name: 'Switcheo',
         originator: 'swth1mw90en8tcqnvdjhp64qmyhuq4qasvhy25dpmvw',
         symbol: 'swth',
