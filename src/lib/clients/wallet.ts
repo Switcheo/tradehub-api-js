@@ -427,6 +427,13 @@ export class WalletClient {
     return code != '0x'
   }
 
+  public async isBscContract(address) {
+    const provider = this.getBscProvider()
+    const code = await provider.getCode(address)
+    // non-contract addresses should return 0x
+    return code != '0x'
+  }
+
   public async getDepositFeeAmount(token, depositAddress) {
     const feeInfo = await this.getFeeInfo(token.denom)
     if (!feeInfo.details?.deposit?.fee) {

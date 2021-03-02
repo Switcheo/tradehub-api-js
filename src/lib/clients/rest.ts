@@ -1420,6 +1420,18 @@ export class RestClient implements REST {
       return address.substr(2)
     }
 
+    if (blockchain === Blockchain.BinanceSmartChain) {
+      const isValidAddress = ethers.utils.isAddress(address)
+      if (!isValidAddress) {
+        throw new Error('Invalid Bsc address')
+      }
+      const isContract = await this.wallet.isBscContract(address)
+      if (isContract) {
+        throw new Error('Cannot withdraw to a contract address: ' + address)
+      }
+      return address.substr(2)
+    }
+
     throw new Error('formatting of withdrawal address not yet supported for ' + blockchain)
   }
 
