@@ -1,0 +1,5 @@
+export { default as balanceReader } from './balanceReader.json'
+export { default as erc20 } from './erc20.json'
+export { default as keyStorage } from './keyStorage.json'
+export { default as lockProxy } from './lockProxy.json'
+export { default as vault } from './vault.json'

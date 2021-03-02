@@ -624,34 +624,16 @@ export class WalletClient {
     return tokens
   }
 
-  public async getBscExternalBalances(address: string) {
-    // const tokenList = await this.getTokens()
-    // const tokens = tokenList.filter(token =>
-    //   token.blockchain == Blockchain.Ethereum &&
-    //   token.asset_id.length == 40 &&
-    //   ('0x' + token.lock_proxy_hash).toLowerCase() == this.network.ETH_LOCKPROXY &&
-    //   (!whitelistDenoms || whitelistDenoms.includes(token.denom))
-    // )
-    // const assetIds = tokens.map(token => '0x' + token.asset_id)
-    const provider = this.getEthProvider()
-    const tokens = [
-      {
-        asset_id: 'D8c2F5ec90ef36552FaEfb3F700Eb3474B5A8c38',
-        blockchain: 'bsc',
-        chain_id: 97,
-        decimals: 8,
-        delegated_supply: '100000000000000000',
-        denom: 'swth',
-        is_active: true,
-        is_collateral: false,
-        lock_proxy_hash: 'C42FC45Ad5D50e0a3bFDB4E58cdEEb4B0A3B11BF',
-        name: 'Switcheo',
-        originator: 'swth1mw90en8tcqnvdjhp64qmyhuq4qasvhy25dpmvw',
-        symbol: 'swth',
-        external_balance: '1',
-      }
-    ]
+  public async getBscExternalBalances(address: string, whitelistDenoms?: string[]) {
+    const tokenList = await this.getTokens()
+    const tokens = tokenList.filter(token =>
+      token.blockchain == Blockchain.Ethereum &&
+      token.asset_id.length == 40 &&
+      ('0x' + token.lock_proxy_hash).toLowerCase() == this.network.ETH_LOCKPROXY &&
+      (!whitelistDenoms || whitelistDenoms.includes(token.denom))
+    )
     const assetIds = tokens.map(token => '0x' + token.asset_id)
+    const provider = this.getBscProvider()
     const contractAddress = this.network.BSC_BALANCE_READER
     const contract = new ethers.Contract(contractAddress, BALANCE_READER_ABI, provider)
 
@@ -773,7 +755,7 @@ export class WalletClient {
         gasPrice: ethers.BigNumber.from(gasPriceGwei.shiftedBy(9).toString()),
         gasLimit: ethers.BigNumber.from(gasLimit.toString()),
 
-        // add tx value for ETH deposits, omit if ERC20 token
+        // add tx value for BNB deposits, omit if ERC20 token
         ...token.asset_id === '0000000000000000000000000000000000000000' && {
           value: amount.toString(),
         },

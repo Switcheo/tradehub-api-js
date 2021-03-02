@@ -1,9 +1,7 @@
+import { logger } from '@tradehub/utils'
 import NodeWebSocket from 'ws'
-
 import { generateChannelId, parseChannelId } from './channel'
 import * as WSConnectorTypes from './types'
-
-import { logger } from '../utils'
 
 // delay between pings.
 // see WSConnector.intervalHeartbeat

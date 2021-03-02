@@ -2,6 +2,8 @@
   WsWrapper is a wrapper that helps to manage the socket connection with the server.
   Manages IDs for messages
 
+  @deprecated use WSConnector
+ 
   Methods:
     connect
     disconnect

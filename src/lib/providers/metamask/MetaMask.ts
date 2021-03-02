@@ -1,9 +1,9 @@
+import { NETWORK } from '@tradehub/config'
+import { Blockchain, ChainNames } from '@tradehub/constants'
+import { ABIs } from '@tradehub/eth'
+import { Network } from '@tradehub/types'
 import * as ethSignUtils from 'eth-sig-util'
-import RegistryContract from './registry_contract'
 import { ethers } from 'ethers'
-import { Network } from '../../types'
-import { NETWORK } from '../../config'
-import { Blockchain } from '../../constants'
 
 const CONTRACT_HASH = {
   [Blockchain.Ethereum]: {
@@ -24,12 +24,7 @@ const CONTRACT_HASH = {
   } as const
 } as const
 
-const CHAIN_NAMES = {
-  1: 'MainNet',
-  3: 'Ropsten',
-  56: 'BSC MainNet',
-  97: 'BSC TestNet',
-} as const
+const REGISTRY_CONTRACT_ABI = ABIs.keyStorage
 
 const ENCRYPTION_VERSION = 'x25519-xsalsa20-poly1305'
 
@@ -136,7 +131,7 @@ export class MetaMask {
   async getStoredMnemonicCipher(account: string): Promise<string | undefined> {
     const contractHash = this.getContractHash()
     const provider = this.checkProvider()
-    const contract = new ethers.Contract(contractHash, RegistryContract.abi, provider)
+    const contract = new ethers.Contract(contractHash, REGISTRY_CONTRACT_ABI, provider)
     const cipherTextHex: string | undefined = await contract.map(account)
     if (!cipherTextHex?.length || cipherTextHex === '0x') {
       // value would be '0x' if not initialized
@@ -186,7 +181,7 @@ export class MetaMask {
 
     const contractHash = this.getContractHash()
     const provider = this.checkProvider()
-    const contract = new ethers.Contract(contractHash, RegistryContract.abi, provider)
+    const contract = new ethers.Contract(contractHash, REGISTRY_CONTRACT_ABI, provider)
 
     const dataBytes = Buffer.from(encryptedMnemonic, 'hex')
     const unsignedTx = await contract.populateTransaction.Store(dataBytes)
@@ -212,7 +207,7 @@ export class MetaMask {
 
     const requiredChainId = this.getRequiredChain(this.network, chainId)
     if (chainId !== requiredChainId) {
-      const requiredNetworkName = CHAIN_NAMES[requiredChainId] || CHAIN_NAMES[3]
+      const requiredNetworkName = ChainNames[requiredChainId] || ChainNames[3]
       throw new Error(`MetaMask not connected to correct network, please use ${requiredNetworkName} (Chain ID: ${requiredChainId})`)
     }
 

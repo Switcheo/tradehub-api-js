@@ -41,6 +41,10 @@
       "node_modules/@types",
       "src/types"
     ],
+    "baseUrl": "./src",
+    "paths": {
+      "@tradehub/*": ["lib/*"]
+    },
     "resolveJsonModule": true
   },
   "include": [
