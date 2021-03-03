@@ -1,5 +1,13 @@
-export { default as balanceReader } from './balanceReader.json'
-export { default as erc20 } from './erc20.json'
-export { default as keyStorage } from './keyStorage.json'
-export { default as lockProxy } from './lockProxy.json'
-export { default as vault } from './vault.json'
+import balanceReader from'./balanceReader.json'
+import erc20 from'./erc20.json'
+import keyStorage from'./keyStorage.json'
+import lockProxy from'./lockProxy.json'
+import vault from'./vault.json'
+
+export {
+  balanceReader,
+  erc20,
+  keyStorage,
+  lockProxy,
+  vault,
+}

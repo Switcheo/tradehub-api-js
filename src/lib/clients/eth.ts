@@ -185,15 +185,15 @@ export class ETHClient {
   }
 
   public getProviderUrl() {
-    return clientConfig[this.network][this.blockchain].providerUrl
+    return clientConfig[this.blockchain][this.network].providerUrl
   }
 
   public getLockProxyAddress() {
-    return clientConfig[this.network][this.blockchain].lockProxyAddress
+    return clientConfig[this.blockchain][this.network].lockProxyAddress
   }
 
   public getBalanceReaderAddress() {
-    return clientConfig[this.network][this.blockchain].balanceReaderAddress
+    return clientConfig[this.blockchain][this.network].balanceReaderAddress
   }
 }
 

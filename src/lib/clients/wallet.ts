@@ -1,6 +1,5 @@
 import * as bip32 from 'bip32'
 import * as bip39 from 'bip39'
-import fetch from 'node-fetch'
 import { BigNumber } from 'bignumber.js'
 import Dagger from '@maticnetwork/eth-dagger'
 import { ethers } from 'ethers'
@@ -28,6 +27,7 @@ import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 import { Fee } from '../types'
 import { logger } from '../utils'
+import fetch from '../utils/fetch'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
