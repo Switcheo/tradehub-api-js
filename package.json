@@ -16,8 +16,8 @@
     "prepare": "yarn run build",
     "prepublishOnly": "yarn test",
     "build": "run-s clean && run-p build:*",
-    "build:main": "tsc -p tsconfig.json",
-    "build:module": "tsc -p tsconfig.module.json",
+    "build:main": "tsc -p tsconfig.json && tsc-alias",
+    "build:module": "tsc -p tsconfig.module.json && tsc-alias",
     "fix": "run-s fix:*",
     "fix:tslint": "tslint --fix --project .",
     "test": "run-s build test:*",
@@ -105,6 +105,7 @@
     "open-cli": "^5.0.0",
     "standard-version": "^8.0.1",
     "trash-cli": "^3.0.0",
+    "tsc-alias": "^1.2.6",
     "tslint": "^5.18.0",
     "tslint-immutable": "^6.0.1",
     "typescript": "^3.5.3"
