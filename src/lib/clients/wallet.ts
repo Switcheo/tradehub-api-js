@@ -420,6 +420,9 @@ export class WalletClient {
     }
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async isEthContract(address) {
     const provider = this.getEthProvider()
     const code = await provider.getCode(address)
@@ -427,6 +430,9 @@ export class WalletClient {
     return code != '0x'
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async isBscContract(address) {
     const provider = this.getBscProvider()
     const code = await provider.getCode(address)
@@ -470,6 +476,9 @@ export class WalletClient {
     return fee.mul(this.feeMultiplier)
   }
 
+  /**
+   * @todo move to ETHClient
+   */
   public async sendEthDeposit(token, depositAddress, getSignatureCallback?: (msg: string) => Promise<{ address: string, signature: string }>) {
     const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
     const amount = ethers.BigNumber.from(token.external_balance)
@@ -589,6 +598,9 @@ export class WalletClient {
     return walletAddress
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public getEthProvider() {
     if (this.network.ETH_URL.length > 0) {
       return new ethers.providers.JsonRpcProvider(this.network.ETH_URL)
@@ -596,6 +608,9 @@ export class WalletClient {
     return ethers.getDefaultProvider(this.network.ETH_ENV)
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public getBscProvider() {
     if (this.network.BSC_URL.length > 0) {
       return new ethers.providers.JsonRpcProvider(this.network.BSC_URL)
@@ -603,6 +618,9 @@ export class WalletClient {
     throw new Error(`BSC_URL for network: ${this.network}, not provided`)
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async getEthExternalBalances(address: string, whitelistDenoms?: string[]) {
     const tokenList = await this.getTokens()
     const tokens = tokenList.filter(token =>
@@ -624,6 +642,9 @@ export class WalletClient {
     return tokens
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async getBscExternalBalances(address: string, whitelistDenoms?: string[]) {
     const tokenList = await this.getTokens()
     const tokens = tokenList.filter(token =>
@@ -645,6 +666,9 @@ export class WalletClient {
     return tokens
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async approveERC20(params: ApproveERC20Params) {
     const { token, gasPriceGwei, gasLimit, ethAddress, signer } = params
     const contractAddress = token.asset_id
@@ -666,6 +690,9 @@ export class WalletClient {
     return approveResultTx
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async checkAllowanceERC20(token: TokenObject, owner: string, spender: string) {
     const contractAddress = token.asset_id
     const ethProvider = this.getEthProvider()
@@ -676,6 +703,9 @@ export class WalletClient {
     return allowance
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async lockEthDeposit(params: LockEthParams) {
     const { token, amount, gasPriceGwei, gasLimit, ethAddress, signer } = params
 
@@ -722,6 +752,9 @@ export class WalletClient {
     return lockResultTx
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async lockBscDeposits(params: LockEthParams) {
     const { token, amount, gasPriceGwei, gasLimit, ethAddress, signer } = params
 

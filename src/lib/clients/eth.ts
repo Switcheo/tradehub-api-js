@@ -20,7 +20,7 @@ interface ETHTxParams {
   signer: ethers.Signer
 }
 
-export interface LockEthParams extends ETHTxParams {
+export interface LockParams extends ETHTxParams {
   address: Uint8Array
   amount: BigNumber
   token: Token
@@ -124,8 +124,7 @@ export class ETHClient {
     return new BigNumber(allowance.toString())
   }
 
-
-  public async lockEthDeposit(params: LockEthParams) {
+  public async lockDeposit(params: LockParams) {
     const { address, token, amount, gasPriceGwei, gasLimit, ethAddress, signer } = params
 
     if (gasLimit.lt(150000)) {
@@ -171,6 +170,13 @@ export class ETHClient {
     )
 
     return lockResultTx
+  }
+
+  public async isContract(address: string) {
+    const provider = this.getProvider()
+    const code = await provider.getCode(address)
+    // non-contract addresses should return 0x
+    return code != '0x'
   }
 
   public getProvider() {
