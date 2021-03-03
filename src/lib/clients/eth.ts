@@ -75,7 +75,7 @@ export class ETHClient {
 
   public async getExternalBalances(address: string, whitelistDenoms?: string[]) {
     const tokenList = await getTokens(this.network)
-    const lockProxyAddress = this.getLockProxyAddress()
+    const lockProxyAddress = this.getLockProxyAddress().toLowerCase()
     const tokens = tokenList.filter(token =>
       token.blockchain == this.blockchain &&
       token.asset_id.length == 40 &&
