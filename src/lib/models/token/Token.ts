@@ -1,11 +1,9 @@
-import { Blockchain } from '@tradehub/constants'
-
 export interface Token {
   name: string
   symbol: string
   denom: string
   decimals: number
-  blockchain: Blockchain
+  blockchain: string
   chain_id: number
   asset_id: string
   is_active: boolean

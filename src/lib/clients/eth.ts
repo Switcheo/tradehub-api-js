@@ -4,6 +4,7 @@ import { ABIs } from "@tradehub/eth";
 import { Token } from "@tradehub/models";
 import { Network } from "@tradehub/types";
 import { Address } from "@tradehub/utils";
+import fetch from "@tradehub/utils/fetch";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import stripHexPrefix from 'strip-hex-prefix';
