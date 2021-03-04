@@ -1,5 +1,5 @@
-import { logger } from '@tradehub/utils'
-import fetch from '@tradehub/utils/fetch'
+import { logger } from '@lib/utils'
+import fetch from '@lib/utils/fetch'
 import querystring from 'query-string'
 
 export interface RequestResult {

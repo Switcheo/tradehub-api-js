@@ -1,7 +1,7 @@
-import { NETWORK } from '@tradehub/config'
-import { Blockchain, ChainNames } from '@tradehub/constants'
-import { ABIs } from '@tradehub/eth'
-import { Network } from '@tradehub/types'
+import { NETWORK } from '@lib/config'
+import { Blockchain, ChainNames } from '@lib/constants'
+import { ABIs } from '@lib/eth'
+import { Network } from '@lib/types'
 import * as ethSignUtils from 'eth-sig-util'
 import { ethers } from 'ethers'
 

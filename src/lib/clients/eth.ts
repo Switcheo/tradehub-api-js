@@ -1,10 +1,10 @@
-import { getBech32Prefix, NETWORK, Network as NetworkConfig } from "@tradehub/config";
-import { Blockchain } from "@tradehub/constants";
-import { ABIs } from "@tradehub/eth";
-import { Token } from "@tradehub/models";
-import { Network } from "@tradehub/types";
-import { Address } from "@tradehub/utils";
-import fetch from "@tradehub/utils/fetch";
+import { getBech32Prefix, NETWORK, Network as NetworkConfig } from "@lib/config";
+import { Blockchain } from "@lib/constants";
+import { ABIs } from "@lib/eth";
+import { Token } from "@lib/models";
+import { Network } from "@lib/types";
+import { Address } from "@lib/utils";
+import fetch from "@lib/utils/fetch";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import stripHexPrefix from 'strip-hex-prefix';

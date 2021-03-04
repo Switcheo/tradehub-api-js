@@ -43,7 +43,7 @@
     ],
     "baseUrl": "./src",
     "paths": {
-      "@tradehub/*": ["lib/*"]
+      "@lib/*": ["lib/*"]
     },
     "resolveJsonModule": true
   },

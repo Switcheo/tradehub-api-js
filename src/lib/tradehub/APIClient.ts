@@ -1,5 +1,5 @@
-import { NETWORK } from '@tradehub/config'
-import { Network } from '@tradehub/types'
+import { NETWORK } from '@lib/config'
+import { Network } from '@lib/types'
 import { GetAccountOpts, GetAccountResponse } from './api'
 import { ListValidatorDelegationsOpts, ListValidatorDelegationsResponse } from './api/list_validator_delegations'
 import APIManager from './APIConnector'

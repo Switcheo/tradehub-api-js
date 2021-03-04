@@ -1,4 +1,4 @@
-import { logger } from '@tradehub/utils'
+import { logger } from '@lib/utils'
 import NodeWebSocket from 'ws'
 import { generateChannelId, parseChannelId } from './channel'
 import * as WSConnectorTypes from './types'

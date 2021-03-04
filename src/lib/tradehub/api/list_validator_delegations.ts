@@ -1,4 +1,4 @@
-import { Delegation } from "@tradehub/models";
+import { Delegation } from "@lib/models";
 import { CosmosResponse } from "./util";
 
 export interface ListValidatorDelegationsResponse extends CosmosResponse<Delegation[]> { }
