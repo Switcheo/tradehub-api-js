@@ -25,15 +25,15 @@ class APIClient {
 
   async getAccount(opts: GetAccountOpts): Promise<GetAccountResponse> {
     const queryParams = { account: opts.address }
-    const ruoteParams = {}
-    const request = this.apiManager.path('account/detail', ruoteParams, queryParams)
+    const routeParams = {}
+    const request = this.apiManager.path('account/detail', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetAccountResponse
   }
 
   async getValidatorDelegations(opts: ListValidatorDelegationsOpts): Promise<ListValidatorDelegationsResponse> {
-    const ruoteParams = { validator: opts.validator }
-    const request = this.apiManager.path('validators/delegations', ruoteParams)
+    const routeParams = { validator: opts.validator }
+    const request = this.apiManager.path('validators/delegations', routeParams)
     const response = await request.get()
     return response.data as ListValidatorDelegationsResponse
   }
