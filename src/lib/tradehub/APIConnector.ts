@@ -1,3 +1,5 @@
+import { logger } from '@tradehub/utils'
+import fetch from '@tradehub/utils/fetch'
 import querystring from 'query-string'
 
 export interface RequestResult {
@@ -21,6 +23,10 @@ export interface PathParams {
   [index: string]: any
 }
 
+export interface HTTPOpts {
+  debugMode?: boolean
+}
+
 /**
  * Helper class for abstracting URL manipulation specifically for
  * API endpoints.
@@ -29,6 +35,7 @@ export interface PathParams {
 export class HTTP<PathSpecs> {
   public apiPrefix: string
   public apiEndpoints: PathSpecs
+  public debugMode: boolean
 
   /**
    * Constructor for `HTTP` helper class.
@@ -44,9 +51,10 @@ export class HTTP<PathSpecs> {
    * @param apiPrefix prefix to add for all endpoints URL construction.
    * @param apiEndpoints see `apiEndpoints` example above.
    */
-  constructor(apiPrefix: string, apiEndpoints: PathSpecs) {
+  constructor(apiPrefix: string, apiEndpoints: PathSpecs, opts?: HTTPOpts) {
     this.apiPrefix = apiPrefix
     this.apiEndpoints = apiEndpoints
+    this.debugMode = opts?.debugMode ?? false
   }
 
   /**
@@ -70,6 +78,10 @@ export class HTTP<PathSpecs> {
     queryParams?: PathParams,
   ) => {
     let url = `${this.apiPrefix}${this.apiEndpoints[path]}`
+
+    if (this.debugMode) {
+      logger('path', url)
+    }
 
     // substitute route params
     if (routeParams) {

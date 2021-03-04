@@ -7,7 +7,7 @@ export interface AccountPublicKey {
 
 export interface Account {
   address: string
-  coins: TokenAmount
+  coins: TokenAmount[]
   public_key: AccountPublicKey
   account_number: string
   sequence: string
