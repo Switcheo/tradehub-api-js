@@ -17,6 +17,8 @@ export interface Network {
   BSC_BALANCE_READER: string
   ETH_LOCKPROXY: string
   BSC_LOCKPROXY: string
+  ETH_WALLET_BYTECODE_HASH: string
+  BSC_WALLET_BYTECODE_HASH: string
   FEE_ADDRESS: string
   CHAIN_ID: string
   BECH32_PREFIX: string
@@ -47,6 +49,8 @@ export const NETWORK: NetworkInterface = {
     BSC_BALANCE_READER: '0x8900C583aB55d7Fa5bF6Ff34175a2a1C252Fb0AC',
     ETH_LOCKPROXY: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
     BSC_LOCKPROXY: '0x12f466DB69B85eE7AA17a66A8B75F8c6d6F04815',
+    ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
+    BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
     CHAIN_ID: 'switcheochain',
     BECH32_PREFIX: 'tswth',
@@ -56,7 +60,7 @@ export const NETWORK: NetworkInterface = {
     REST_URL: 'https://dev-tradescan.switcheo.org',
     WS_URL: 'wss://dev-ws.dem.exchange/ws',
     ETH_PAYER_URL: 'http://13.251.218.38:7001',
-    BSC_PAYER_URL: 'http://13.251.218.38:8001',
+    BSC_PAYER_URL: 'http://localhost:8001',
     FEE_URL: 'http://13.251.218.38:9001',
     COSMOS_URL: 'https://dev-tradescan.switcheo.org',
     NEO_URLS: ['https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com'],
@@ -68,6 +72,8 @@ export const NETWORK: NetworkInterface = {
     BSC_BALANCE_READER: '0x8900C583aB55d7Fa5bF6Ff34175a2a1C252Fb0AC',
     ETH_LOCKPROXY: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
     BSC_LOCKPROXY: '0x12f466DB69B85eE7AA17a66A8B75F8c6d6F04815',
+    ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
+    BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
     CHAIN_ID: 'switcheochain',
     BECH32_PREFIX: 'swth',
@@ -89,6 +95,8 @@ export const NETWORK: NetworkInterface = {
     BSC_BALANCE_READER: '0x8900C583aB55d7Fa5bF6Ff34175a2a1C252Fb0AC',
     ETH_LOCKPROXY: '0x86edf4748efeded37f4932b7de93a575909cc892',
     BSC_LOCKPROXY: '0x12f466DB69B85eE7AA17a66A8B75F8c6d6F04815',
+    ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
+    BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
     CHAIN_ID: 'switcheochain',
     BECH32_PREFIX: 'tswth',
@@ -119,6 +127,8 @@ export const NETWORK: NetworkInterface = {
     BSC_BALANCE_READER: '',
     ETH_LOCKPROXY: '0x9a016ce184a22dbf6c17daa59eb7d3140dbd1c54',
     BSC_LOCKPROXY: '',
+    ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
+    BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '08d8f59e475830d9a1bb97d74285c4d34c6dac08', // swth1prv0t8j8tqcdngdmjlt59pwy6dxxmtqgycy2h7
     CHAIN_ID: 'switcheo-tradehub-1',
     BECH32_PREFIX: 'swth',

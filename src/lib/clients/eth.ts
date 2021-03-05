@@ -1,5 +1,5 @@
 import { getBech32Prefix, NETWORK, Network as NetworkConfig } from "@lib/config";
-import { Blockchain, ETH_WALLET_BYTECODE } from "@lib/constants";
+import { Blockchain } from "@lib/constants";
 import { ABIs } from "@lib/eth";
 import { FeeResult, Token } from "@lib/models";
 import { Network } from "@lib/types";
@@ -192,7 +192,7 @@ export class ETHClient {
     const contractAddress = this.getLockProxyAddress()
     logger('getDepositContractAddress lock proxy', contractAddress)
     const contract = new ethers.Contract(contractAddress, ABIs.lockProxy, provider)
-    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, ETH_WALLET_BYTECODE)
+    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, this.getWalletBytecodeHash())
 
     logger('getDepositContractAddress', swthBech32Addres, ownerEthAddress, walletAddress)
 
@@ -318,6 +318,10 @@ export class ETHClient {
   public getBalanceReaderAddress() {
     return clientConfig[this.blockchain][this.network].balanceReaderAddress
   }
+
+  public getWalletBytecodeHash() {
+    return clientConfig[this.blockchain][this.network].walletBytecodeHash
+  }
 }
 
 interface ClientNetworkConfig {
@@ -325,6 +329,7 @@ interface ClientNetworkConfig {
   balanceReaderAddress: string
   lockProxyAddress: string
   payerUrl: string
+  walletBytecodeHash: string
 }
 interface BlockchainConfig {
   [network: string]: ClientNetworkConfig
@@ -340,24 +345,28 @@ export const clientConfig: ETHClientConfig = {
       payerUrl: NETWORK[Network.LocalHost].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.LocalHost].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.LocalHost].ETH_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.LocalHost].ETH_WALLET_BYTECODE_HASH,
     },
     [Network.DevNet]: {
       providerUrl: NETWORK[Network.DevNet].ETH_URL,
       payerUrl: NETWORK[Network.DevNet].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.DevNet].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.DevNet].ETH_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.DevNet].ETH_WALLET_BYTECODE_HASH,
     },
     [Network.TestNet]: {
       providerUrl: NETWORK[Network.TestNet].ETH_URL,
       payerUrl: NETWORK[Network.TestNet].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.TestNet].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.TestNet].ETH_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.TestNet].ETH_WALLET_BYTECODE_HASH,
     },
     [Network.MainNet]: {
       providerUrl: NETWORK[Network.MainNet].ETH_URL,
       payerUrl: NETWORK[Network.MainNet].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.MainNet].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.MainNet].ETH_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.MainNet].ETH_WALLET_BYTECODE_HASH,
     },
   },
   [Blockchain.BinanceSmartChain]: {
@@ -366,24 +375,28 @@ export const clientConfig: ETHClientConfig = {
       payerUrl: NETWORK[Network.LocalHost].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.LocalHost].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.LocalHost].BSC_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.LocalHost].BSC_WALLET_BYTECODE_HASH,
     },
     [Network.DevNet]: {
       providerUrl: NETWORK[Network.DevNet].BSC_URL,
       payerUrl: NETWORK[Network.DevNet].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.DevNet].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.DevNet].BSC_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.DevNet].BSC_WALLET_BYTECODE_HASH,
     },
     [Network.TestNet]: {
       providerUrl: NETWORK[Network.TestNet].BSC_URL,
       payerUrl: NETWORK[Network.TestNet].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.TestNet].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.TestNet].BSC_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.TestNet].BSC_WALLET_BYTECODE_HASH,
     },
     [Network.MainNet]: {
       providerUrl: NETWORK[Network.MainNet].BSC_URL,
       payerUrl: NETWORK[Network.MainNet].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.MainNet].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.MainNet].BSC_LOCKPROXY,
+      walletBytecodeHash: NETWORK[Network.MainNet].BSC_WALLET_BYTECODE_HASH,
     },
   }
 } as const
