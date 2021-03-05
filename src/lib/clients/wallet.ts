@@ -483,8 +483,20 @@ export class WalletClient {
     return fee.mul(this.feeMultiplier)
   }
 
+  public async ethSign(message: string) {
+    const privateKey = this.hdWallet[Blockchain.Ethereum]
+    const ethWallet = new ethers.Wallet(`0x${privateKey}`)
+    const messageBytes = ethers.utils.arrayify(message)
+    const signatureBytes = await ethWallet.signMessage(messageBytes)
+    const signature = ethers.utils.hexlify(signatureBytes).replace(/^0x/g, '')
+    return {
+      address: ethWallet.address,
+      signature,
+    }
+  }
+
   /**
-   * @todo move to ETHClient
+   * @deprecated use ETHClient
    */
   public async sendEthDeposit(token, depositAddress, getSignatureCallback?: (msg: string) => Promise<{ address: string, signature: string }>) {
     const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
@@ -592,6 +604,9 @@ export class WalletClient {
     return account.address
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async getEthDepositAddress(ownerEthAddress?: string) {
     const swthAddress = ethers.utils.hexlify(this.address)
     if (!ownerEthAddress) {
@@ -607,6 +622,9 @@ export class WalletClient {
     return walletAddress
   }
 
+  /**
+   * @deprecated use ETHClient
+   */
   public async getBscDepositAddress(ownerEthAddress?: string) {
     const swthAddress = ethers.utils.hexlify(this.address)
     if (!ownerEthAddress) {
