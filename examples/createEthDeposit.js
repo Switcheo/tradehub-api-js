@@ -32,11 +32,15 @@ const mnemonics = require('../mnemonics.json');
     blockchain: Blockchain.BinanceSmartChain,
   })
 
-
   const privateKey = wallet.hdWallet[Blockchain.Ethereum] // private key should be same
   const ethWallet = new ethers.Wallet(`0x${privateKey}`)
   const ethAddress = ethWallet.address
   const swthAddress = wallet.pubKeyBech32
+
+  const depositAddress = await ethClient.getDepositContractAddress(swthAddress, ethAddress)
+  const feeAmount = await ethClient.getDepositFeeAmount(token, depositAddress)
+  console.log('*NOTE* min deposit amount', feeAmount.mul(ethers.BigNumber.from(2)).toString())
+
   const result = await ethClient.sendDeposit(token, swthAddress, ethAddress, async (message) => {
     console.log('start sign')
     const messageBytes = ethers.utils.arrayify(message)
