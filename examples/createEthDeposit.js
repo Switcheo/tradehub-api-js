@@ -6,6 +6,8 @@ const mnemonics = require('../mnemonics.json');
 const network = Network.DevNet
 const TOKEN_DENOM = 'swth-b5';
 
+// deposit will occur to the swth address derived from the mnemonics
+
 (async () => {
   const wallet = await WalletClient.connectMnemonic(mnemonics[0], network) // this is the receiving addr
   const token = await new RestClient({ network, wallet }).getToken({ token: TOKEN_DENOM })
@@ -27,17 +29,7 @@ const TOKEN_DENOM = 'swth-b5';
   const feeAmount = await ethClient.getDepositFeeAmount(token, depositAddress)
   console.log('*NOTE* min deposit amount', feeAmount.mul(ethers.BigNumber.from(2)).toString())
 
-  const result = await ethClient.sendDeposit(token, swthAddress, ethAddress, async (message) => {
-    console.log('start sign')
-    const messageBytes = ethers.utils.arrayify(message)
-    const signatureBytes = await ethWallet.signMessage(messageBytes)
-    const signature = ethers.utils.hexlify(signatureBytes).replace(/^0x/g, '')
-    console.log("sign", message, signature)
-    return {
-      address: ethAddress,
-      signature,
-    }
-  })
+  const result = await ethClient.sendDeposit(token, swthAddress, ethAddress, (message) => wallet.ethSign(message))
   if (result === 'insufficient balance')
     throw new Error(result)
 
