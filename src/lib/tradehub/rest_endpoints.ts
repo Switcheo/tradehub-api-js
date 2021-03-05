@@ -5,6 +5,7 @@ const TradehubEndpoints = {
   'account/username_check': '/username_check',
   'account/get_profile': '/get_profile',
   'account/get_position': '/get_position',
+  'account/get_positions': '/get_positions',
 
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',

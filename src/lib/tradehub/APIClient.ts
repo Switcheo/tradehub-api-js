@@ -64,6 +64,14 @@ class APIClient {
     const response = await request.get()
     return response.data as GetPositionResponse
   }
+
+  async getPositions(opts: GetPositionOpts): Promise<GetPositionResponse[]> {
+    const queryParams = { account: opts.account }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_positions', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPositionResponse[]
+  }
 }
 
 export default APIClient
