@@ -4,7 +4,7 @@ const { ETHClient, Network, Blockchain, WalletClient, RestClient } = require('..
 const mnemonics = require('../mnemonics.json');
 
 const network = Network.DevNet
-const TOKEN_DENOM = 'swth-b4';
+const TOKEN_DENOM = 'swth-b5';
 
 (async () => {
   const wallet = await WalletClient.connectMnemonic(mnemonics[0], network) // this is the receiving addr
