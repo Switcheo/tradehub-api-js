@@ -2,6 +2,7 @@ import { NETWORK } from '@lib/config'
 import { Network } from '@lib/types'
 import { GetAccountOpts, GetAccountResponse } from './api'
 import { CheckUserNameOpts } from './api/check_username'
+import { GetPositionOpts, GetPositionResponse } from './api/get_position'
 import { GetProfileOpts, GetProfileResponse } from './api/get_profile'
 import { ListValidatorDelegationsOpts, ListValidatorDelegationsResponse } from './api/list_validator_delegations'
 import APIManager from './APIConnector'
@@ -54,6 +55,14 @@ class APIClient {
     const request = this.apiManager.path('account/get_profile', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetProfileResponse
+  }
+
+  async getPosition(opts: GetPositionOpts): Promise<GetPositionResponse> {
+    const queryParams = { account: opts.account, market: opts.market }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_position', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPositionResponse
   }
 }
 
