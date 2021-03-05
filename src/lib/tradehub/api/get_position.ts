@@ -1,4 +1,4 @@
-import { Position } from "@lib/models/position";
+import { Position } from "@lib/models";
 
 export interface GetPositionResponse extends Position { }
 
@@ -9,4 +9,8 @@ export interface GetPositionResponse extends Position { }
 export interface GetPositionOpts {
   account: string
   market: string
+}
+
+export interface GetPositionsOpts {
+  account: string
 }

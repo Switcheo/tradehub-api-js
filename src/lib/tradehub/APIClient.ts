@@ -2,7 +2,8 @@ import { NETWORK } from '@lib/config'
 import { Network } from '@lib/types'
 import { GetAccountOpts, GetAccountResponse } from './api'
 import { CheckUserNameOpts } from './api/check_username'
-import { GetPositionOpts, GetPositionResponse } from './api/get_position'
+import { GetLeverageOpts, GetLeverageResponse } from './api/get_leverage'
+import { GetPositionOpts, GetPositionResponse, GetPositionsOpts } from './api/get_position'
 import { GetProfileOpts, GetProfileResponse } from './api/get_profile'
 import { ListValidatorDelegationsOpts, ListValidatorDelegationsResponse } from './api/list_validator_delegations'
 import APIManager from './APIConnector'
@@ -65,12 +66,20 @@ class APIClient {
     return response.data as GetPositionResponse
   }
 
-  async getPositions(opts: GetPositionOpts): Promise<GetPositionResponse[]> {
+  async getPositions(opts: GetPositionsOpts): Promise<GetPositionResponse[]> {
     const queryParams = { account: opts.account }
     const routeParams = {}
     const request = this.apiManager.path('account/get_positions', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetPositionResponse[]
+  }
+
+  async getLeverage(opts: GetLeverageOpts): Promise<GetLeverageResponse[]> {
+    const queryParams = { account: opts.account }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetLeverageResponse[]
   }
 }
 
