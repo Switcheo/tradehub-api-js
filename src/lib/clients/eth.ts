@@ -1,9 +1,10 @@
 import { getBech32Prefix, NETWORK, Network as NetworkConfig } from "@lib/config";
-import { Blockchain } from "@lib/constants";
+import { Blockchain, ETH_WALLET_BYTECODE } from "@lib/constants";
 import { ABIs } from "@lib/eth";
-import { Token } from "@lib/models";
+import { FeeResult, Token } from "@lib/models";
 import { Network } from "@lib/types";
 import { Address } from "@lib/utils";
+import { logger } from "@lib/utils/logger";
 import fetch from "@lib/utils/fetch";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
@@ -32,6 +33,8 @@ export interface ApproveERC20Params extends ETHTxParams {
   signCompleteCallback?: () => void
 }
 
+export const FEE_MULTIPLIER = ethers.BigNumber.from(2)
+
 
 /**
  * stop-gap be refactored
@@ -42,6 +45,12 @@ const getTokens = async (network: Network) => {
   const response = await fetch(url)
   const body = await response.json()
   return body as Token[]
+}
+
+const getAddressBytes = (bech32Address: string, networkConfig: NetworkConfig) => {
+  const prefix = getBech32Prefix(networkConfig, 'main')
+  const address = Address.fromBech32(prefix, bech32Address)
+  return address.toBytes()
 }
 
 /**
@@ -173,6 +182,116 @@ export class ETHClient {
     return lockResultTx
   }
 
+
+  public async getDepositContractAddress(swthBech32Addres: string, ownerEthAddress: string) {
+    const networkConfigs = NETWORK[this.network]
+    const addressBytes = getAddressBytes(swthBech32Addres, networkConfigs)
+    const swthAddress = ethers.utils.hexlify(addressBytes)
+
+    const provider = this.getProvider()
+    const contractAddress = this.getLockProxyAddress()
+    logger('getDepositContractAddress lock proxy', contractAddress)
+    const contract = new ethers.Contract(contractAddress, ABIs.lockProxy, provider)
+    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, ETH_WALLET_BYTECODE)
+
+    logger('getDepositContractAddress', swthBech32Addres, ownerEthAddress, walletAddress)
+
+    return walletAddress
+  }
+
+  public async sendDeposit(token, swthAddress: string, ethAddress: string, getSignatureCallback?: (msg: string) => Promise<{ address: string, signature: string }>) {
+    logger('sendDeposit', token, swthAddress, ethAddress)
+    const depositAddress = await this.getDepositContractAddress(swthAddress, ethAddress)
+    const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
+    const amount = ethers.BigNumber.from(token.external_balance)
+    if (amount.lt(feeAmount.mul(FEE_MULTIPLIER))) {
+      return 'insufficient balance'
+    }
+
+    const networkConfigs = NETWORK[this.network]
+
+    const assetId = '0x' + token.asset_id
+    const targetProxyHash = '0x' + getTargetProxyHash(token, networkConfigs)
+    const feeAddress = '0x' + networkConfigs.FEE_ADDRESS
+    const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
+    const nonce = Math.floor(Math.random() * 1000000000) // random nonce to prevent replay attacks
+    const message = ethers.utils.solidityKeccak256(
+      ['string', 'address', 'bytes', 'bytes', 'bytes', 'uint256', 'uint256', 'uint256'],
+      ['sendTokens', assetId, targetProxyHash, toAssetHash, feeAddress, amount, feeAmount, nonce]
+    )
+    logger('sendDeposit message', message)
+
+    let signatureResult: {
+      owner: string
+      r: string
+      s: string
+      v: string
+    } | undefined
+
+    const { address, signature } = await getSignatureCallback(message)
+    const signatureBytes = ethers.utils.arrayify('0x' + signature)
+    const rsv = ethers.utils.splitSignature(signatureBytes)
+
+    logger('sign result', address, signature)
+
+    signatureResult = {
+      owner: address,
+      v: rsv.v.toString(),
+      r: rsv.r,
+      s: rsv.s,
+    }
+
+    const addressBytes = getAddressBytes(swthAddress, networkConfigs)
+    const swthAddressHex = ethers.utils.hexlify(addressBytes)
+    const body = {
+      OwnerAddress: signatureResult.owner,
+      SwthAddress: swthAddressHex,
+      AssetHash: assetId,
+      TargetProxyHash: targetProxyHash,
+      ToAssetHash: toAssetHash,
+      Amount: amount.toString(),
+      FeeAmount: feeAmount.toString(),
+      FeeAddress: feeAddress,
+      Nonce: nonce.toString(),
+      V: signatureResult.v,
+      R: signatureResult.r,
+      S: signatureResult.s,
+    }
+
+    const result = await fetch(
+      this.getPayerUrl() + '/deposit',
+      { method: 'POST', body: JSON.stringify(body) }
+    )
+    logger('fetch result', result)
+    return result
+  }
+
+  public async getDepositFeeAmount(token: Token, depositAddress: string) {
+    const feeInfo = await this.getFeeInfo(token.denom)
+    if (!feeInfo.details?.deposit?.fee) {
+      throw new Error('unsupported token')
+    }
+    if (token.blockchain !== this.blockchain) {
+      throw new Error('unsupported token')
+    }
+
+    let feeAmount = ethers.BigNumber.from(feeInfo.details.deposit.fee)
+    const walletContractDeployed = await this.isContract(depositAddress)
+    if (!walletContractDeployed) {
+      feeAmount = feeAmount.add(ethers.BigNumber.from(feeInfo.details.createWallet.fee))
+    }
+
+    return feeAmount
+  }
+
+
+  public async getFeeInfo(denom: string) {
+    const networkConfigs = NETWORK[this.network]
+    const url = `${networkConfigs.FEE_URL}/fees?denom=${denom}`
+    const result = await fetch(url).then(res => res.json()) as FeeResult
+    return result
+  }
+
   public async isContract(address: string) {
     const provider = this.getProvider()
     const code = await provider.getCode(address)
@@ -182,6 +301,10 @@ export class ETHClient {
 
   public getProvider() {
     return new ethers.providers.JsonRpcProvider(this.getProviderUrl())
+  }
+
+  public getPayerUrl() {
+    return clientConfig[this.blockchain][this.network].payerUrl
   }
 
   public getProviderUrl() {
@@ -201,6 +324,7 @@ interface ClientNetworkConfig {
   providerUrl: string
   balanceReaderAddress: string
   lockProxyAddress: string
+  payerUrl: string
 }
 interface BlockchainConfig {
   [network: string]: ClientNetworkConfig
@@ -213,21 +337,25 @@ export const clientConfig: ETHClientConfig = {
   [Blockchain.Ethereum]: {
     [Network.LocalHost]: {
       providerUrl: NETWORK[Network.LocalHost].ETH_URL,
+      payerUrl: NETWORK[Network.LocalHost].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.LocalHost].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.LocalHost].ETH_LOCKPROXY,
     },
     [Network.DevNet]: {
       providerUrl: NETWORK[Network.DevNet].ETH_URL,
+      payerUrl: NETWORK[Network.DevNet].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.DevNet].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.DevNet].ETH_LOCKPROXY,
     },
     [Network.TestNet]: {
       providerUrl: NETWORK[Network.TestNet].ETH_URL,
+      payerUrl: NETWORK[Network.TestNet].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.TestNet].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.TestNet].ETH_LOCKPROXY,
     },
     [Network.MainNet]: {
       providerUrl: NETWORK[Network.MainNet].ETH_URL,
+      payerUrl: NETWORK[Network.MainNet].ETH_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.MainNet].ETH_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.MainNet].ETH_LOCKPROXY,
     },
@@ -235,21 +363,25 @@ export const clientConfig: ETHClientConfig = {
   [Blockchain.BinanceSmartChain]: {
     [Network.LocalHost]: {
       providerUrl: NETWORK[Network.LocalHost].BSC_URL,
+      payerUrl: NETWORK[Network.LocalHost].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.LocalHost].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.LocalHost].BSC_LOCKPROXY,
     },
     [Network.DevNet]: {
       providerUrl: NETWORK[Network.DevNet].BSC_URL,
+      payerUrl: NETWORK[Network.DevNet].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.DevNet].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.DevNet].BSC_LOCKPROXY,
     },
     [Network.TestNet]: {
       providerUrl: NETWORK[Network.TestNet].BSC_URL,
+      payerUrl: NETWORK[Network.TestNet].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.TestNet].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.TestNet].BSC_LOCKPROXY,
     },
     [Network.MainNet]: {
       providerUrl: NETWORK[Network.MainNet].BSC_URL,
+      payerUrl: NETWORK[Network.MainNet].BSC_PAYER_URL,
       balanceReaderAddress: NETWORK[Network.MainNet].BSC_BALANCE_READER,
       lockProxyAddress: NETWORK[Network.MainNet].BSC_LOCKPROXY,
     },

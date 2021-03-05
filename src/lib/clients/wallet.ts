@@ -144,6 +144,7 @@ export class WalletClient {
   public readonly privKey: PrivKeySecp256k1
   public readonly address: Uint8Array
   public readonly addressHex: string
+  public readonly ethAddress?: string
   public readonly pubKeySecp256k1: PubKeySecp256k1
   public readonly pubKeyBase64: string
   public readonly pubKeyBech32: string
@@ -200,6 +201,7 @@ export class WalletClient {
       this.mnemonic = mnemonic
       this.hdWallet = HDWallet.getWallet(mnemonic)
       this.privKey = privKey
+      this.ethAddress = new ethers.Wallet('0x' + this.hdWallet[Blockchain.Ethereum]).address
 
       this.pubKeySecp256k1 = this.privKey.toPubKey()
       address = this.pubKeySecp256k1.toAddress()
@@ -452,6 +454,11 @@ export class WalletClient {
       if (!walletContractDeployed) {
         feeAmount = feeAmount.add(ethers.BigNumber.from(feeInfo.details.createWallet.fee))
       }
+    } else if (token.blockchain == Blockchain.BinanceSmartChain) {
+      const walletContractDeployed = await this.isBscContract(depositAddress)
+      if (!walletContractDeployed) {
+        feeAmount = feeAmount.add(ethers.BigNumber.from(feeInfo.details.createWallet.fee))
+      }
     }
 
     return feeAmount
@@ -563,6 +570,8 @@ export class WalletClient {
       depositAddress = await this.getNeoDepositAddress()
     } else if (blockchain === Blockchain.Ethereum) {
       depositAddress = await this.getEthDepositAddress()
+    } else if (blockchain === Blockchain.BinanceSmartChain) {
+      depositAddress = await this.getBscDepositAddress()
     } else {
       return 'unsupported blockchain'
     }
@@ -592,6 +601,21 @@ export class WalletClient {
 
     const provider = this.getEthProvider()
     const contractAddress = this.network.ETH_LOCKPROXY
+    const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, provider)
+    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, ETH_WALLET_BYTECODE)
+
+    return walletAddress
+  }
+
+  public async getBscDepositAddress(ownerEthAddress?: string) {
+    const swthAddress = ethers.utils.hexlify(this.address)
+    if (!ownerEthAddress) {
+      const privateKey = this.hdWallet[Blockchain.Ethereum]
+      ownerEthAddress = (new ethers.Wallet('0x' + privateKey)).address
+    }
+
+    const provider = this.getBscProvider()
+    const contractAddress = this.network.BSC_LOCKPROXY
     const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, provider)
     const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, ETH_WALLET_BYTECODE)
 

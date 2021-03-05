@@ -1,24 +1,25 @@
 import { Bech32Type } from "./types"
 
 export interface Network {
-  NAME: string,
-  REST_URL: string,
-  WS_URL: string,
-  ETH_PAYER_URL: string,
-  FEE_URL: string,
-  COSMOS_URL: string,
-  NEO_URLS: Array<string>,
-  ETH_URL: string,
-  ETH_ENV: string,
-  BSC_URL: string,
-  ETH_WS_URL: string,
-  ETH_BALANCE_READER: string,
-  BSC_BALANCE_READER: string,
-  ETH_LOCKPROXY: string,
-  BSC_LOCKPROXY: string,
-  FEE_ADDRESS: string,
-  CHAIN_ID: string,
-  BECH32_PREFIX: string,
+  NAME: string
+  REST_URL: string
+  WS_URL: string
+  ETH_PAYER_URL: string
+  BSC_PAYER_URL: string
+  FEE_URL: string
+  COSMOS_URL: string
+  NEO_URLS: Array<string>
+  ETH_URL: string
+  ETH_ENV: string
+  BSC_URL: string
+  ETH_WS_URL: string
+  ETH_BALANCE_READER: string
+  BSC_BALANCE_READER: string
+  ETH_LOCKPROXY: string
+  BSC_LOCKPROXY: string
+  FEE_ADDRESS: string
+  CHAIN_ID: string
+  BECH32_PREFIX: string
 }
 
 const localhost = process.env.REST_HOST || '127.0.0.1'
@@ -34,17 +35,18 @@ export const NETWORK: NetworkInterface = {
     REST_URL: `http://${localhost}:${port}`,
     WS_URL: 'ws://localhost:5000/ws',
     ETH_PAYER_URL: `http://${localhost}:7001`,
+    BSC_PAYER_URL: `http://${localhost}:8001`,
     FEE_URL: `http://${localhost}:9001`,
     COSMOS_URL: `http://${localhost}:1317`,
     NEO_URLS: ['https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com'],
     ETH_URL: 'https://ropsten.infura.io/v3/e4dd457b33124bbda7e17500e6efbc27',
+    BSC_URL: 'https://data-seed-prebsc-2-s3.binance.org:8545/',
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
-    BSC_URL: 'https://data-seed-prebsc-2-s3.binance.org:8545/',
-    BSC_LOCKPROXY: '0xC42FC45Ad5D50e0a3bFDB4E58cdEEb4B0A3B11BF',
     ETH_BALANCE_READER: '0xa74c81866c5bfff6684aa8edf35a5de8c3b9f173',
-    BSC_BALANCE_READER: '0x0817340A8e6d3b0C16Fc4b0BED208E26a34c262f',
+    BSC_BALANCE_READER: '0x8900C583aB55d7Fa5bF6Ff34175a2a1C252Fb0AC',
     ETH_LOCKPROXY: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
+    BSC_LOCKPROXY: '0x12f466DB69B85eE7AA17a66A8B75F8c6d6F04815',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
     CHAIN_ID: 'switcheochain',
     BECH32_PREFIX: 'tswth',
@@ -54,17 +56,18 @@ export const NETWORK: NetworkInterface = {
     REST_URL: 'https://dev-tradescan.switcheo.org',
     WS_URL: 'wss://dev-ws.dem.exchange/ws',
     ETH_PAYER_URL: 'http://13.251.218.38:7001',
+    BSC_PAYER_URL: 'http://13.251.218.38:8001',
     FEE_URL: 'http://13.251.218.38:9001',
     COSMOS_URL: 'https://dev-tradescan.switcheo.org',
     NEO_URLS: ['https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com'],
     ETH_URL: 'https://ropsten.infura.io/v3/e4dd457b33124bbda7e17500e6efbc27',
-    BSC_LOCKPROXY: '0xC42FC45Ad5D50e0a3bFDB4E58cdEEb4B0A3B11BF',
-    BSC_URL: 'https://data-seed-prebsc-2-s3.binance.org:8545/',
+    BSC_URL: 'https://data-seed-prebsc-1-s2.binance.org:8545/',
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xa74c81866c5bfff6684aa8edf35a5de8c3b9f173',
-    BSC_BALANCE_READER: '0x0817340A8e6d3b0C16Fc4b0BED208E26a34c262f',
+    BSC_BALANCE_READER: '0x8900C583aB55d7Fa5bF6Ff34175a2a1C252Fb0AC',
     ETH_LOCKPROXY: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
+    BSC_LOCKPROXY: '0x12f466DB69B85eE7AA17a66A8B75F8c6d6F04815',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
     CHAIN_ID: 'switcheochain',
     BECH32_PREFIX: 'swth',
@@ -74,17 +77,18 @@ export const NETWORK: NetworkInterface = {
     REST_URL: 'https://test-tradescan.switcheo.org',
     WS_URL: 'wss://test-ws.dem.exchange/ws',
     ETH_PAYER_URL: 'http://54.255.42.175:7001',
+    BSC_PAYER_URL: 'http://54.255.42.175:8001',
     FEE_URL: 'http://54.255.42.175:9001',
     COSMOS_URL: 'https://test-tradescan.switcheo.org',
     NEO_URLS: ['https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com'],
     ETH_URL: 'https://ropsten.infura.io/v3/e4dd457b33124bbda7e17500e6efbc27',
     BSC_URL: 'https://data-seed-prebsc-2-s3.binance.org:8545/',
-    BSC_LOCKPROXY: '0xC42FC45Ad5D50e0a3bFDB4E58cdEEb4B0A3B11BF',
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xa74c81866c5bfff6684aa8edf35a5de8c3b9f173',
-    BSC_BALANCE_READER: '0x0817340A8e6d3b0C16Fc4b0BED208E26a34c262f',
+    BSC_BALANCE_READER: '0x8900C583aB55d7Fa5bF6Ff34175a2a1C252Fb0AC',
     ETH_LOCKPROXY: '0x86edf4748efeded37f4932b7de93a575909cc892',
+    BSC_LOCKPROXY: '0x12f466DB69B85eE7AA17a66A8B75F8c6d6F04815',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
     CHAIN_ID: 'switcheochain',
     BECH32_PREFIX: 'tswth',
@@ -94,6 +98,7 @@ export const NETWORK: NetworkInterface = {
     REST_URL: 'https://tradescan.switcheo.org',
     WS_URL: 'wss://ws.dem.exchange/ws',
     ETH_PAYER_URL: 'https://eth-payer.switcheo.org',
+    BSC_PAYER_URL: 'https://bsc-payer.switcheo.org',
     FEE_URL: 'https://fees.switcheo.org',
     COSMOS_URL: 'https://tradescan.switcheo.org',
     NEO_URLS: [
@@ -109,11 +114,11 @@ export const NETWORK: NetworkInterface = {
     ETH_URL: 'https://eth-2.switcheo.network/',
     ETH_ENV: 'ropsten',
     BSC_URL: '',
-    BSC_LOCKPROXY: '',
     ETH_WS_URL: 'wss://mainnet.dagger.matic.network',
     ETH_BALANCE_READER: '0xe5e83cdba612672785d835714af26707f98030c3',
     BSC_BALANCE_READER: '',
     ETH_LOCKPROXY: '0x9a016ce184a22dbf6c17daa59eb7d3140dbd1c54',
+    BSC_LOCKPROXY: '',
     FEE_ADDRESS: '08d8f59e475830d9a1bb97d74285c4d34c6dac08', // swth1prv0t8j8tqcdngdmjlt59pwy6dxxmtqgycy2h7
     CHAIN_ID: 'switcheo-tradehub-1',
     BECH32_PREFIX: 'swth',
