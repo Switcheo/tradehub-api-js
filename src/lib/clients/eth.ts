@@ -53,18 +53,6 @@ const getAddressBytes = (bech32Address: string, networkConfig: NetworkConfig) =>
   return address.toBytes()
 }
 
-/**
- * stop-gap be refactored
- * aim: decouple with wallet instance
- */
-const getTargetProxyHash = (token: Token, networkConfig: NetworkConfig) => {
-  const prefix = getBech32Prefix(networkConfig, 'main')
-  const address = Address.fromBech32(prefix, token.originator)
-  const addressBytes = address.toBytes()
-  const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))
-  return addressHex
-}
-
 export class ETHClient {
   static SUPPORTED_BLOCKCHAINS = [Blockchain.BinanceSmartChain, Blockchain.Ethereum]
 
@@ -144,7 +132,7 @@ export class ETHClient {
     const networkConfigs = NETWORK[this.network]
 
     const assetId = `0x${token.asset_id}`
-    const targetProxyHash = `0x${getTargetProxyHash(token, networkConfigs)}`
+    const targetProxyHash = `0x${this.getTargetProxyHash(token)}`
     const feeAddress = `0x${networkConfigs.FEE_ADDRESS}`
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
 
@@ -211,7 +199,7 @@ export class ETHClient {
     const networkConfigs = NETWORK[this.network]
 
     const assetId = '0x' + token.asset_id
-    const targetProxyHash = '0x' + getTargetProxyHash(token, networkConfigs)
+    const targetProxyHash = '0x' + this.getTargetProxyHash(token)
     const feeAddress = '0x' + networkConfigs.FEE_ADDRESS
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
     const nonce = Math.floor(Math.random() * 1000000000) // random nonce to prevent replay attacks
@@ -297,6 +285,22 @@ export class ETHClient {
     const code = await provider.getCode(address)
     // non-contract addresses should return 0x
     return code != '0x'
+  }
+
+  /**
+   * TargetProxyHash is a hash of token originator address that is used
+   * for lockproxy asset registration and identification
+   * 
+   * @param token 
+   * @param networkConfig 
+   */
+  public getTargetProxyHash(token: Token) {
+    const networkConfig = NETWORK[this.network]
+    const prefix = getBech32Prefix(networkConfig, 'main')
+    const address = Address.fromBech32(prefix, token.originator)
+    const addressBytes = address.toBytes()
+    const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))
+    return addressHex
   }
 
   public getProvider() {
