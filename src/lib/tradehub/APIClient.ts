@@ -4,13 +4,14 @@ import {
   CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
   GetAccountTradesOpts,
   GetAccountTradesResponse,
-  GetLeverageOpts, GetLeverageResponse, GetNodesResponse, GetOrderOpts,
+  GetLeverageOpts, GetLeverageResponse, GetMarketOpts, GetMarketResponse, GetNodesResponse, GetOrderBookResponse, GetOrderOpts,
   GetOrderResponse,
   GetOrdersOpts, GetPositionOpts, GetPositionResponse,
   GetPositionsOpts, GetProfileOpts, GetProfileResponse,
+  GetWalletBalanceOpts,
+  GetWalletBalanceResponse,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse
 } from './api'
-import { GetWalletBalanceOpts } from './api/get_wallet_balance'
 import APIManager from './APIConnector'
 import TradehubEndpoints from './rest_endpoints'
 
@@ -129,19 +130,45 @@ class APIClient {
   }
 
   async getNodes(): Promise<GetNodesResponse> {
-    const queryParams = {}
-    const routeParams = {}
-    const request = this.apiManager.path('tradehub/get_nodes', routeParams, queryParams)
+    const request = this.apiManager.path('tradehub/get_nodes')
     const response = await request.get()
     return response.data as GetNodesResponse
   }
 
-  async getWalletBalance(): Promise<GetWalletBalanceOpts> {
-    const queryParams = {}
+  async getWalletBalance(opts: GetWalletBalanceOpts): Promise<GetWalletBalanceResponse> {
+    const queryParams = {
+      account: opts.account,
+    }
     const routeParams = {}
-    const request = this.apiManager.path('tradehub/get_nodes', routeParams, queryParams)
+    const request = this.apiManager.path('account/get_balance', routeParams, queryParams)
     const response = await request.get()
-    return response.data as GetWalletBalanceOpts
+    return response.data as GetWalletBalanceResponse
+  }
+
+  async getMarket(opts: GetMarketOpts): Promise<GetMarketResponse> {
+    const queryParams = {
+      market: opts.market
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_market', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetMarketResponse
+  }
+
+  async getOrderbook(opts: GetMarketOpts): Promise<GetOrderBookResponse> {
+    const queryParams = {
+      market: opts.market
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('orderbook/get_orderbook', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetOrderBookResponse
+  }
+
+  async getMarkets(): Promise<GetMarketResponse[]> {
+    const request = this.apiManager.path('markets/get_markets')
+    const response = await request.get()
+    return response.data as GetMarketResponse[]
   }
 }
 
