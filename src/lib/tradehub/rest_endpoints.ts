@@ -4,11 +4,12 @@ const TradehubEndpoints = {
   'account/detail': '/get_account',
   'account/username_check': '/username_check',
   'account/get_profile': '/get_profile',
-  'account/get_position': '/get_position',
-  'account/get_positions': '/get_positions',
+  'history/get_position': '/get_position',
+  'history/get_positions': '/get_positions',
   'account/get_leverage': '/get_leverage',
-  'orders/get_order': '/get_order',
-  'orders/get_orders': '/get_orders',
+  'history/get_order': '/get_order',
+  'history/get_orders': '/get_orders',
+  'history/get_account_trades': '/get_trades_by_account',
 
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',

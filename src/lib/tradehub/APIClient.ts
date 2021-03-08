@@ -2,6 +2,8 @@ import { NETWORK } from '@lib/config'
 import { Network } from '@lib/types'
 import {
   CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
+  GetAccountTradesOpts,
+  GetAccountTradesResponse,
   GetLeverageOpts, GetLeverageResponse, GetOrderOpts,
   GetOrderResponse,
   GetOrdersOpts, GetPositionOpts, GetPositionResponse,
@@ -63,7 +65,7 @@ class APIClient {
   async getPosition(opts: GetPositionOpts): Promise<GetPositionResponse> {
     const queryParams = { account: opts.account, market: opts.market }
     const routeParams = {}
-    const request = this.apiManager.path('account/get_position', routeParams, queryParams)
+    const request = this.apiManager.path('history/get_position', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetPositionResponse
   }
@@ -71,7 +73,7 @@ class APIClient {
   async getPositions(opts: GetPositionsOpts): Promise<GetPositionResponse[]> {
     const queryParams = { account: opts.account }
     const routeParams = {}
-    const request = this.apiManager.path('account/get_positions', routeParams, queryParams)
+    const request = this.apiManager.path('history/get_positions', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetPositionResponse[]
   }
@@ -87,14 +89,14 @@ class APIClient {
   async getOrder(opts: GetOrderOpts): Promise<GetOrderResponse> {
     const queryParams = { order_id: opts.order_id }
     const routeParams = {}
-    const request = this.apiManager.path('orders/get_order', routeParams, queryParams)
+    const request = this.apiManager.path('history/get_order', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetOrderResponse
   }
 
   async getOrders(opts: GetOrdersOpts): Promise<GetOrderResponse[]> {
     const queryParams = { 
-      order_id: opts.account,
+      account: opts.account,
       market: opts.market,
       limit: opts.limit,
       before_id: opts.before_id,
@@ -105,9 +107,24 @@ class APIClient {
       initiator: opts.initiator,
     }
     const routeParams = {}
-    const request = this.apiManager.path('orders/get_orders', routeParams, queryParams)
+    const request = this.apiManager.path('history/get_orders', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetOrderResponse[]
+  }
+
+  async getAccountTrades(opts: GetAccountTradesOpts): Promise<GetAccountTradesResponse> {
+    const queryParams = { 
+      account: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_by: opts.order_by,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_account_trades', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetAccountTradesResponse
   }
 }
 
