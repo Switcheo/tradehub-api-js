@@ -197,6 +197,16 @@ export interface GetLeaderboardParams {
   order?: string
 }
 
+export interface GetBlockHeightParams {
+  unix: number
+}
+
+export interface GetIndividualPnlParams {
+  account: string
+  from?: number
+  to?: number
+}
+
 export interface SetTradingFlagMsg {
   is_enabled: string
   blockchain: string
@@ -883,4 +893,21 @@ export interface LeaderboardDataResponse {
   denom: string
   realized_pnl: string
   username: string
+}
+
+export interface GetBlockHeightResponse {
+  height: string // string representation of number
+  block_time: string // string representation of timestamp
+}
+
+export interface IndivPnlData {
+  realized_pnl: string
+}
+
+export interface GetIndivPnlResponse {
+  data: IndivPnlData[]
+  from_block: string // string representation of number
+  from_time: string // string representation of unix timestamp
+  to_block: string // string representation of number
+  to_time: string // string representation of unix timestamp
 }

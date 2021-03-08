@@ -48,6 +48,7 @@ export interface REST {
   getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any>
   getInsuranceFundBalance(): Promise<Array<object>>
   getLeaderboard(params?: types.GetLeaderboardParams): Promise<types.GetLeaderboardResponse>
+  getBlockHeightfromUnix(params: types.GetBlockHeightParams): Promise<types.GetBlockHeightResponse>
   getLeverage(params: types.MarketAndAddressGetterParams): Promise<object>
   getLiquidityPools(): Promise<null | types.GetLiquidityPoolsResponse>
   getLiquidationTrades(): Promise<Array<object>>
@@ -163,6 +164,7 @@ export interface REST {
   getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
   getGasFees() : Promise<GasFees>
+  getAccountRealizedPnl(params: types.GetIndividualPnlParams): Promise<types.GetIndivPnlResponse>
 }
 
 export class RestClient implements REST {
@@ -524,6 +526,24 @@ export class RestClient implements REST {
       url += `to=${to}&`
     }
     return this.fetchJson(url)
+  }
+
+  public async getAccountRealizedPnl(params: types.GetIndividualPnlParams) {
+    let url = '/get_account_realized_pnl'
+    const { account = '', from, to } = params
+    url += `?account=${account}`
+
+    if (from) {
+      url += `&from=${from}`
+    }
+    if (to) {
+      url += `&to=${to}`
+    }
+    return this.fetchJson(url)
+  }
+
+  public async getBlockHeightfromUnix(params: types.GetBlockHeightParams) {
+    return this.fetchJson(`/get_blockheight_from_unix?unix=${params.unix}`)
   }
 
   public async getPositionsWithHighestPnL(params: types.MarketOnlyGetterParams) {
