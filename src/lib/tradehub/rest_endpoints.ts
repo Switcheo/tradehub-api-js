@@ -11,6 +11,7 @@ const TradehubEndpoints = {
   'history/get_orders': '/get_orders',
   'history/get_account_trades': '/get_trades_by_account',
   'tradehub/get_nodes': '/monitor',
+  'account/get_wallet_balance': '/get_balance',
 
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',

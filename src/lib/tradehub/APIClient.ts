@@ -10,6 +10,7 @@ import {
   GetPositionsOpts, GetProfileOpts, GetProfileResponse,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse
 } from './api'
+import { GetWalletBalanceOpts } from './api/get_wallet_balance'
 import APIManager from './APIConnector'
 import TradehubEndpoints from './rest_endpoints'
 
@@ -133,6 +134,14 @@ class APIClient {
     const request = this.apiManager.path('tradehub/get_nodes', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetNodesResponse
+  }
+
+  async getWalletBalance(): Promise<GetWalletBalanceOpts> {
+    const queryParams = {}
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_nodes', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetWalletBalanceOpts
   }
 }
 
