@@ -4,7 +4,7 @@ import {
   CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
   GetAccountTradesOpts,
   GetAccountTradesResponse,
-  GetLeverageOpts, GetLeverageResponse, GetOrderOpts,
+  GetLeverageOpts, GetLeverageResponse, GetNodesResponse, GetOrderOpts,
   GetOrderResponse,
   GetOrdersOpts, GetPositionOpts, GetPositionResponse,
   GetPositionsOpts, GetProfileOpts, GetProfileResponse,
@@ -125,6 +125,14 @@ class APIClient {
     const request = this.apiManager.path('history/get_account_trades', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetAccountTradesResponse
+  }
+
+  async getNodes(): Promise<GetNodesResponse> {
+    const queryParams = {}
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_nodes', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetNodesResponse
   }
 }
 
