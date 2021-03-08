@@ -1,16 +1,22 @@
-import { Order } from "@lib/models";
-
-export interface GetOrdersResponse extends Order { }
-
 /**
- * @param order_id Order id to query
+ * @param account Only returns orders made by this address
+ * @param market The market (eg: swth_eth)
+ * @param limit Limit to this number of orders
+ * @param before_id Only returns orders before this id
+ * @param after_id Only returns trades after this id
+ * @param order_status Status of order
+ * @param order_type Type of order
+ * @param order_by Sort order by
+ * @param initiator Maker of order
  */
-export interface GetOrderOpts {
-  account: string
-  market: string
-  limit: string
-  beforeId: string
-  afterId: string
-  orderStatus: string
-  orderType: string
+export interface GetOrdersOpts {
+  account?: string
+  market?: string
+  limit?: string
+  before_id?: string
+  after_id?: string
+  order_status?: string
+  order_type?: string
+  order_by?: string
+  initiator?: string
 }

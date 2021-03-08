@@ -8,6 +8,7 @@ const TradehubEndpoints = {
   'account/get_positions': '/get_positions',
   'account/get_leverage': '/get_leverage',
   'orders/get_order': '/get_order',
+  'orders/get_orders': '/get_orders',
 
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',

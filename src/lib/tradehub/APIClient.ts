@@ -1,12 +1,13 @@
 import { NETWORK } from '@lib/config'
 import { Network } from '@lib/types'
-import { GetAccountOpts, GetAccountResponse } from './api'
-import { CheckUserNameOpts } from './api/check_username'
-import { GetLeverageOpts, GetLeverageResponse } from './api/get_leverage'
-import { GetOrderOpts } from './api/get_order'
-import { GetPositionOpts, GetPositionResponse, GetPositionsOpts } from './api/get_position'
-import { GetProfileOpts, GetProfileResponse } from './api/get_profile'
-import { ListValidatorDelegationsOpts, ListValidatorDelegationsResponse } from './api/list_validator_delegations'
+import {
+  CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
+  GetLeverageOpts, GetLeverageResponse, GetOrderOpts,
+  GetOrderResponse,
+  GetOrdersOpts, GetPositionOpts, GetPositionResponse,
+  GetPositionsOpts, GetProfileOpts, GetProfileResponse,
+  ListValidatorDelegationsOpts, ListValidatorDelegationsResponse
+} from './api'
 import APIManager from './APIConnector'
 import TradehubEndpoints from './rest_endpoints'
 
@@ -83,12 +84,30 @@ class APIClient {
     return response.data as GetLeverageResponse[]
   }
 
-  async getOrder(opts: GetOrderOpts): Promise<GetLeverageResponse[]> {
+  async getOrder(opts: GetOrderOpts): Promise<GetOrderResponse> {
     const queryParams = { order_id: opts.order_id }
     const routeParams = {}
-    const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
+    const request = this.apiManager.path('orders/get_order', routeParams, queryParams)
     const response = await request.get()
-    return response.data as GetLeverageResponse[]
+    return response.data as GetOrderResponse
+  }
+
+  async getOrders(opts: GetOrdersOpts): Promise<GetOrderResponse[]> {
+    const queryParams = { 
+      order_id: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_status: opts.order_status,
+      order_type: opts.order_type,
+      order_by: opts.order_by,
+      initiator: opts.initiator,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('orders/get_orders', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetOrderResponse[]
   }
 }
 
