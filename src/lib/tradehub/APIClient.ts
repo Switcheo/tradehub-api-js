@@ -10,7 +10,8 @@ import {
   GetPositionsOpts, GetProfileOpts, GetProfileResponse,
   GetWalletBalanceOpts,
   GetWalletBalanceResponse,
-  ListValidatorDelegationsOpts, ListValidatorDelegationsResponse
+  ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
+  GetPricesOpts, GetPricesResponse
 } from './api'
 import APIManager from './APIConnector'
 import TradehubEndpoints from './rest_endpoints'
@@ -160,7 +161,7 @@ class APIClient {
       market: opts.market
     }
     const routeParams = {}
-    const request = this.apiManager.path('orderbook/get_orderbook', routeParams, queryParams)
+    const request = this.apiManager.path('markets/get_orderbook', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetOrderBookResponse
   }
@@ -169,6 +170,16 @@ class APIClient {
     const request = this.apiManager.path('markets/get_markets')
     const response = await request.get()
     return response.data as GetMarketResponse[]
+  }
+
+  async getPrices(opts: GetPricesOpts): Promise<GetPricesResponse> {
+    const queryParams = {
+      market: opts.market
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_prices', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPricesResponse
   }
 }
 
