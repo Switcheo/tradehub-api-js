@@ -170,7 +170,6 @@ export class ETHClient {
     return lockResultTx
   }
 
-
   public async getDepositContractAddress(swthBech32Addres: string, ownerEthAddress: string) {
     const networkConfigs = NETWORK[this.network]
     const addressBytes = getAddressBytes(swthBech32Addres, networkConfigs)
@@ -285,6 +284,16 @@ export class ETHClient {
     const code = await provider.getCode(address)
     // non-contract addresses should return 0x
     return code != '0x'
+  }
+
+  public async retrieveERC20Info(address: string) {
+    const provider = this.getProvider()
+    const contract = new ethers.Contract(address, ABIs.erc20, provider)
+    const decimals = await contract.decimals()
+    const name = await contract.name()
+    const symbol = await contract.symbol()
+
+    return { address, decimals, name, symbol }
   }
 
   /**
