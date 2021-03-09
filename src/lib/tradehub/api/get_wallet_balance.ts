@@ -1,4 +1,4 @@
-import { Balances } from "@lib/models";
+import { Balances } from "@lib/tradehub/models";
 
 export interface GetWalletBalanceResponse extends Balances {}
 

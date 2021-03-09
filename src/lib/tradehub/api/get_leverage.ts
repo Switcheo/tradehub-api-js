@@ -1,4 +1,4 @@
-import { Leverage } from "@lib/models";
+import { Leverage } from "@lib/tradehub/models";
 
 export interface GetLeverageResponse extends Leverage { }
 

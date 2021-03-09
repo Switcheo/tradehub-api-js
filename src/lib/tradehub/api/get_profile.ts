@@ -1,4 +1,4 @@
-import { Profile } from "@lib/models";
+import { Profile } from "@lib/tradehub/models";
 
 export interface GetProfileResponse extends Profile { }
 

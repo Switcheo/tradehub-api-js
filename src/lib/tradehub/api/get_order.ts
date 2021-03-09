@@ -1,4 +1,4 @@
-import { Order } from "@lib/models";
+import { Order } from "@lib/tradehub/models";
 
 export interface GetOrderResponse extends Order { }
 

@@ -1,4 +1,4 @@
-import { Market } from "@lib/models";
+import { Market } from "@lib/tradehub/models";
 
 export interface GetMarketResponse extends Market {}
 

@@ -1,4 +1,4 @@
-import { OrderBook } from "@lib/models";
+import { OrderBook } from "@lib/tradehub/models";
 
 export interface GetOrderBookResponse extends OrderBook {}
 

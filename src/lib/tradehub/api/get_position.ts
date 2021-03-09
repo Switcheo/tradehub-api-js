@@ -1,4 +1,4 @@
-import { Position } from "@lib/models";
+import { Position } from "@lib/tradehub/models";
 
 export interface GetPositionResponse extends Position { }
 

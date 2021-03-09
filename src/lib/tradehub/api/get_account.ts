@@ -1,4 +1,4 @@
-import { Account } from "@lib/models";
+import { Account } from "@lib/tradehub/models";
 import { CosmosResponse, TypedResponse } from "./util";
 
 export interface GetAccountResponse extends CosmosResponse<TypedResponse<Account>> { }
