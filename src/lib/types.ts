@@ -116,6 +116,12 @@ export interface OrderBook {
   bids: Array<PriceLevel>
 }
 
+export interface TokenInitInfo {
+  address: string
+  decimals: number
+  symbol: string
+  name: string
+}
 
 export interface Balance {
   available: string

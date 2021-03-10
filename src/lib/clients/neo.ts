@@ -1,7 +1,7 @@
 import Neon, { rpc } from "@cityofzion/neon-js";
 import { NETWORK } from "@lib/config";
 import { Blockchain } from "@lib/constants";
-import { Network } from "@lib/types";
+import { Network, TokenInitInfo } from "@lib/types";
 import { logger } from "@lib/utils";
 
 export interface NEOClientOpts {
@@ -29,7 +29,7 @@ export class NEOClient {
     return new NEOClient(network, blockchain)
   }
 
-  public async retrieveNEP5Info(scriptHash: string) {
+  public async retrieveNEP5Info(scriptHash: string): Promise<TokenInitInfo> {
     const url = this.getProviderUrl()
     const sb = Neon.create.scriptBuilder()
     sb.emitAppCall(scriptHash, "symbol", [])

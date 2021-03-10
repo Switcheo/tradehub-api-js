@@ -2,7 +2,7 @@ import { getBech32Prefix, NETWORK, Network as NetworkConfig } from "@lib/config"
 import { Blockchain } from "@lib/constants";
 import { ABIs } from "@lib/eth";
 import { FeeResult, Token } from "@lib/models";
-import { Network } from "@lib/types";
+import { Network, TokenInitInfo } from "@lib/types";
 import { Address } from "@lib/utils";
 import { logger } from "@lib/utils/logger";
 import fetch from "@lib/utils/fetch";
@@ -286,7 +286,7 @@ export class ETHClient {
     return code != '0x'
   }
 
-  public async retrieveERC20Info(address: string) {
+  public async retrieveERC20Info(address: string): Promise<TokenInitInfo> {
     const provider = this.getProvider()
     const contract = new ethers.Contract(address, ABIs.erc20, provider)
     const decimals = await contract.decimals()
