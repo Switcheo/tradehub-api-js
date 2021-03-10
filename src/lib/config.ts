@@ -46,9 +46,9 @@ export const NETWORK: NetworkInterface = {
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xa74c81866c5bfff6684aa8edf35a5de8c3b9f173',
-    BSC_BALANCE_READER: '0x4D27227291d47ac61f4a514D8435f79c3CfE0D54',
+    BSC_BALANCE_READER: '0x47837fC56f88F6A44Ed35c5e3F7981f6127dDe03',
     ETH_LOCKPROXY: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
-    BSC_LOCKPROXY: '0x8B4e0940447B5fec6c25A2FA33f20A1844E39415',
+    BSC_LOCKPROXY: '0x47837fC56f88F6A44Ed35c5e3F7981f6127dDe03',
     ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
     BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
@@ -69,9 +69,9 @@ export const NETWORK: NetworkInterface = {
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xa74c81866c5bfff6684aa8edf35a5de8c3b9f173',
-    BSC_BALANCE_READER: '0x4D27227291d47ac61f4a514D8435f79c3CfE0D54',
+    BSC_BALANCE_READER: '0x47837fC56f88F6A44Ed35c5e3F7981f6127dDe03',
     ETH_LOCKPROXY: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
-    BSC_LOCKPROXY: '0x8B4e0940447B5fec6c25A2FA33f20A1844E39415',
+    BSC_LOCKPROXY: '0x47837fC56f88F6A44Ed35c5e3F7981f6127dDe03',
     ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
     BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
@@ -92,9 +92,9 @@ export const NETWORK: NetworkInterface = {
     ETH_ENV: 'ropsten',
     ETH_WS_URL: 'wss://ropsten.dagger.matic.network',
     ETH_BALANCE_READER: '0xa74c81866c5bfff6684aa8edf35a5de8c3b9f173',
-    BSC_BALANCE_READER: '0x4D27227291d47ac61f4a514D8435f79c3CfE0D54',
+    BSC_BALANCE_READER: '0x47837fC56f88F6A44Ed35c5e3F7981f6127dDe03',
     ETH_LOCKPROXY: '0x86edf4748efeded37f4932b7de93a575909cc892',
-    BSC_LOCKPROXY: '0x8B4e0940447B5fec6c25A2FA33f20A1844E39415',
+    BSC_LOCKPROXY: '0x47837fC56f88F6A44Ed35c5e3F7981f6127dDe03',
     ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
     BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
@@ -110,9 +110,9 @@ export const NETWORK: NetworkInterface = {
     FEE_URL: 'https://fees.switcheo.org',
     COSMOS_URL: 'https://tradescan.switcheo.org',
     NEO_URLS: [
+      "https://seed3.switcheo.network:443", // Switcheo seed3
       "https://seed1.switcheo.network:443", // Switcheo seed1
       "https://seed2.switcheo.network:443", // Switcheo seed2
-      "https://seed3.switcheo.network:443", // Switcheo seed3
       "https://vlqvfsx107.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed1
       "https://qtl81e9fhb.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed2
       "https://vonfbyseb2.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed3
@@ -121,12 +121,12 @@ export const NETWORK: NetworkInterface = {
     ],
     ETH_URL: 'https://eth-2.switcheo.network/',
     ETH_ENV: 'ropsten',
-    BSC_URL: '',
+    BSC_URL: 'https://bsc-dataseed2.binance.org/',
     ETH_WS_URL: 'wss://mainnet.dagger.matic.network',
     ETH_BALANCE_READER: '0xe5e83cdba612672785d835714af26707f98030c3',
-    BSC_BALANCE_READER: '',
+    BSC_BALANCE_READER: '0x47837fC56f88F6A44Ed35c5e3F7981f6127dDe03',
     ETH_LOCKPROXY: '0x9a016ce184a22dbf6c17daa59eb7d3140dbd1c54',
-    BSC_LOCKPROXY: '',
+    BSC_LOCKPROXY: '0x6CA6F1f00497C5c0bA5DB886E3AF470280bBd2d4',
     ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
     BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '08d8f59e475830d9a1bb97d74285c4d34c6dac08', // swth1prv0t8j8tqcdngdmjlt59pwy6dxxmtqgycy2h7
