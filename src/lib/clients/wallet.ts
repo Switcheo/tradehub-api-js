@@ -383,6 +383,44 @@ export class WalletClient {
     })
   }
 
+  public async wrapNeoToNneo(neoAmount: number, _privateKey = null) {
+    const privateKey = !!_privateKey ? _privateKey : this.hdWallet[Blockchain.Neo]
+    const account = Neon.create.account(privateKey)
+    const wrapperContractScriptHash = 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6'
+    const wrapperContractAddress = neonWallet.getAddressFromScriptHash(wrapperContractScriptHash)
+
+    // Build config
+    const intent = api.makeIntent({ NEO: neoAmount }, wrapperContractAddress);
+    console.log('intent', intent)
+    const props = {
+      scriptHash: wrapperContractScriptHash,
+      operation: "mintTokens",
+      args: []
+    }
+
+    const script = Neon.create.script(props)
+    const apiProvider = new api.neoscan.instance("MainNet")
+    const rpcUrl = await this.getNeoRpcUrl()
+
+    const config = {
+      api: apiProvider, // Network
+      url: rpcUrl,
+      account, // Sender's Account
+      intents: intent,
+      script: script
+    }
+
+    // Neon API
+    return Neon.doInvoke(config)
+      .then(res => {
+        console.log("\n\n--- Response ---")
+        console.log(res)
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
   public async watchEthDepositAddress(whitelistDenoms?: string[]) {
     const address = await this.getDepositAddress(Blockchain.Ethereum)
     // do an initial check
