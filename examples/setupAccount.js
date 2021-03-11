@@ -1,5 +1,9 @@
 const { RestClient, WalletClient, Network } = require("../.")
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 /**
  *
  * @param {string} mnemonic
@@ -11,11 +15,14 @@ module.exports = async function setupAccount(mnemonic, network = Network.LocalHo
     const client = new RestClient({ network, wallet })
     const fees = await client.getGasFees()
     wallet.initialize({ fees })
-    const mintResult = await client.mintTokens({
-        address: wallet.pubKeyBech32,
-        amount: '1000',
-        denom: 'swth',
-    })
-    console.log('mintResult:', mintResult)
+    if (network === Network.LocalHost) {
+      const mintResult = await client.mintTokens({
+          address: wallet.pubKeyBech32,
+          amount: '1000',
+          denom: 'swth',
+      })
+      console.log('mintResult:', mintResult)
+      await sleep(1000)
+    }
     return wallet
 }
