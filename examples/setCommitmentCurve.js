@@ -11,8 +11,8 @@ async function set() {
     const wallet = await setupAccount(process.env.MNEMONICS)
     const minterClient = new RestClient({ wallet, network })
     const account = newAccount(network)
-  
-    
+
+
     const tokenReq = {
       toAddress: account.pubKeyBech32,
       mint: [
@@ -33,15 +33,15 @@ async function set() {
     const mintResult = await minterClient.mintMultipleTestnetTokens(tokenReq)
     console.log('mintResult', mintResult)
     await sleep(1000)
-  
+
     const accountWallet = await WalletClient.connectMnemonic(account.mnemonic, network)
     const mainClient = new RestClient({ wallet: accountWallet, network})
 
 
   console.log('setting commitment curve')
   const params = {
-    max_duration: 31557600,
-    max_reward_multiplier: 600,
+    max_duration: '15552000',
+    max_reward_multiplier: 200,
     originator: accountWallet.pubKeyBech32,
 }
   const res = await mainClient.setCommitmentCurve(params)
