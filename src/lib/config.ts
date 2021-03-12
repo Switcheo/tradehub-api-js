@@ -124,9 +124,9 @@ export const NETWORK: NetworkInterface = {
     BSC_URL: 'https://bsc-dataseed2.binance.org/',
     ETH_WS_URL: 'wss://mainnet.dagger.matic.network',
     ETH_BALANCE_READER: '0xe5e83cdba612672785d835714af26707f98030c3',
-    BSC_BALANCE_READER: '0x7c2b13d656d222cb79670e301dd826dc5b8dc20c',
+    BSC_BALANCE_READER: '0x2b18c5e1edaa7e27d40fec8d0b7d96c5eefa35df',
     ETH_LOCKPROXY: '0x9a016ce184a22dbf6c17daa59eb7d3140dbd1c54',
-    BSC_LOCKPROXY: '0x6ca6f1f00497c5c0ba5db886e3af470280bbd2d4',
+    BSC_LOCKPROXY: '0xb5d4f343412dc8efb6ff599d790074d0f1e8d430',
     ETH_WALLET_BYTECODE_HASH: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
     BSC_WALLET_BYTECODE_HASH: '0x1b147c1cef546fcbcc1284df778073d65b90f80d5b649a69d5f8a01e186c0ec1',
     FEE_ADDRESS: '08d8f59e475830d9a1bb97d74285c4d34c6dac08', // swth1prv0t8j8tqcdngdmjlt59pwy6dxxmtqgycy2h7
