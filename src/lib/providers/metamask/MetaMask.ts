@@ -1,5 +1,5 @@
-import { NETWORK } from '@lib/config'
-import { Blockchain, ChainNames } from '@lib/constants'
+import { ETHClient } from '@lib/clients'
+import { Blockchain, blockchainForChainId, ChainNames } from '@lib/constants'
 import { ABIs } from '@lib/eth'
 import { Network } from '@lib/types'
 import * as ethSignUtils from 'eth-sig-util'
@@ -20,7 +20,7 @@ const CONTRACT_HASH = {
     [Network.DevNet]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
     [Network.LocalHost]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
 
-    [Network.MainNet]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
+    [Network.MainNet]: '0x3786d94AC6B15FE2eaC72c3CA78cB82578Fc66f4',
   } as const
 } as const
 
@@ -56,6 +56,11 @@ export interface CallContractArgs {
   data?: string
 }
 
+export interface SyncResult {
+  blockchain?: Blockchain
+  chainId?: number
+}
+
 /**
  * TODO: Add docs
  */
@@ -63,29 +68,36 @@ export class MetaMask {
   private metamaskAPI: MetaMaskAPI | null = null
   private blockchain: Blockchain = Blockchain.Ethereum
 
-  public readonly provider: ethers.providers.Provider | null = null
-
   constructor(
     public readonly network: Network,
   ) {
     this.metamaskAPI = (window as any).ethereum as MetaMaskAPI | undefined
-
-    const providerUrl = NETWORK[network].ETH_URL
-    if (providerUrl) {
-      this.provider = new ethers.providers.JsonRpcProvider(providerUrl)
-    }
   }
 
-  private checkProvider(): ethers.providers.Provider {
-    if (!this.provider) {
+  private checkProvider(blockchain: Blockchain = this.blockchain): ethers.providers.Provider {
+    const ethClient = ETHClient.instance({
+      blockchain: blockchain,
+      network: this.network,
+    })
+
+    const provider = ethClient.getProvider()
+
+    if (!provider) {
       throw new Error(`MetaMask login not supported for this network ${this.network}`)
     }
 
-    return this.provider
+    return provider
   }
 
   public getBlockchain(): Blockchain {
     return this.blockchain
+  }
+
+  async syncBlockchain(): Promise<SyncResult> {
+    const chainIdHex = await this.metamaskAPI?.request({ method: 'eth_chainId' }) as string
+    const chainId = !!chainIdHex ? parseInt(chainIdHex, 16) : undefined
+    const blockchain = blockchainForChainId(chainId)
+    return { chainId, blockchain }
   }
 
   async getSigner(): Promise<ethers.Signer> {
@@ -128,9 +140,9 @@ export class MetaMask {
     return defaultAccount
   }
 
-  async getStoredMnemonicCipher(account: string): Promise<string | undefined> {
-    const contractHash = this.getContractHash()
-    const provider = this.checkProvider()
+  async getStoredMnemonicCipher(account: string, blockchain?: Blockchain): Promise<string | undefined> {
+    const contractHash = this.getContractHash(blockchain)
+    const provider = this.checkProvider(blockchain)
     const contract = new ethers.Contract(contractHash, REGISTRY_CONTRACT_ABI, provider)
     const cipherTextHex: string | undefined = await contract.map(account)
     if (!cipherTextHex?.length || cipherTextHex === '0x') {
@@ -273,10 +285,10 @@ export class MetaMask {
     return 3
   }
 
-  private getContractHash() {
-    const contractHash = CONTRACT_HASH[this.blockchain][this.network]
+  private getContractHash(blockchain: Blockchain = this.blockchain) {
+    const contractHash = CONTRACT_HASH[blockchain][this.network]
     if (!contractHash) {
-      throw new Error(`MetaMask login is not supported on ${this.network} on ${this.blockchain}`)
+      throw new Error(`MetaMask login is not supported on ${this.network} on ${blockchain}`)
     }
 
     return contractHash
