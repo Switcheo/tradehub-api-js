@@ -1,2 +1,2 @@
 export * from './account'
-export { default as MetaMask } from './metamask'
+export * from './metamask'

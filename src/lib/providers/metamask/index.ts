@@ -1,1 +1,1 @@
-export { default } from './MetaMask'
+export * from './MetaMask'

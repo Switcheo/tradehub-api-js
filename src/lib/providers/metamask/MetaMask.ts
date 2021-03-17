@@ -50,13 +50,26 @@ interface MetaMaskAPI {
   request: (args: RequestArguments) => Promise<unknown>
 }
 
+export interface MetaMaskChangeNetworkParam {
+  chainId: string
+  blockExplorerUrls?: string[]
+  chainName?: string
+  iconUrls?: string[]
+  nativeCurrency?: {
+    name: string
+    symbol: string
+    decimals: number
+  }
+  rpcUrls?: string[]
+}
+
 export interface CallContractArgs {
   from?: string
   value?: string
   data?: string
 }
 
-export interface SyncResult {
+export interface MetaMaskSyncResult {
   blockchain?: Blockchain
   chainId?: number
 }
@@ -67,6 +80,80 @@ export interface SyncResult {
 export class MetaMask {
   private metamaskAPI: MetaMaskAPI | null = null
   private blockchain: Blockchain = Blockchain.Ethereum
+
+  static getNetworkParams(network: Network, blockchain: Blockchain = Blockchain.Ethereum): MetaMaskChangeNetworkParam {
+    if (network === Network.MainNet) {
+      switch (blockchain) {
+        case Blockchain.BinanceSmartChain:
+          return {
+            chainId: '0x38',
+            blockExplorerUrls: ['https://bscscan.com'],
+            chainName: 'BSC Mainnet',
+            rpcUrls: [
+              'https://bsc-dataseed2.binance.org/',
+              'https://bsc-dataseed3.binance.org/',
+              'https://bsc-dataseed4.binance.org/',
+              'https://bsc-dataseed1.defibit.io/',
+              'https://bsc-dataseed2.defibit.io/',
+              'https://bsc-dataseed3.defibit.io/',
+              'https://bsc-dataseed4.defibit.io/',
+              'https://bsc-dataseed1.ninicoin.io/',
+              'https://bsc-dataseed2.ninicoin.io/',
+              'https://bsc-dataseed3.ninicoin.io/',
+              'https://bsc-dataseed4.ninicoin.io/',
+              'https://bsc-dataseed1.binance.org/',
+            ],
+            nativeCurrency: {
+              decimals: 18,
+              name: 'Binance Coin',
+              symbol: 'BNB',
+            },
+          }
+        default:
+          // metamask should come with Ethereum configs
+          return { chainId: '0x1' }
+      }
+    }
+
+    switch (blockchain) {
+      case Blockchain.BinanceSmartChain:
+        return {
+          chainId: '0x61',
+          blockExplorerUrls: ['https://testnet.bscscan.com'],
+          chainName: 'BSC Testnet',
+          rpcUrls: [
+            'https://data-seed-prebsc-2-s1.binance.org:8545/',
+            'http://data-seed-prebsc-1-s2.binance.org:8545/',
+            'http://data-seed-prebsc-2-s2.binance.org:8545/',
+            'https://data-seed-prebsc-1-s3.binance.org:8545/',
+            'https://data-seed-prebsc-2-s3.binance.org:8545/',
+            'https://data-seed-prebsc-1-s1.binance.org:8545/',
+          ],
+          nativeCurrency: {
+            decimals: 18,
+            name: 'Binance Coin',
+            symbol: 'BNB',
+          },
+        }
+      default:
+        // metamask should come with Ethereum configs
+        return { chainId: '0x3' }
+    }
+  }
+
+  static getRequiredChainId(network: Network, blockchain: Blockchain = Blockchain.Ethereum) {
+    if (network === Network.MainNet) {
+      switch (blockchain) {
+        case Blockchain.BinanceSmartChain: return 56
+        default: return 1
+      }
+    }
+
+    switch (blockchain) {
+      case Blockchain.BinanceSmartChain: return 97
+      default: return 3
+    }
+  }
 
   constructor(
     public readonly network: Network,
@@ -93,7 +180,7 @@ export class MetaMask {
     return this.blockchain
   }
 
-  async syncBlockchain(): Promise<SyncResult> {
+  async syncBlockchain(): Promise<MetaMaskSyncResult> {
     const chainIdHex = await this.metamaskAPI?.request({ method: 'eth_chainId' }) as string
     const chainId = !!chainIdHex ? parseInt(chainIdHex, 16) : undefined
     const blockchain = blockchainForChainId(chainId)
@@ -294,5 +381,3 @@ export class MetaMask {
     return contractHash
   }
 }
-
-export default MetaMask
