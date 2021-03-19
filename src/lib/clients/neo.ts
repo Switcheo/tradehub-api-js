@@ -1,8 +1,11 @@
-import Neon, { rpc } from "@cityofzion/neon-js";
 import { NETWORK } from "@lib/config";
 import { Blockchain } from "@lib/constants";
 import { Network, TokenInitInfo } from "@lib/types";
 import { logger } from "@lib/utils";
+import Neon, { rpc, api } from '@cityofzion/neon-js'
+import {
+  wallet as neonWallet,
+} from '@cityofzion/neon-core'
 
 export interface NEOClientOpts {
   network: Network,
@@ -51,5 +54,40 @@ export class NEOClient {
 
   public getProviderUrl() {
     return NETWORK[this.network].NEO_URLS[0];
+  }
+
+  public async wrapNeoToNneo(neoAmount: number, account, rpcUrl) {
+    const wrapperContractScriptHash = 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6'
+    const wrapperContractAddress = neonWallet.getAddressFromScriptHash(wrapperContractScriptHash)
+
+    // Build config
+    const intent = api.makeIntent({ NEO: neoAmount }, wrapperContractAddress);
+    console.log('intent', intent)
+    const props = {
+      scriptHash: wrapperContractScriptHash,
+      operation: "mintTokens",
+      args: []
+    }
+
+    const script = Neon.create.script(props)
+    const apiProvider = new api.neoscan.instance("MainNet")
+
+    const config = {
+      api: apiProvider, // Network
+      url: rpcUrl,
+      account, // Sender's Account
+      intents: intent,
+      script: script
+    }
+
+    // Neon API
+    return Neon.doInvoke(config)
+      .then(res => {
+        console.log("\n\n--- Response ---")
+        console.log(res)
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 }

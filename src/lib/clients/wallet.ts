@@ -25,9 +25,10 @@ import {
 import { chunk } from 'lodash'
 import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
-import { Fee } from '../types'
+import { Fee, Network as NETWORK } from '../types'
 import { logger } from '../utils'
 import fetch from '../utils/fetch'
+import { NEOClient } from './neo'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -385,40 +386,14 @@ export class WalletClient {
 
   public async wrapNeoToNneo(neoAmount: number, _privateKey = null) {
     const privateKey = !!_privateKey ? _privateKey : this.hdWallet[Blockchain.Neo]
-    const account = Neon.create.account(privateKey)
-    const wrapperContractScriptHash = 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6'
-    const wrapperContractAddress = neonWallet.getAddressFromScriptHash(wrapperContractScriptHash)
-
-    // Build config
-    const intent = api.makeIntent({ NEO: neoAmount }, wrapperContractAddress);
-    console.log('intent', intent)
-    const props = {
-      scriptHash: wrapperContractScriptHash,
-      operation: "mintTokens",
-      args: []
-    }
-
-    const script = Neon.create.script(props)
-    const apiProvider = new api.neoscan.instance("MainNet")
     const rpcUrl = await this.getNeoRpcUrl()
+    const account = Neon.create.account(privateKey)
+    const network = NETWORK.MainNet
 
-    const config = {
-      api: apiProvider, // Network
-      url: rpcUrl,
-      account, // Sender's Account
-      intents: intent,
-      script: script
-    }
-
-    // Neon API
-    return Neon.doInvoke(config)
-      .then(res => {
-        console.log("\n\n--- Response ---")
-        console.log(res)
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    const neoClient = NEOClient.instance({
+      network,
+    })
+    neoClient.wrapNeoToNneo(neoAmount, account, rpcUrl)
   }
 
   public async watchEthDepositAddress(whitelistDenoms?: string[]) {
