@@ -1,5 +1,5 @@
-import { NETWORK } from '@lib/config'
-import { Blockchain, ChainNames } from '@lib/constants'
+import { ETHClient } from '@lib/clients'
+import { Blockchain, blockchainForChainId, ChainNames } from '@lib/constants'
 import { ABIs } from '@lib/eth'
 import { Network } from '@lib/types'
 import * as ethSignUtils from 'eth-sig-util'
@@ -20,7 +20,7 @@ const CONTRACT_HASH = {
     [Network.DevNet]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
     [Network.LocalHost]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
 
-    [Network.MainNet]: '0x06E949ec2d6737ff57859CdcE426C5b5CA2Fc085',
+    [Network.MainNet]: '0x3786d94AC6B15FE2eaC72c3CA78cB82578Fc66f4',
   } as const
 } as const
 
@@ -50,10 +50,28 @@ interface MetaMaskAPI {
   request: (args: RequestArguments) => Promise<unknown>
 }
 
+export interface MetaMaskChangeNetworkParam {
+  chainId: string
+  blockExplorerUrls?: string[]
+  chainName?: string
+  iconUrls?: string[]
+  nativeCurrency?: {
+    name: string
+    symbol: string
+    decimals: number
+  }
+  rpcUrls?: string[]
+}
+
 export interface CallContractArgs {
   from?: string
   value?: string
   data?: string
+}
+
+export interface MetaMaskSyncResult {
+  blockchain?: Blockchain
+  chainId?: number
 }
 
 /**
@@ -63,29 +81,110 @@ export class MetaMask {
   private metamaskAPI: MetaMaskAPI | null = null
   private blockchain: Blockchain = Blockchain.Ethereum
 
-  public readonly provider: ethers.providers.Provider | null = null
+  static getNetworkParams(network: Network, blockchain: Blockchain = Blockchain.Ethereum): MetaMaskChangeNetworkParam {
+    if (network === Network.MainNet) {
+      switch (blockchain) {
+        case Blockchain.BinanceSmartChain:
+          return {
+            chainId: '0x38',
+            blockExplorerUrls: ['https://bscscan.com'],
+            chainName: 'BSC Mainnet',
+            rpcUrls: [
+              'https://bsc-dataseed2.binance.org/',
+              'https://bsc-dataseed3.binance.org/',
+              'https://bsc-dataseed4.binance.org/',
+              'https://bsc-dataseed1.defibit.io/',
+              'https://bsc-dataseed2.defibit.io/',
+              'https://bsc-dataseed3.defibit.io/',
+              'https://bsc-dataseed4.defibit.io/',
+              'https://bsc-dataseed1.ninicoin.io/',
+              'https://bsc-dataseed2.ninicoin.io/',
+              'https://bsc-dataseed3.ninicoin.io/',
+              'https://bsc-dataseed4.ninicoin.io/',
+              'https://bsc-dataseed1.binance.org/',
+            ],
+            nativeCurrency: {
+              decimals: 18,
+              name: 'Binance Coin',
+              symbol: 'BNB',
+            },
+          }
+        default:
+          // metamask should come with Ethereum configs
+          return { chainId: '0x1' }
+      }
+    }
+
+    switch (blockchain) {
+      case Blockchain.BinanceSmartChain:
+        return {
+          chainId: '0x61',
+          blockExplorerUrls: ['https://testnet.bscscan.com'],
+          chainName: 'BSC Testnet',
+          rpcUrls: [
+            'https://data-seed-prebsc-2-s1.binance.org:8545/',
+            'http://data-seed-prebsc-1-s2.binance.org:8545/',
+            'http://data-seed-prebsc-2-s2.binance.org:8545/',
+            'https://data-seed-prebsc-1-s3.binance.org:8545/',
+            'https://data-seed-prebsc-2-s3.binance.org:8545/',
+            'https://data-seed-prebsc-1-s1.binance.org:8545/',
+          ],
+          nativeCurrency: {
+            decimals: 18,
+            name: 'Binance Coin',
+            symbol: 'BNB',
+          },
+        }
+      default:
+        // metamask should come with Ethereum configs
+        return { chainId: '0x3' }
+    }
+  }
+
+  static getRequiredChainId(network: Network, blockchain: Blockchain = Blockchain.Ethereum) {
+    if (network === Network.MainNet) {
+      switch (blockchain) {
+        case Blockchain.BinanceSmartChain: return 56
+        default: return 1
+      }
+    }
+
+    switch (blockchain) {
+      case Blockchain.BinanceSmartChain: return 97
+      default: return 3
+    }
+  }
 
   constructor(
     public readonly network: Network,
   ) {
     this.metamaskAPI = (window as any).ethereum as MetaMaskAPI | undefined
-
-    const providerUrl = NETWORK[network].ETH_URL
-    if (providerUrl) {
-      this.provider = new ethers.providers.JsonRpcProvider(providerUrl)
-    }
   }
 
-  private checkProvider(): ethers.providers.Provider {
-    if (!this.provider) {
+  private checkProvider(blockchain: Blockchain = this.blockchain): ethers.providers.Provider {
+    const ethClient = ETHClient.instance({
+      blockchain: blockchain,
+      network: this.network,
+    })
+
+    const provider = ethClient.getProvider()
+
+    if (!provider) {
       throw new Error(`MetaMask login not supported for this network ${this.network}`)
     }
 
-    return this.provider
+    return provider
   }
 
   public getBlockchain(): Blockchain {
     return this.blockchain
+  }
+
+  async syncBlockchain(): Promise<MetaMaskSyncResult> {
+    const chainIdHex = await this.metamaskAPI?.request({ method: 'eth_chainId' }) as string
+    const chainId = !!chainIdHex ? parseInt(chainIdHex, 16) : undefined
+    const blockchain = blockchainForChainId(chainId)
+    return { chainId, blockchain }
   }
 
   async getSigner(): Promise<ethers.Signer> {
@@ -128,9 +227,9 @@ export class MetaMask {
     return defaultAccount
   }
 
-  async getStoredMnemonicCipher(account: string): Promise<string | undefined> {
-    const contractHash = this.getContractHash()
-    const provider = this.checkProvider()
+  async getStoredMnemonicCipher(account: string, blockchain?: Blockchain): Promise<string | undefined> {
+    const contractHash = this.getContractHash(blockchain)
+    const provider = this.checkProvider(blockchain)
     const contract = new ethers.Contract(contractHash, REGISTRY_CONTRACT_ABI, provider)
     const cipherTextHex: string | undefined = await contract.map(account)
     if (!cipherTextHex?.length || cipherTextHex === '0x') {
@@ -273,14 +372,12 @@ export class MetaMask {
     return 3
   }
 
-  private getContractHash() {
-    const contractHash = CONTRACT_HASH[this.blockchain][this.network]
+  private getContractHash(blockchain: Blockchain = this.blockchain) {
+    const contractHash = CONTRACT_HASH[blockchain][this.network]
     if (!contractHash) {
-      throw new Error(`MetaMask login is not supported on ${this.network} on ${this.blockchain}`)
+      throw new Error(`MetaMask login is not supported on ${this.network} on ${blockchain}`)
     }
 
     return contractHash
   }
 }
-
-export default MetaMask
