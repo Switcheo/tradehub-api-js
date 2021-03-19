@@ -799,8 +799,10 @@ export class RestClient implements REST {
 
   public async getWeeklyPoolRewards(): Promise<number> {
     const total = await this.getWeeklyRewards()
-    const distribution = await this.fetchCosmosJson(`/distribution/parameters`)
-    const poolAllocation = new BigNumber(distribution.result.liquidity_provider_reward)
+    const rewardCurve = await this.getRewardCurve()
+    const reductions = new BigNumber(rewardCurve.result.reduction).times(new BigNumber(rewardCurve.result.reductions_made))
+    const currentBP = new BigNumber(rewardCurve.result.initial_reward).minus(reductions)
+    const poolAllocation = BigNumber.max(new BigNumber(rewardCurve.result.final_reward), currentBP).shiftedBy(-4)
     return new BigNumber(total).times(poolAllocation).dp(8).toNumber()
   }
 
