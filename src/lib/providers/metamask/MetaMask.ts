@@ -78,7 +78,6 @@ export interface MetaMaskSyncResult {
  * TODO: Add docs
  */
 export class MetaMask {
-  private metamaskAPI: MetaMaskAPI | null = null
   private blockchain: Blockchain = Blockchain.Ethereum
 
   static getNetworkParams(network: Network, blockchain: Blockchain = Blockchain.Ethereum): MetaMaskChangeNetworkParam {
@@ -157,9 +156,7 @@ export class MetaMask {
 
   constructor(
     public readonly network: Network,
-  ) {
-    this.metamaskAPI = (window as any).ethereum as MetaMaskAPI | undefined
-  }
+  ) { }
 
   private checkProvider(blockchain: Blockchain = this.blockchain): ethers.providers.Provider {
     const ethClient = ETHClient.instance({
@@ -181,7 +178,7 @@ export class MetaMask {
   }
 
   async syncBlockchain(): Promise<MetaMaskSyncResult> {
-    const chainIdHex = await this.metamaskAPI?.request({ method: 'eth_chainId' }) as string
+    const chainIdHex = await this.getAPI()?.request({ method: 'eth_chainId' }) as string
     const chainId = !!chainIdHex ? parseInt(chainIdHex, 16) : undefined
     const blockchain = blockchainForChainId(chainId)
     return { chainId, blockchain }
@@ -193,23 +190,21 @@ export class MetaMask {
   }
 
   getAPI(): MetaMaskAPI | null {
-    return this.metamaskAPI
+    return (window as any).ethereum as MetaMaskAPI | null ?? null
   }
 
   async getConnectedAPI(): Promise<MetaMaskAPI> {
-    if (!this.metamaskAPI) {
-      this.metamaskAPI = (window as any).ethereum as MetaMaskAPI | null ?? null
-      if (!this.metamaskAPI) {
-        throw new Error('MetaMask not connected, please check that your extension is enabled')
-      }
+    const metamaskAPI = this.getAPI()
+    if (!metamaskAPI) {
+      throw new Error('MetaMask not connected, please check that your extension is enabled')
     }
 
-    if (this.metamaskAPI?.isConnected()) {
-      return this.metamaskAPI
+    if (metamaskAPI?.isConnected()) {
+      return metamaskAPI
     }
 
-    await this.metamaskAPI.request({ method: 'eth_requestAccounts' })
-    return this.metamaskAPI
+    await metamaskAPI.request({ method: 'eth_requestAccounts' })
+    return metamaskAPI
   }
 
   async connect() {
