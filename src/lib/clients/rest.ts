@@ -1,12 +1,14 @@
-import { u as neonUtils, wallet as neonWallet } from "@cityofzion/neon-js"
 import { BigNumber } from 'bignumber.js'
-import dayjs from 'dayjs'
 import { ethers } from 'ethers'
-import { getNetwork, NETWORK as NET } from '../config'
-import { Blockchain } from '../constants'
-import * as types from '../types'
 import fetch from '../utils/fetch'
+import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
+import dayjs from 'dayjs'
+
+import { getNetwork, NETWORK as NET } from '../config'
 import { GasFees, WalletClient } from './wallet'
+import { Blockchain } from '../constants'
+
+import * as types from '../types'
 
 export enum Direction {
   long = 'long',
