@@ -119,7 +119,7 @@ export const NETWORK: NetworkInterface = {
       "https://cn2t0g46mi.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed4
       "https://ojgox44quf.execute-api.ap-southeast-1.amazonaws.com", // ngd proxy seed10
     ],
-    ETH_URL: 'https://eth.switcheo.network/',
+    ETH_URL: 'https://eth-2.switcheo.network/',
     ETH_ENV: 'ropsten',
     BSC_URL: 'https://bsc-dataseed2.binance.org/',
     ETH_WS_URL: 'wss://mainnet.dagger.matic.network',
