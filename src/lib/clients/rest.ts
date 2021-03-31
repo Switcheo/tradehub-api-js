@@ -1,14 +1,14 @@
+import * as types from '../types'
+
+import { GasFees, WalletClient } from './wallet'
+import { NETWORK as NET, getNetwork } from '../config'
+import { u as neonUtils, wallet as neonWallet } from "@cityofzion/neon-js"
+
 import { BigNumber } from 'bignumber.js'
+import { Blockchain } from '../constants'
+import dayjs from 'dayjs'
 import { ethers } from 'ethers'
 import fetch from '../utils/fetch'
-import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
-import dayjs from 'dayjs'
-
-import { getNetwork, NETWORK as NET } from '../config'
-import { GasFees, WalletClient } from './wallet'
-import { Blockchain } from '../constants'
-
-import * as types from '../types'
 
 export enum Direction {
   long = 'long',
@@ -45,6 +45,7 @@ export interface REST {
   getAMMRewardPercentage(): Promise<null | types.GetAMMRewardPercentageResponse>
   getAverageBlocktime(): Promise<string>
   getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
+  getCandlesticks(params?: types.CandlesticksParams): Promise<Array<types.CandleStickResponse>>
   getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any>
   getInsuranceFundBalance(): Promise<Array<object>>
   getLeaderboard(params?: types.GetLeaderboardParams): Promise<types.GetLeaderboardResponse>
@@ -415,6 +416,36 @@ export class RestClient implements REST {
 
   // Market Info
 
+  public async getCandlesticks(params?: types.CandlesticksParams) {
+    if (!params) {
+      throw new Error('/candlesticks: please provide the following params (market, resolution, from, to)')
+    }
+
+    const resolutionLevels: number[] = [1, 5, 30, 60, 360, 1440]
+    const {
+      market,
+      resolution,
+      from,
+      to = 0
+    } = params
+    if (!market) {
+      throw new Error('/candlesticks: missing market param')
+    }
+    if (!resolution) {
+      throw new Error('/candlesticks: missing resolution param')
+    }
+    if (!resolutionLevels.includes(resolution)) {
+      throw new Error('/candlesticks: please select one of the following values to insert as resolution (1, 5, 30, 60, 360, 1440)')
+    }
+    if (!from) {
+      throw new Error('/candlesticks: missing from param')
+    }
+    if (!to) {
+      throw new Error('/candlesticks: missing to param')
+    }
+    return this.fetchJson(`/candlesticks?market=${market}&resolution=${resolution}&from=${from}&to=${to}`)
+  }
+  
   public async getMarket(params: types.MarketOnlyGetterParams) {
     return this.fetchJson(`/get_market?market=${params.market}`)
   }

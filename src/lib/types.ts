@@ -100,6 +100,28 @@ export class Fee {
   }
 }
 
+export type CandlestickResolution = 1 | 5 | 30 | 60 | 360 | 1440
+
+export interface CandlesticksParams {
+  market: string
+  resolution: CandlestickResolution
+  from: number
+  to: number
+}
+
+export interface CandleStickResponse {
+  id: number
+  market: string
+  time: string // string representation of timestamp
+  resolution: number
+  open: string // string representation of number
+  close: string // string representation of number
+  high: string // string representation of number
+  low: string // string representation of number
+  volume: string // string representation of number
+  quote_volume: string // string representation of number
+}
+
 export interface TransactionOptions {
   fee?: Fee
   mode?: string
