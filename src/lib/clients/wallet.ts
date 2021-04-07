@@ -25,9 +25,10 @@ import {
 import { chunk } from 'lodash'
 import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
-import { Fee } from '../types'
+import { Fee, Network as NETWORK } from '../types'
 import { logger } from '../utils'
 import fetch from '../utils/fetch'
+import { NEOClient } from './neo'
 
 export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
@@ -381,6 +382,18 @@ export class WalletClient {
       gas: 0,
       fees: 0
     })
+  }
+
+  public async wrapNeoToNneo(neoAmount: number, _privateKey = null) {
+    const privateKey = !!_privateKey ? _privateKey : this.hdWallet[Blockchain.Neo]
+    const rpcUrl = await this.getNeoRpcUrl()
+    const account = Neon.create.account(privateKey)
+    const network = NETWORK.MainNet
+
+    const neoClient = NEOClient.instance({
+      network,
+    })
+    neoClient.wrapNeoToNneo(neoAmount, account, rpcUrl)
   }
 
   public async watchEthDepositAddress(whitelistDenoms?: string[]) {
