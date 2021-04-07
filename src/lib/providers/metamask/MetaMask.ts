@@ -181,6 +181,7 @@ export class MetaMask {
     const chainIdHex = await this.getAPI()?.request({ method: 'eth_chainId' }) as string
     const chainId = !!chainIdHex ? parseInt(chainIdHex, 16) : undefined
     const blockchain = blockchainForChainId(chainId)
+    this.blockchain = blockchain
     return { chainId, blockchain }
   }
 
@@ -264,17 +265,17 @@ export class MetaMask {
     return Buffer.from(encryptedMnemonic).toString('hex')
   }
 
-  async storeMnemonic(encryptedMnemonic: string) {
+  async storeMnemonic(encryptedMnemonic: string, blockchain?: Blockchain) {
     const metamaskAPI = await this.getConnectedAPI()
     const defaultAccount = await this.defaultAccount()
-    const storedMnemonicCipher = await this.getStoredMnemonicCipher(defaultAccount)
+    const storedMnemonicCipher = await this.getStoredMnemonicCipher(defaultAccount, blockchain)
 
     if (storedMnemonicCipher) {
       throw new Error('Cannot store key on registry - key already exists for ETH account')
     }
 
-    const contractHash = this.getContractHash()
-    const provider = this.checkProvider()
+    const contractHash = this.getContractHash(blockchain)
+    const provider = this.checkProvider(blockchain)
     const contract = new ethers.Contract(contractHash, REGISTRY_CONTRACT_ABI, provider)
 
     const dataBytes = Buffer.from(encryptedMnemonic, 'hex')
@@ -286,15 +287,15 @@ export class MetaMask {
         ...unsignedTx,
         from: defaultAccount,
       }],
-    })
+    }) as string
 
     return txHash
   }
 
-  async login(): Promise<string | null> {
+  async login(blockchain?: Blockchain): Promise<string | null> {
     const metamaskAPI = await this.getConnectedAPI()
     const defaultAccount = await this.defaultAccount()
-    const cipherTextHex: string | undefined = await this.getStoredMnemonicCipher(defaultAccount)
+    const cipherTextHex: string | undefined = await this.getStoredMnemonicCipher(defaultAccount, blockchain)
 
     const chainIdHex = await metamaskAPI.request({ method: 'eth_chainId' }) as string
     const chainId = parseInt(chainIdHex, 16)
