@@ -150,6 +150,7 @@ export interface GetTradesGetterParams {
   limit?: number
   beforeId?: number
   afterId?: number
+  orderId?: string
 }
 
 export interface GetTransactionsGetterParams {
