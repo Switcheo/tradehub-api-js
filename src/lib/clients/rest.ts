@@ -481,6 +481,7 @@ export class RestClient implements REST {
       limit,
       beforeId,
       afterId,
+      orderId
     } = options
 
     let url = '/get_trades?'
@@ -504,6 +505,9 @@ export class RestClient implements REST {
     }
     if (afterId) {
       url += `after_id=${afterId}&`
+    }
+    if (orderId) {
+      url += `order_id=${orderId}&`
     }
 
     return this.fetchJson(url)
