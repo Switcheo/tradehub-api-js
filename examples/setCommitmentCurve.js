@@ -3,14 +3,14 @@ const { RestClient } = require("../.")
 const setupAccount = require("./setupAccount")
 require('dotenv').config()
 
-const network = 'LOCALHOST'
+const network = 'MAINNET'
 async function set() {
-  const wallet = await setupAccount(process.env.MNEMONICS)
+  const wallet = await setupAccount(process.env.MNEMONICS, network)
   const client = new RestClient({ wallet, network })
 
   console.log('setting commitment curve')
   const params = {
-    max_duration: '15552000',
+    max_duration: '2592000',
     max_reward_multiplier: 200,
 }
   const res = await client.setCommitmentCurve(params)
