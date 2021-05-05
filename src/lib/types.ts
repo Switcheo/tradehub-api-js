@@ -173,6 +173,8 @@ export interface GetTradesGetterParams {
   beforeId?: number
   afterId?: number
   orderId?: string
+  afterBlock?: number
+  beforeBlock?: number
 }
 
 export interface GetTransactionsGetterParams {
@@ -204,6 +206,11 @@ export interface MarketAndAddressGetterParams {
   market: string
   address?: string
 }
+
+export interface GetPositionGetterParams {
+  positionId: string
+}
+
 export interface GetPositionsCloseToLiquidationParams {
   market: string
   direction: string

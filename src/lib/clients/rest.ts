@@ -76,7 +76,7 @@ export interface REST {
   getPositionsWithHighestPnL(params: types.MarketOnlyGetterParams): Promise<Array<object>>
   getPositionsCloseToLiquidation(params: types.GetPositionsCloseToLiquidationParams): Promise<Array<object>>
   getPositionsLargest(params: types.MarketOnlyGetterParams): Promise<Array<object>>
-  getPosition(params: types.MarketAndAddressGetterParams): Promise<object>
+  getPosition(params: types.GetPositionGetterParams): Promise<object>
   getPositions(params?: types.AddressOnlyGetterParams): Promise<Array<object>>
   getWalletBalance(params?: types.AddressOnlyGetterParams): Promise<types.WalletBalance>
   getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null>
@@ -238,17 +238,11 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_profile?account=${address}`)
   }
 
-  public async getPosition(params: types.MarketAndAddressGetterParams) {
-    if (!params.address && !this.wallet) {
-      throw new Error('get_account: missing address param')
+  public async getPosition(params: types.GetPositionGetterParams) {
+    if (!params.positionId) {
+      throw new Error('position_id: missing position_id param')
     }
-    let address = ''
-    if (!params.address) {
-      address = this.wallet.pubKeyBech32
-    } else {
-      address = params.address
-    }
-    return this.fetchJson(`/get_position?account=${address}&market=${params.market}`)
+    return this.fetchJson(`/get_position?position_id=${params.positionId}`)
   }
 
   public async getPositions(params?: types.AddressOnlyGetterParams) {
@@ -481,7 +475,9 @@ export class RestClient implements REST {
       limit,
       beforeId,
       afterId,
-      orderId
+      orderId,
+      afterBlock,
+      beforeBlock
     } = options
 
     let url = '/get_trades?'
@@ -496,6 +492,12 @@ export class RestClient implements REST {
     }
     if (market) {
       url += `market=${market}&`
+    }
+    if (afterBlock) {
+      url += `after_block=${afterBlock}&`
+    }
+    if (beforeBlock) {
+      url += `after_block=${afterBlock}&`
     }
     if (limit) {
       url += `limit=${limit}&`
