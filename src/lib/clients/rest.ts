@@ -77,7 +77,7 @@ export interface REST {
   getPositionsCloseToLiquidation(params: types.GetPositionsCloseToLiquidationParams): Promise<Array<object>>
   getPositionsLargest(params: types.MarketOnlyGetterParams): Promise<Array<object>>
   getPosition(params: types.GetPositionGetterParams): Promise<object>
-  getPositions(params?: types.AddressOnlyGetterParams): Promise<Array<object>>
+  getPositions(params?: types.GetPositionsGetterParams): Promise<Array<object>>
   getWalletBalance(params?: types.AddressOnlyGetterParams): Promise<types.WalletBalance>
   getStakedPoolTokenInfo(params: types.PoolIDAndAddressGetter): Promise<types.GetStakedPoolTokenInfoResponse | null>
   getWeeklyRewards(): Promise<number | null>
@@ -245,17 +245,50 @@ export class RestClient implements REST {
     return this.fetchJson(`/get_position?position_id=${params.positionId}`)
   }
 
-  public async getPositions(params?: types.AddressOnlyGetterParams) {
-    let address = ''
-    if (!params) {
+  public async getPositions(params?: types.GetPositionsGetterParams) {
+    const {
+      address,
+      afterId,
+      beforeId,
+      orderBy,
+      limit,
+      onlyOpen,
+      onlyClosed,
+      pagination,
+    } = params
+
+    let url = '/get_positions?'
+    
+    if (!address) {
       if (!this.wallet) {
         throw new Error('get_account: missing address param')
       }
-      address = this.wallet.pubKeyBech32
+      url += `account=${this.wallet.pubKeyBech32}&`
     } else {
-      address = params.address
+      url += `account=${address}&`
     }
-    return this.fetchJson(`/get_position?account=${address}`)
+    if (orderBy) {
+      url += `order_by=${orderBy}&`
+    }
+    if (limit) {
+      url += `limit=${limit}&`
+    }
+    if (beforeId) {
+      url += `before_id=${beforeId}&`
+    }
+    if (afterId) {
+      url += `after_id=${afterId}&`
+    }
+    if (onlyOpen) {
+      url += `only_open=${onlyOpen}&`
+    }
+    if (onlyClosed) {
+      url += `only_closed=${onlyClosed}&`
+    }
+    if (pagination) {
+      url += `pagination=${pagination}&`
+    }
+    return this.fetchJson(url)
   }
 
   public async getLeverage(params: types.MarketAndAddressGetterParams) {

@@ -211,6 +211,17 @@ export interface GetPositionGetterParams {
   positionId: string
 }
 
+export interface GetPositionsGetterParams {
+  address: string
+  beforeId?: number
+	afterId?: number
+	orderBy?: string
+	limit?: number
+	onlyOpen?: string
+  onlyClosed?: string
+  pagination?: string
+}
+
 export interface GetPositionsCloseToLiquidationParams {
   market: string
   direction: string
