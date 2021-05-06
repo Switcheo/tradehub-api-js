@@ -239,10 +239,30 @@ export class RestClient implements REST {
   }
 
   public async getPosition(params: types.GetPositionGetterParams) {
-    if (!params.positionId) {
-      throw new Error('position_id: missing position_id param')
+    let query = ""
+    if (!params.positionId && !params.market && (!params.address && !this.wallet)){
+      throw new Error('get_position: missing either positionID or market and address params')
     }
-    return this.fetchJson(`/get_position?position_id=${params.positionId}`)
+    if (!params.positionId) {
+      if (!params.market) {
+        throw new Error('get_position: missing market param')
+      } else {
+        query += `market=${params.market}&`
+      }
+      if (!params.address && !this.wallet) {
+        throw new Error('get_account: missing address param')
+      }
+      let address = ''
+      if (!params.address) {
+        address = this.wallet.pubKeyBech32
+      } else {
+        address = params.address
+      }
+      query += `account=${address}`
+    } else {
+      query += `position_id=${params.positionId}`
+    }
+    return this.fetchJson(`/get_position?${query}`)
   }
 
   public async getPositions(params?: types.GetPositionsGetterParams) {

@@ -208,7 +208,9 @@ export interface MarketAndAddressGetterParams {
 }
 
 export interface GetPositionGetterParams {
-  positionId: string
+  positionId?: string
+  market?: string
+  address?: string
 }
 
 export interface GetPositionsGetterParams {
