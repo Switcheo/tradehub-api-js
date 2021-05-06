@@ -214,10 +214,10 @@ export interface GetPositionGetterParams {
 export interface GetPositionsGetterParams {
   address: string
   beforeId?: number
-	afterId?: number
-	limit?: number
-	orderBy?: string
-	onlyOpen?: string
+  afterId?: number
+  limit?: number
+  orderBy?: string
+  onlyOpen?: string
   onlyClosed?: string
   pagination?: string
 }
