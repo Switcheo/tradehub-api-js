@@ -510,7 +510,7 @@ export class RestClient implements REST {
       afterId,
       orderId,
       afterBlock,
-      beforeBlock
+      beforeBlock,
     } = options
 
     let url = '/get_trades?'

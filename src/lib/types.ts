@@ -215,8 +215,8 @@ export interface GetPositionsGetterParams {
   address: string
   beforeId?: number
 	afterId?: number
-	orderBy?: string
 	limit?: number
+	orderBy?: string
 	onlyOpen?: string
   onlyClosed?: string
   pagination?: string
