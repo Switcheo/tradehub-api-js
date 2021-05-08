@@ -168,7 +168,11 @@ const parseResponse = async (response: Response) => {
   return result
 }
 
-export type APIRequester = (options?: RequestInit) => Promise<RequestResult>
+type RequestOpts = Omit<RequestInit, "body"> & {
+  body?: any;
+};
+
+export type APIRequester = (options?: RequestOpts) => Promise<RequestResult>
 export interface APIExecutor {
   get: APIRequester
   post: APIRequester
@@ -197,10 +201,10 @@ class APIManager<M extends EndpointMap> implements APIHandler<M> {
   }
 
   private createExecutor = (url: string): APIExecutor => ({
-    get: async (options: RequestInit = {}) => this.http.get({ url, ...options }).then(parseResponse),
-    post: async (options: RequestInit = {}) => this.http.post({ url, ...options }).then(parseResponse),
-    delete: async (options: RequestInit = {}) => this.http.del({ url, ...options }).then(parseResponse),
-    raw: async (options: RequestInit = {}) => this.http.raw({ url, ...options }).then(parseResponse),
+    get: async (options: RequestOpts = {}) => this.http.get({ url, ...options }).then(parseResponse),
+    post: async (options: RequestOpts = {}) => this.http.post({ url, ...options }).then(parseResponse),
+    delete: async (options: RequestOpts = {}) => this.http.del({ url, ...options }).then(parseResponse),
+    raw: async (options: RequestOpts = {}) => this.http.raw({ url, ...options }).then(parseResponse),
   })
 
   public path(

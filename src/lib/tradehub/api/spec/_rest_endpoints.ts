@@ -1,5 +1,6 @@
 export const TradehubEndpoints = {
   // generic api
+  'tradehub/txs': '/txs',
   'tradehub/get_nodes': '/monitor',
   'tradehub/get_txns_fees': '/get_txns_fees',
 

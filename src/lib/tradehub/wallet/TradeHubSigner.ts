@@ -1,5 +1,3 @@
-import { StdSignDoc } from "@lib/containers";
-
 export enum TradeHubSignerTypes {
   Ledger,
   PrivateKey,
@@ -7,6 +5,7 @@ export enum TradeHubSignerTypes {
 
 export interface TradeHubSigner {
   type: TradeHubSignerTypes
-  // signs the cosmos StdSignDoc, returns signature buffer
-  sign: (doc: StdSignDoc) => Buffer
+
+  // signs the cosmos StdSignDoc.toJSON, returns signature buffer
+  sign: (doc: string) => Buffer
 }

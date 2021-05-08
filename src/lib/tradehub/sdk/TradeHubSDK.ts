@@ -1,7 +1,9 @@
 import BigNumber from "bignumber.js";
+import { APIClient } from "../api";
 import { Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
-import APIClient from "./APIClient";
+import { ModOrder } from "./modules";
+import { SDKProvider } from "./modules/module";
 
 export interface TradeHubSDKInitOpts {
   network?: Network
@@ -13,12 +15,15 @@ const DEFAULT_OPTS: TradeHubSDKInitOpts = {
   network: Network.MainNet,
 }
 
-class TradeHubSDK {
+class TradeHubSDK implements SDKProvider {
   static Network = Network
 
   network: Network
   api: APIClient
   debugMode: boolean
+
+  // modules
+  order: ModOrder
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -37,6 +42,9 @@ class TradeHubSDK {
       this.log("setting BigNumber print mode for console logs")
       BigNumber.prototype[require('util').inspect.custom] = BigNumber.prototype.valueOf;
     }
+
+    // initialize modules
+    this.order = new ModOrder(this);
   }
 
   public generateOpts(): TradeHubSDKInitOpts {
@@ -47,7 +55,7 @@ class TradeHubSDK {
     }
   }
 
-  public log(...args) {
+  public log(...args: any[]) {
     if (this.debugMode) {
       console.log.apply(console.log, [this.constructor.name, ...args]);
     }
@@ -60,14 +68,22 @@ class TradeHubSDK {
 
   /* CONNECT WALLET FUNCTIONS */
 
-  public async initialize() {
+  public async initialize(wallet?: TradeHubWallet) {
     this.log("initialize…");
     await this.reloadTxnFees();
+
+    if (wallet) {
+      this.log("reloading wallet account");
+      await wallet.reloadAccount();
+
+      this.log("update wallet account", wallet.account, "sequence", wallet.sequence);
+    }
+
     this.log("initialize complete");
   }
 
   public async connect(wallet: TradeHubWallet) {
-    await this.initialize();
+    await this.initialize(wallet);
     return new ConnectedTradeHubSDK(wallet, this.generateOpts())
   }
 
@@ -103,10 +119,14 @@ class TradeHubSDK {
     return this.wallet
   }
 
+  public getConnectedWallet(): TradeHubWallet {
+    return this.checkWallet();
+  }
+
   public async loadAccount() {
-    const wallet = this.checkWallet()
-    const address = wallet.bech32Address
-    return this.api.getAccount({ address })
+    const wallet = this.checkWallet();
+    const account = await wallet.reloadAccount();
+    return account;
   }
 }
 

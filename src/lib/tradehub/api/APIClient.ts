@@ -1,3 +1,5 @@
+import { bnOrZero, Network, NetworkConfigs, TxRequest } from '../utils';
+import APIManager from './APIConnector';
 import {
   CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
   GetAccountTradesOpts,
@@ -12,10 +14,7 @@ import {
   GetWalletBalanceResponse,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
   TradehubEndpoints
-} from '../api'
-import { bnOrZero } from '../utils'
-import { Network, NetworkConfigs } from '../utils/network'
-import APIManager from './APIConnector'
+} from './spec';
 
 export interface APIClientOpts {
   debugMode?: boolean
@@ -33,6 +32,12 @@ class APIClient {
     this.apiManager = new APIManager(restUrl, TradehubEndpoints)
 
     this.debugMode = opts?.debugMode ?? false
+  }
+
+  async tx(tx: TxRequest): Promise<unknown> {
+    const request = this.apiManager.path("tradehub/txs")
+    const response = await request.post({ body: tx })
+    return response.data
   }
 
   async getAccount(opts: GetAccountOpts): Promise<GetAccountResponse> {
@@ -110,7 +115,7 @@ class APIClient {
   }
 
   async getOrders(opts: GetOrdersOpts): Promise<GetOrderResponse[]> {
-    const queryParams = { 
+    const queryParams = {
       account: opts.account,
       market: opts.market,
       limit: opts.limit,
@@ -128,7 +133,7 @@ class APIClient {
   }
 
   async getAccountTrades(opts: GetAccountTradesOpts): Promise<GetAccountTradesResponse> {
-    const queryParams = { 
+    const queryParams = {
       account: opts.account,
       market: opts.market,
       limit: opts.limit,

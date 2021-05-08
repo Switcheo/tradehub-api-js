@@ -138,6 +138,7 @@ export interface AddressBuilder<T extends AddressOptions> {
   mnemonicToPrivateKey(mnemonic: string, account?: number, opts?: T): Buffer
 
   privateKeyToAddress(privateKey: string | Buffer, opts?: T): string
+  privateToPublicKey(privateKey: string | Buffer): Buffer
 
   /**
    * Returns a 33-byte encoded/compressed public key, also known as the encoded public key
@@ -196,10 +197,15 @@ export const SWTHAddress: SWTHAddressType = {
     return privateKey
   },
 
-  privateKeyToAddress: (privateKey: string | Buffer, opts?: SWTHAddressOptions): string => {
+  privateToPublicKey: (privateKey: string | Buffer): Buffer => {
     const privateKeyBuff = stringOrBufferToBuffer(privateKey)
     const publicKeyUint8Array: Uint8Array = secp256k1.publicKeyCreate(privateKeyBuff, true)
     const publicKey = Buffer.from(publicKeyUint8Array)
+    return publicKey;
+  },
+
+  privateKeyToAddress: (privateKey: string | Buffer, opts?: SWTHAddressOptions): string => {
+    const publicKey = SWTHAddress.privateToPublicKey(privateKey)
     const address = SWTHAddress.publicKeyToAddress(publicKey, opts)
 
     return address
@@ -293,10 +299,14 @@ export const NEOAddress: AddressBuilder<AddressOptions> = {
     return privateKey
   },
 
-  privateKeyToAddress: (privateKey: string | Buffer): string => {
+  privateToPublicKey: (privateKey: string | Buffer): Buffer => {
     const privateKeyBuff = stringOrBufferToBuffer(privateKey)
     const publicKeyUint8Array: Uint8Array = secp256r1.publicKeyCreate(privateKeyBuff, true)
-    const compressedPublicKey = Buffer.from(publicKeyUint8Array)
+    return Buffer.from(publicKeyUint8Array)
+  },
+
+  privateKeyToAddress: (privateKey: string | Buffer): string => {
+    const compressedPublicKey = NEOAddress.privateToPublicKey(privateKey)
     const address = NEOAddress.publicKeyToAddress(compressedPublicKey)
 
     return address
@@ -344,10 +354,14 @@ export const ETHAddress: AddressBuilder<AddressOptions> = {
     return privateKey
   },
 
-  privateKeyToAddress: (privateKey: string | Buffer): string => {
+  privateToPublicKey: (privateKey: string | Buffer): Buffer => {
     const privateKeyBuff = stringOrBufferToBuffer(privateKey)
     const publicKeyUint8Array: Uint8Array = secp256r1.publicKeyCreate(privateKeyBuff, true)
-    const compressedPublicKey = Buffer.from(publicKeyUint8Array)
+    return Buffer.from(publicKeyUint8Array)
+  },
+
+  privateKeyToAddress: (privateKey: string | Buffer): string => {
+    const compressedPublicKey = ETHAddress.privateToPublicKey(privateKey);
     const address = ETHAddress.publicKeyToAddress(compressedPublicKey)
     return address
   },

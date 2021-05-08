@@ -13,6 +13,8 @@ import { TradeHubSDK } from '..';
   const connectedSDK = await sdk.connectWithMnemonic(mnemonic);
   console.log("connected wallet:", connectedSDK.wallet.bech32Address)
 
+  await connectedSDK.initialize();
+
   const account = await connectedSDK.loadAccount();
   console.log("loaded account", account);
 })().catch(console.error).finally(() => process.exit(0))

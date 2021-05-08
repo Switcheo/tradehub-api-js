@@ -1,8 +1,8 @@
-import { Network, TradeHubSDK } from '..'
+import { TradeHubSDK } from '..'
 
 (async () => {
   const sdk = new TradeHubSDK({
-    network: Network.MainNet,
+    network: TradeHubSDK.Network.MainNet,
     debugMode: true,
   })
 
