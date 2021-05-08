@@ -1,6 +1,7 @@
-const TradehubEndpoints = {
+export const TradehubEndpoints = {
   // generic api
   'tradehub/get_nodes': '/monitor',
+  'tradehub/get_txns_fees': '/get_txns_fees',
 
   // account api
   'account/detail': '/get_account',
@@ -26,5 +27,3 @@ const TradehubEndpoints = {
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',
 } as const
-
-export default TradehubEndpoints;

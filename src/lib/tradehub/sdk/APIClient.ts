@@ -1,5 +1,3 @@
-import { NETWORK } from '@lib/config'
-import { Network } from '@lib/types'
 import {
   CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
   GetAccountTradesOpts,
@@ -7,14 +5,17 @@ import {
   GetLeverageOpts, GetLeverageResponse, GetMarketOpts, GetMarketResponse, GetNodesResponse, GetOrderBookResponse, GetOrderOpts,
   GetOrderResponse,
   GetOrdersOpts, GetPositionOpts, GetPositionResponse,
-  GetPositionsOpts, GetProfileOpts, GetProfileResponse,
+  GetPositionsOpts,
+  GetPricesOpts, GetPricesResponse, GetProfileOpts, GetProfileResponse,
+  GetTxnFeesResponse,
   GetWalletBalanceOpts,
   GetWalletBalanceResponse,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
-  GetPricesOpts, GetPricesResponse
-} from './api'
+  TradehubEndpoints
+} from '../api'
+import { bnOrZero } from '../utils'
+import { Network, NetworkConfigs } from '../utils/network'
 import APIManager from './APIConnector'
-import TradehubEndpoints from './rest_endpoints'
 
 export interface APIClientOpts {
   debugMode?: boolean
@@ -28,7 +29,7 @@ class APIClient {
     public readonly network: Network,
     opts?: APIClientOpts,
   ) {
-    const restUrl = NETWORK[network].REST_URL
+    const restUrl = NetworkConfigs[network].RestURL
     this.apiManager = new APIManager(restUrl, TradehubEndpoints)
 
     this.debugMode = opts?.debugMode ?? false
@@ -40,6 +41,17 @@ class APIClient {
     const request = this.apiManager.path('account/detail', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetAccountResponse
+  }
+
+  async getTxnFees(): Promise<GetTxnFeesResponse> {
+    const request = this.apiManager.path('tradehub/get_txns_fees')
+    const response = await request.get()
+    const fees = response.data!.result
+    const output: GetTxnFeesResponse = {}
+    for (const item of fees) {
+      output[item.msg_type] = bnOrZero(item.fee)
+    }
+    return output
   }
 
   async getValidatorDelegations(opts: ListValidatorDelegationsOpts): Promise<ListValidatorDelegationsResponse> {
