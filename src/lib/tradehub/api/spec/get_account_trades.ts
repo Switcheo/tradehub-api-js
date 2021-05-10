@@ -1,5 +1,6 @@
+import { RestResponse } from "@lib/tradehub/models";
 
-export interface GetAccountTradesResponse extends Array<Account> { }
+export interface GetAccountTradesResponse extends Array<RestResponse.Account> { }
 
 /**
  * @param market The market (eg: swth_eth)

@@ -1,8 +1,2 @@
-export * from './account'
-export * from './balances/Fees'
-export * from './balances/NeoBalances'
-export * from './market'
-export * from './token'
-export * from './validator'
-export * from './history'
-export * from './misc'
+export * as RestResponse from "./rest";
+export * as RPCParams from "./rpc";

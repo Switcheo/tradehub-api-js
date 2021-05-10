@@ -1,6 +1,6 @@
-import { Leverage } from "@lib/tradehub/models";
+import { RestResponse } from "@lib/tradehub/models";
 
-export interface GetLeverageResponse extends Leverage { }
+export interface GetLeverageResponse extends RestResponse.Leverage { }
 
 /**
  * @param account TradeHub address to query

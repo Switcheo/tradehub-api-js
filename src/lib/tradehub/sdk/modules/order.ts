@@ -6,12 +6,12 @@ class ModOrder extends BaseModule {
   public async create(params: CreateOrderMsg) {
     const wallet = this.getWallet();
 
+    if (!params.originator)
+      params.originator = wallet.bech32Address;
+
     return await wallet.sendTx({
       type: TxTypes.Order.CREATE,
-      value: {
-        ...params,
-        originator: wallet.bech32Address,
-      },
+      value: params,
     });
   }
 }

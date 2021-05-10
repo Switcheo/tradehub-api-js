@@ -1,6 +1,6 @@
-import { Balances } from "@lib/tradehub/models";
+import { RestResponse } from "@lib/tradehub/models";
 
-export interface GetWalletBalanceResponse extends Balances {}
+export interface GetWalletBalanceResponse extends RestResponse.Balances {}
 
 /**
  * @param account Only returns balances of this address

@@ -1,4 +1,5 @@
 import { APIClient } from "@lib/tradehub/api";
+import { TxMsgValue } from "@lib/tradehub/utils";
 import { TradeHubWallet } from "@lib/tradehub/wallet";
 
 export interface SDKProvider {
@@ -17,7 +18,16 @@ class BaseModule {
   }
 
   protected log(...args: any[]): void {
-    this.sdkProvider.log(args)
+    this.sdkProvider.log(args);
+  }
+
+  protected async sendTx(msgType: string, params: TxMsgValue): Promise<unknown> {
+    const wallet = this.getWallet();
+
+    return await wallet.sendTx({
+      type: msgType,
+      value: params,
+    });
   }
 }
 

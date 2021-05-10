@@ -3,7 +3,7 @@ import { stringOrBufferToBuffer, SWTHAddress } from "@lib/utils";
 import secp256k1 from 'secp256k1';
 import { sha256 } from 'sha.js';
 import { APIClient } from "../api";
-import { Account } from "../models";
+import { RestResponse } from "../models";
 import { NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest } from "../utils";
 import { TradeHubSigner, TradeHubSignerTypes } from "./TradeHubSigner";
 
@@ -130,7 +130,7 @@ export class TradeHubWallet {
     }
   }
 
-  public async reloadAccount(): Promise<Account> {
+  public async reloadAccount(): Promise<RestResponse.Account> {
     const address = this.bech32Address;
     const response = await this.api.getAccount({ address });
     const account = response.result.value;

@@ -8,5 +8,6 @@ import { SWTHAddress, TradeHubSDK } from '..';
     type: "main",
   });
 
-  console.log(address);
+  console.log("generated mnemonic:", mnemonic)
+  console.log("address:", address);
 })().catch(console.error).finally(() => process.exit(0))

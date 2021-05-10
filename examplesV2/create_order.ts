@@ -12,8 +12,8 @@ const PARAMS: CreateOrderMsg = {
 };
 
 (async () => {
-  const mnemonic = BIP39.generateMnemonic()
-  console.log("generated mnemonic:", mnemonic)
+  const mnemonic = process.env.MNEMONICS ?? BIP39.generateMnemonic()
+  console.log("mnemonic:", mnemonic)
 
   const sdk = new TradeHubSDK({
     network: TradeHubSDK.Network.MainNet,

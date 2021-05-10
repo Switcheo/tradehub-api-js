@@ -1,6 +1,6 @@
-import { Order } from "@lib/tradehub/models";
+import { RestResponse } from "@lib/tradehub/models";
 
-export interface GetOrderResponse extends Order { }
+export interface GetOrderResponse extends RestResponse.Order { }
 
 /**
  * @param order_id Unique identifier of the order object

@@ -1,6 +1,6 @@
-import { OrderBook } from "@lib/tradehub/models";
+import { RestResponse } from "@lib/tradehub/models";
 
-export interface GetOrderBookResponse extends OrderBook {}
+export interface GetOrderBookResponse extends RestResponse.OrderBook {}
 
 /**
  * @param market The market (eg: swth_eth)

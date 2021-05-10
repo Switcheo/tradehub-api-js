@@ -1,7 +1,7 @@
-import { Account } from "@lib/tradehub/models";
+import { RestResponse } from "@lib/tradehub/models";
 import { CosmosResponse, TypedResponse } from "./util";
 
-export interface GetAccountResponse extends CosmosResponse<TypedResponse<Account>> { }
+export interface GetAccountResponse extends CosmosResponse<TypedResponse<RestResponse.Account>> { }
 
 /**
  * @param address TradeHub address to query

@@ -3,6 +3,7 @@ import { APIClient } from "../api";
 import { Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { ModOrder } from "./modules";
+import ModMarket from "./modules/market";
 import { SDKProvider } from "./modules/module";
 
 export interface TradeHubSDKInitOpts {
@@ -24,6 +25,7 @@ class TradeHubSDK implements SDKProvider {
 
   // modules
   order: ModOrder
+  market: ModMarket
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -45,6 +47,7 @@ class TradeHubSDK implements SDKProvider {
 
     // initialize modules
     this.order = new ModOrder(this);
+    this.market = new ModMarket(this);
   }
 
   public generateOpts(): TradeHubSDKInitOpts {
