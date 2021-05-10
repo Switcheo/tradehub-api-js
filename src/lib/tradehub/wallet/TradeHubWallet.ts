@@ -97,21 +97,21 @@ export class TradeHubWallet {
     return this
   }
 
-  public static initWithPrivateKey(privateKey: string | Buffer, opts: Omit<TradeHubWalletInitOpts, "privateKey"> = {}) {
+  public static withPrivateKey(privateKey: string | Buffer, opts: Omit<TradeHubWalletInitOpts, "privateKey"> = {}) {
     return new TradeHubWallet({
       ...opts,
       privateKey,
     })
   }
 
-  public static initWithMnemonic(mnemonic: string, opts: Omit<TradeHubWalletInitOpts, "mnemonic"> = {}) {
+  public static withMnemonic(mnemonic: string, opts: Omit<TradeHubWalletInitOpts, "mnemonic"> = {}) {
     return new TradeHubWallet({
       ...opts,
       mnemonic,
     })
   }
 
-  public static initWithSigner(signer: TradeHubSigner, publicKeyBase64: string, opts: Omit<TradeHubWalletInitOpts, "signer"> = {}) {
+  public static withSigner(signer: TradeHubSigner, publicKeyBase64: string, opts: Omit<TradeHubWalletInitOpts, "signer"> = {}) {
     return new TradeHubWallet({
       ...opts,
       signer,
@@ -119,18 +119,7 @@ export class TradeHubWallet {
     })
   }
 
-  private checkAccountLoaded(): LoadedAccount {
-    if (this.account === undefined || this.sequence === undefined) {
-      throw new Error("wallet not initialized, call wallet.reloadAccount()");
-    }
-
-    return {
-      account: this.account,
-      sequence: this.sequence,
-    }
-  }
-
-  public async reloadAccount(): Promise<RestResponse.Account> {
+  public async loadAccount(): Promise<RestResponse.Account> {
     const address = this.bech32Address;
     const response = await this.api.getAccount({ address });
     const account = response.result.value;
@@ -139,6 +128,43 @@ export class TradeHubWallet {
     this.sequence = parseInt(account.sequence);
 
     return account;
+  }
+
+  public async init(force: boolean = false): Promise<TradeHubWallet> {
+    // if account number is already loaded, skip initialization
+    // unless force flag is marked as true.
+    if (!force && this.account > 0)
+      return this;
+
+    // reload account, sets account and sequence numbers
+    await this.loadAccount();
+
+    // return self
+    return this;
+  }
+
+  public async sendTx(msg: TxMsg) {
+    const { account, sequence } = this.checkAccountInit();
+    const doc = this.genSignDoc([msg]).prepare(account, sequence);
+    const signature = this.sign(doc);
+
+    const tx: TradeHubTx = {
+      fee: doc.fee,
+      memo: doc.memo,
+      msg: doc.msgs,
+      signatures: [signature],
+    };
+
+    const txRequest: TxRequest = {
+      mode: "block",
+      tx,
+    };
+
+    if (this.debugMode) {
+      this.log("sendTx", JSON.stringify(txRequest));
+    }
+
+    return this.api.tx(txRequest);
   }
 
   private genSignDoc(msgs: TxMsg[]): PreSignDoc {
@@ -158,28 +184,21 @@ export class TradeHubWallet {
     }
   }
 
-  public async sendTx(msg: TxMsg) {
-    const { account, sequence } = this.checkAccountLoaded();
-    const doc = this.genSignDoc([msg]).prepare(account, sequence);
-    const signature = this.sign(doc);
-
-    const tx: TradeHubTx = {
-      fee: doc.fee,
-      memo: doc.memo,
-      msg: doc.msgs,
-      signatures: [signature],
-    };
-
-    const txRequest: TxRequest = {
-      mode: "block",
-      tx,
-    };
-
-    if (this.debugMode) {
-      console.log("sendTx", JSON.stringify(txRequest));
+  private checkAccountInit(): LoadedAccount {
+    if (this.account === undefined || this.sequence === undefined) {
+      throw new Error("wallet not initialized, run wallet.init() first.");
     }
 
-    return this.api.tx(txRequest);
+    return {
+      account: this.account,
+      sequence: this.sequence,
+    }
+  }
+
+  private log(...args: any[]): void {
+    if (this.debugMode) {
+      console.log.apply(console.log, [this.constructor.name, ...args]);
+    }
   }
 }
 

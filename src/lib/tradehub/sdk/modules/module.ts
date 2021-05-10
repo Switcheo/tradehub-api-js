@@ -18,7 +18,7 @@ class BaseModule {
   }
 
   protected log(...args: any[]): void {
-    this.sdkProvider.log(args);
+    this.sdkProvider.log(`[${this.constructor.name}]`, ...args);
   }
 
   protected async sendTx(msgType: string, params: TxMsgValue): Promise<unknown> {

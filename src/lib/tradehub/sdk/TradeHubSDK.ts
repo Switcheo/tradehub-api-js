@@ -77,9 +77,13 @@ class TradeHubSDK implements SDKProvider {
 
     if (wallet) {
       this.log("reloading wallet account");
-      await wallet.reloadAccount();
+      await wallet.init();
 
       this.log("update wallet account", wallet.account, "sequence", wallet.sequence);
+
+      if (wallet.account === 0) {
+        this.log(`account is not initialized, please send funds to ${wallet.bech32Address} before initiating a transaction.`)
+      }
     }
 
     this.log("initialize complete");
@@ -91,7 +95,7 @@ class TradeHubSDK implements SDKProvider {
   }
 
   public async connectWithPrivateKey(privateKey: string | Buffer) {
-    const wallet = TradeHubWallet.initWithPrivateKey(privateKey, {
+    const wallet = TradeHubWallet.withPrivateKey(privateKey, {
       debugMode: this.debugMode,
       network: this.network,
     })
@@ -99,7 +103,7 @@ class TradeHubSDK implements SDKProvider {
   }
 
   public async connectWithMnemonic(mnemonic: string) {
-    const wallet = TradeHubWallet.initWithMnemonic(mnemonic, {
+    const wallet = TradeHubWallet.withMnemonic(mnemonic, {
       debugMode: this.debugMode,
       network: this.network,
     })
@@ -107,7 +111,7 @@ class TradeHubSDK implements SDKProvider {
   }
 
   public async connectWithSigner(signer: TradeHubSigner, bech32Address: string) {
-    const wallet = TradeHubWallet.initWithSigner(signer, bech32Address, {
+    const wallet = TradeHubWallet.withSigner(signer, bech32Address, {
       debugMode: this.debugMode,
       network: this.network,
     })
@@ -124,12 +128,6 @@ class TradeHubSDK implements SDKProvider {
 
   public getConnectedWallet(): TradeHubWallet {
     return this.checkWallet();
-  }
-
-  public async loadAccount() {
-    const wallet = this.checkWallet();
-    const account = await wallet.reloadAccount();
-    return account;
   }
 }
 
