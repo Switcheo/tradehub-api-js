@@ -27,6 +27,10 @@ export interface HTTPOpts {
   debugMode?: boolean
 }
 
+export interface ResponseParser {
+  (response: Response): Promise<RequestResult>
+}
+
 /**
  * Helper class for abstracting URL manipulation specifically for
  * API endpoints.
@@ -153,7 +157,7 @@ export class RequestError extends Error {
   }
 }
 
-const parseResponse = async (response: Response) => {
+const defaultResponseParser: ResponseParser = async (response: Response) => {
   const { status, statusText, headers, url } = response
   const result: RequestResult = { status, statusText, headers, url }
   try {
@@ -172,7 +176,7 @@ type RequestOpts = Omit<RequestInit, "body"> & {
   body?: any;
 };
 
-export type APIRequester = (options?: RequestOpts) => Promise<RequestResult>
+export type APIRequester = (options?: RequestOpts, parser?: ResponseParser) => Promise<RequestResult>
 export interface APIExecutor {
   get: APIRequester
   post: APIRequester
@@ -196,15 +200,16 @@ class APIManager<M extends EndpointMap> implements APIHandler<M> {
   constructor(
     public readonly apiPrefix: string,
     public readonly endpoints: M,
+    public readonly responseParser: ResponseParser = defaultResponseParser,
   ) {
     this.http = new HTTP(apiPrefix, endpoints)
   }
 
   private createExecutor = (url: string): APIExecutor => ({
-    get: async (options: RequestOpts = {}) => this.http.get({ url, ...options }).then(parseResponse),
-    post: async (options: RequestOpts = {}) => this.http.post({ url, ...options }).then(parseResponse),
-    delete: async (options: RequestOpts = {}) => this.http.del({ url, ...options }).then(parseResponse),
-    raw: async (options: RequestOpts = {}) => this.http.raw({ url, ...options }).then(parseResponse),
+    get: async (options: RequestOpts = {}, parser: ResponseParser = this.responseParser) => this.http.get({ url, ...options }).then(parser),
+    post: async (options: RequestOpts = {}, parser: ResponseParser = this.responseParser) => this.http.post({ url, ...options }).then(parser),
+    delete: async (options: RequestOpts = {}, parser: ResponseParser = this.responseParser) => this.http.del({ url, ...options }).then(parser),
+    raw: async (options: RequestOpts = {}, parser: ResponseParser = this.responseParser) => this.http.raw({ url, ...options }).then(parser),
   })
 
   public path(

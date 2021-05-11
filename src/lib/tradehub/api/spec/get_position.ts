@@ -1,6 +1,6 @@
 import { RestResponse } from "@lib/tradehub/models";
 
-export interface GetPositionResponse extends RestResponse.Position { }
+export interface GetPositionResponse extends Array<RestResponse.Position> { }
 
 /**
  * @param account TradeHub address to query

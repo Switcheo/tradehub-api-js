@@ -1,12 +1,13 @@
 import * as BIP39 from "bip39";
 import { TradeHubSDK } from '..';
+import "./_setup";
 
 (async () => {
   const mnemonic = process.env.MNEMONICS ?? BIP39.generateMnemonic();
   console.log("mnemonic:", mnemonic);
 
   const sdk = new TradeHubSDK({
-    network: TradeHubSDK.Network.MainNet,
+    network: TradeHubSDK.Network.TestNet,
     debugMode: true,
   });
 

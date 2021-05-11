@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { BN_ZERO, DEFAULT_GAS } from "./constants";
+import { BN_ONE, DEFAULT_GAS, ONE_SWTH } from "./constants";
 import { sortObject } from "./misc";
 
 export interface TxMsgValue { }
@@ -36,7 +36,7 @@ export class TxFee {
 }
 
 export const DEFAULT_FEE = new TxFee(
-  [new DenomAmount(BN_ZERO)],
+  [new DenomAmount(BN_ONE)],
   DEFAULT_GAS,
 );
 
@@ -64,7 +64,10 @@ export class PreSignDoc {
       sequence,
       this.chainId,
       this.msgs,
-      this.fee,
+      new TxFee(
+        [new DenomAmount(ONE_SWTH.times(this.msgs.length))],
+        DEFAULT_GAS,
+      ),
       this.memo,
     );
   }

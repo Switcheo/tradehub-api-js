@@ -1,5 +1,5 @@
 import { bnOrZero, Network, NetworkConfigs, TxRequest } from '../utils';
-import APIManager from './APIConnector';
+import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
   CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
   GetAccountTradesOpts,
@@ -24,14 +24,52 @@ class APIClient {
   public readonly apiManager: APIManager<typeof TradehubEndpoints>
   public readonly debugMode: boolean
 
+  public static DEBUG_HEADERS: boolean = false
+
   constructor(
     public readonly network: Network,
     opts?: APIClientOpts,
   ) {
-    const restUrl = NetworkConfigs[network].RestURL
-    this.apiManager = new APIManager(restUrl, TradehubEndpoints)
+    const restUrl = NetworkConfigs[network].RestURL;
+    const responseParser: ResponseParser = this.parseResponse.bind(this);
+    this.apiManager = new APIManager(restUrl, TradehubEndpoints, responseParser)
 
     this.debugMode = opts?.debugMode ?? false
+  }
+
+  async parseResponse(response: Response): Promise<RequestResult> {
+    const { status, statusText, headers, url } = response
+    const result: RequestResult = { status, statusText, headers, url }
+
+    if (this.debugMode) {
+      console.log("parsing response", url);
+      console.log("status", `[${status}] ${statusText}`);
+    }
+
+    if (APIClient.DEBUG_HEADERS) {
+      console.log("printing headers", response.headers);
+    }
+
+    try {
+      const responseJson = await response.json()
+      result.data = responseJson
+
+      if (this.debugMode) {
+        console.log("response json", JSON.stringify(result.data));
+      }
+
+    } catch (e) {
+      if (this.debugMode) {
+        console.error("could not parse response as json");
+        console.error(e);
+      }
+    }
+
+    if (response.status >= 400 && response.status < 600) {
+      throw new RequestError(result, result.data?.error || 'unknown error')
+    }
+
+    return result;
   }
 
   async tx(tx: TxRequest): Promise<unknown> {
@@ -90,20 +128,20 @@ class APIClient {
     return response.data as GetPositionResponse
   }
 
-  async getPositions(opts: GetPositionsOpts): Promise<GetPositionResponse[]> {
+  async getPositions(opts: GetPositionsOpts): Promise<GetPositionResponse> {
     const queryParams = { account: opts.account }
     const routeParams = {}
     const request = this.apiManager.path('history/get_positions', routeParams, queryParams)
     const response = await request.get()
-    return response.data as GetPositionResponse[]
+    return response.data as GetPositionResponse
   }
 
-  async getLeverage(opts: GetLeverageOpts): Promise<GetLeverageResponse[]> {
+  async getLeverage(opts: GetLeverageOpts): Promise<GetLeverageResponse> {
     const queryParams = { account: opts.account }
     const routeParams = {}
     const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
     const response = await request.get()
-    return response.data as GetLeverageResponse[]
+    return response.data as GetLeverageResponse
   }
 
   async getOrder(opts: GetOrderOpts): Promise<GetOrderResponse> {
@@ -114,7 +152,7 @@ class APIClient {
     return response.data as GetOrderResponse
   }
 
-  async getOrders(opts: GetOrdersOpts): Promise<GetOrderResponse[]> {
+  async getOrders(opts: GetOrdersOpts): Promise<GetOrderResponse> {
     const queryParams = {
       account: opts.account,
       market: opts.market,
@@ -129,7 +167,7 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('history/get_orders', routeParams, queryParams)
     const response = await request.get()
-    return response.data as GetOrderResponse[]
+    return response.data as GetOrderResponse
   }
 
   async getAccountTrades(opts: GetAccountTradesOpts): Promise<GetAccountTradesResponse> {

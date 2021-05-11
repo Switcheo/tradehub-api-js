@@ -1,5 +1,6 @@
 import * as BIP39 from "bip39";
 import { SWTHAddress, TradeHubSDK } from '..';
+import "./_setup";
 
 (async () => {
   const mnemonic = BIP39.generateMnemonic();

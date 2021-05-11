@@ -79,13 +79,15 @@ export class TradeHubWallet {
       this.signer = opts.signer
       this.pubKeyBase64 = opts.publicKeyBase64
     } else if (this.privateKey) {
-      this.signer = new TradeHubMnemonicSigner(this.privateKey)
-      this.bech32Address = SWTHAddress.privateKeyToAddress(this.privateKey)
+      this.signer = new TradeHubMnemonicSigner(this.privateKey);
+      this.pubKeyBase64 = SWTHAddress.privateToPublicKey(this.privateKey).toString("base64");
     } else {
       throw new Error("cannot instantiate wallet signer")
     }
-
-    this.pubKeyBase64 = SWTHAddress.privateToPublicKey(this.privateKey).toString("base64")
+    
+    this.bech32Address = SWTHAddress.publicKeyToAddress(Buffer.from(this.pubKeyBase64, "base64"), {
+      network: this.network,
+    });
   }
 
   public updateNetwork(network: Network): TradeHubWallet {

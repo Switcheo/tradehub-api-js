@@ -2,8 +2,7 @@ import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
-import { ModOrder } from "./modules";
-import ModMarket from "./modules/market";
+import { ModOrder, ModMarket, ModGovernance } from "./modules";
 import { SDKProvider } from "./modules/module";
 
 export interface TradeHubSDKInitOpts {
@@ -18,6 +17,7 @@ const DEFAULT_OPTS: TradeHubSDKInitOpts = {
 
 class TradeHubSDK implements SDKProvider {
   static Network = Network
+  static APIClient = APIClient
 
   network: Network
   api: APIClient
@@ -26,6 +26,7 @@ class TradeHubSDK implements SDKProvider {
   // modules
   order: ModOrder
   market: ModMarket
+  governance: ModGovernance
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -48,6 +49,7 @@ class TradeHubSDK implements SDKProvider {
     // initialize modules
     this.order = new ModOrder(this);
     this.market = new ModMarket(this);
+    this.governance = new ModGovernance(this);
   }
 
   public generateOpts(): TradeHubSDKInitOpts {

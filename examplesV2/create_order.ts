@@ -1,5 +1,9 @@
 import * as BIP39 from "bip39";
 import { CreateOrderMsg, TradeHubSDK } from '..';
+import { APIClient } from "../build/main/lib/tradehub/api";
+import "./_setup";
+
+APIClient.DEBUG_HEADERS = true;
 
 const PARAMS: CreateOrderMsg = {
   market: "swth_eth1",
@@ -16,7 +20,7 @@ const PARAMS: CreateOrderMsg = {
   console.log("mnemonic:", mnemonic)
 
   const sdk = new TradeHubSDK({
-    network: TradeHubSDK.Network.MainNet,
+    network: TradeHubSDK.Network.TestNet,
     debugMode: true,
   });
 

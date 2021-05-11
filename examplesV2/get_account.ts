@@ -1,4 +1,5 @@
 import { TradeHubSDK } from '..'
+import "./_setup";
 
 (async () => {
   const sdk = new TradeHubSDK({
