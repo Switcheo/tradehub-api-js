@@ -1,10 +1,8 @@
 import * as BIP39 from "bip39";
 import { TradeHubSDK } from '..';
-import { APIClient } from "../build/main/lib/tradehub/api";
-import { TokenProposal } from "../build/main/lib/tradehub/models/rpc";
 import "./_setup";
 
-APIClient.DEBUG_HEADERS = true;
+TradeHubSDK.APIClient.DEBUG_HEADERS = true;
 
 (async () => {
   const mnemonic = process.env.MNEMONICS ?? BIP39.generateMnemonic();
@@ -20,7 +18,7 @@ APIClient.DEBUG_HEADERS = true;
 
   await connectedSDK.initialize();
 
-  const result = await connectedSDK.governance.submitProposal<TokenProposal>("coin/TokenProposal", [],
+  const result = await connectedSDK.governance.submitProposal<TradeHubSDK.RPCParams.TokenProposal>("coin/TokenProposal", [],
     connectedSDK.wallet.bech32Address, {
     title: "test",
     description: "test",

@@ -1,8 +1,9 @@
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
+import { RPCParams as _RPCParams, RestResponse as _RestResponse } from "../models";
 import { Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
-import { ModOrder, ModMarket, ModGovernance } from "./modules";
+import { ModGovernance, ModMarket, ModOrder } from "./modules";
 import { SDKProvider } from "./modules/module";
 
 export interface TradeHubSDKInitOpts {
@@ -145,6 +146,11 @@ class ConnectedTradeHubSDK extends TradeHubSDK {
 
     this.wallet = wallet
   }
+}
+
+namespace TradeHubSDK {
+  export import RPCParams = _RPCParams;
+  export import RestResponse = _RestResponse;
 }
 
 export default TradeHubSDK
