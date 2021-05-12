@@ -15,6 +15,7 @@ import {
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
   TradehubEndpoints
 } from './spec';
+import { GetBlocksOpts, GetBlocksResponse } from './spec/get_blocks';
 
 export interface APIClientOpts {
   debugMode?: boolean
@@ -235,6 +236,16 @@ class APIClient {
     const request = this.apiManager.path('markets/get_prices', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetPricesResponse
+  }
+
+  async getBlocks(opts: GetBlocksOpts): Promise<GetBlocksResponse> {
+    const queryParams = {
+      page: opts.page
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_blocks', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetBlocksResponse
   }
 }
 

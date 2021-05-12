@@ -3,6 +3,7 @@ export const TradehubEndpoints = {
   'tradehub/txs': '/txs',
   'tradehub/get_nodes': '/monitor',
   'tradehub/get_txns_fees': '/get_txns_fees',
+  'tradehub/get_blocks': '/get_blocks',
 
   // account api
   'account/detail': '/get_account',
