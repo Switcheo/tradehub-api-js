@@ -1,3 +1,4 @@
+import { GetActiveWalletsParams } from '@lib/types';
 import { bnOrZero, Network, NetworkConfigs, TxRequest } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
@@ -15,6 +16,8 @@ import {
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
   TradehubEndpoints
 } from './spec';
+import { GetActiveWalletsOpts } from './spec/get_active_wallets';
+import { GetAllValidatorsResponse } from './spec/get_all_validators';
 import { GetBlocksOpts, GetBlocksResponse } from './spec/get_blocks';
 
 export interface APIClientOpts {
@@ -103,6 +106,12 @@ class APIClient {
     const request = this.apiManager.path('validators/delegations', routeParams)
     const response = await request.get()
     return response.data as ListValidatorDelegationsResponse
+  }
+
+  async getAllValidators(): Promise<GetAllValidatorsResponse> {
+    const request = this.apiManager.path('validators/get_all')
+    const response = await request.get()
+    return response.data as GetAllValidatorsResponse
   }
 
   async checkUsername(opts: CheckUserNameOpts): Promise<Boolean> {
@@ -200,6 +209,16 @@ class APIClient {
     const request = this.apiManager.path('account/get_balance', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetWalletBalanceResponse
+  }
+
+  async getActiveWallets(opts: GetActiveWalletsOpts): Promise<string> {
+    const queryParams = {
+      token: opts.token
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_active_wallets', routeParams, queryParams)
+    const response = await request.get();
+    return response.data as string
   }
 
   async getMarket(opts: GetMarketOpts): Promise<GetMarketResponse> {

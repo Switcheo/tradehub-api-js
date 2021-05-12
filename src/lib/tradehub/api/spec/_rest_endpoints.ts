@@ -11,6 +11,7 @@ export const TradehubEndpoints = {
   'account/get_profile': '/get_profile',
   'account/get_balance': '/get_balance',
   'account/get_leverage': '/get_leverage',
+  'account/get_active_wallets': '/get_active_wallets',
 
   // market api
   'markets/list': '/get_markets',
@@ -28,4 +29,5 @@ export const TradehubEndpoints = {
   
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',
+  'validators/get_all': '/get_all_validators',
 } as const
