@@ -11,10 +11,10 @@ export interface GetAccountTradesResponse extends Array<RestResponse.Account> { 
  * @param account Only returns trades made by this address
  */
 export interface GetAccountTradesOpts {
-  market: string
-  before_id: string
-  after_id: string
-  order_by: string
-  limit: string
-  account: string
+  market?: string
+  before_id?: string
+  after_id?: string
+  order_by?: string
+  limit?: string
+  account?: string
 }

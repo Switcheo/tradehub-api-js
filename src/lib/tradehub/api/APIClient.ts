@@ -1,24 +1,29 @@
-import { GetActiveWalletsParams } from '@lib/types';
+import { GetActiveWalletsParams, GetLeaderboardParams } from '@lib/types';
 import { bnOrZero, Network, NetworkConfigs, TxRequest } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
-  CheckUserNameOpts, GetAccountOpts, GetAccountResponse,
+  CheckUserNameOpts, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountRealizedPnlResponse, GetAccountResponse,
   GetAccountTradesOpts,
   GetAccountTradesResponse,
-  GetLeverageOpts, GetLeverageResponse, GetMarketOpts, GetMarketResponse, GetNodesResponse, GetOrderBookResponse, GetOrderOpts,
+  GetActiveWalletsOpts,
+  GetAllValidatorsResponse,
+  GetBlocksOpts,
+  GetBlocksResponse,
+  GetInsuranceFundBalanceResponse,
+  GetLeaderboardOpts,
+  GetLeverageOpts, GetLeverageResponse, GetLiquidationTradesResponse, GetLiquidityPoolsResponse, GetMarketOpts, GetMarketResponse, GetMarketStatsOpts, GetMarketStatsResponse, GetNodesResponse, GetOrderBookResponse, GetOrderOpts,
   GetOrderResponse,
-  GetOrdersOpts, GetPositionOpts, GetPositionResponse,
+  GetOrdersOpts, GetOrdersResponse, GetPositionOpts, GetPositionResponse,
   GetPositionsOpts,
   GetPricesOpts, GetPricesResponse, GetProfileOpts, GetProfileResponse,
+  GetTradesOpts,
+  GetTradesResponse,
   GetTxnFeesResponse,
   GetWalletBalanceOpts,
   GetWalletBalanceResponse,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
   TradehubEndpoints
 } from './spec';
-import { GetActiveWalletsOpts } from './spec/get_active_wallets';
-import { GetAllValidatorsResponse } from './spec/get_all_validators';
-import { GetBlocksOpts, GetBlocksResponse } from './spec/get_blocks';
 
 export interface APIClientOpts {
   debugMode?: boolean
@@ -76,11 +81,7 @@ class APIClient {
     return result;
   }
 
-  async tx(tx: TxRequest): Promise<unknown> {
-    const request = this.apiManager.path("tradehub/txs")
-    const response = await request.post({ body: tx })
-    return response.data
-  }
+  // Account
 
   async getAccount(opts: GetAccountOpts): Promise<GetAccountResponse> {
     const queryParams = { account: opts.address }
@@ -89,6 +90,237 @@ class APIClient {
     const response = await request.get()
     return response.data as GetAccountResponse
   }
+
+  async checkUsername(opts: CheckUserNameOpts): Promise<Boolean> {
+    const queryParams = { account: opts.username }
+    const routeParams = {}
+    const request = this.apiManager.path('account/username_check', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as Boolean
+  }
+
+  async getProfile(opts: GetProfileOpts): Promise<GetProfileResponse> {
+    const queryParams = { address: opts.address }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_profile', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetProfileResponse
+  }
+
+  async getLeverage(opts: GetLeverageOpts): Promise<GetLeverageResponse> {
+    const queryParams = { account: opts.account }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetLeverageResponse
+  }
+
+  async getWalletBalance(opts: GetWalletBalanceOpts): Promise<GetWalletBalanceResponse> {
+    const queryParams = {
+      account: opts.account,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_balance', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetWalletBalanceResponse
+  }
+
+  async getAccountRealizedPnl(opts: GetAccountRealizedPnlOpts): Promise<GetAccountRealizedPnlResponse> {
+    const queryParams = {
+      account: opts.account,
+      from: opts.from,
+      to: opts.to,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_realized_pnl', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetAccountRealizedPnlResponse
+  }
+
+  // History
+
+  async getPosition(opts: GetPositionOpts): Promise<GetPositionResponse> {
+    const queryParams = { account: opts.account, market: opts.market }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_position', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPositionResponse
+  }
+
+  async getPositions(opts: GetPositionsOpts): Promise<GetPositionResponse> {
+    const queryParams = { account: opts.account }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_positions', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPositionResponse
+  }
+
+  async getOrder(opts: GetOrderOpts): Promise<GetOrderResponse> {
+    const queryParams = { order_id: opts.order_id }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_order', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetOrderResponse
+  }
+
+  async getOrders(opts: GetOrdersOpts): Promise<GetOrdersResponse> {
+    const queryParams = {
+      account: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_status: opts.order_status,
+      order_type: opts.order_type,
+      order_by: opts.order_by,
+      initiator: opts.initiator,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_orders', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetOrdersResponse
+  }
+
+  async getOpenOrders(opts: GetOrdersOpts): Promise<GetOrdersResponse> {
+    const queryParams = {
+      account: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_status: 'open',
+      order_type: opts.order_type,
+      order_by: opts.order_by,
+      initiator: opts.initiator,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_orders', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetOrdersResponse
+  }
+
+  async getAccountTrades(opts: GetAccountTradesOpts): Promise<GetAccountTradesResponse> {
+    const queryParams = {
+      account: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_by: opts.order_by,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_account_trades', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetAccountTradesResponse
+  }
+
+  async getTrades(opts: GetTradesOpts): Promise<GetTradesResponse> {
+    const queryParams = {
+      account: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_trades', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetTradesResponse
+  }
+
+  async getLiquidationTrades(): Promise<GetLiquidationTradesResponse> {
+    const request = this.apiManager.path('history/get_liquidation_trades')
+    const response = await request.get()
+    return response.data as GetLiquidationTradesResponse
+  }
+
+  // Market
+
+  async getMarket(opts: GetMarketOpts): Promise<GetMarketResponse> {
+    const queryParams = {
+      market: opts.market
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_market', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetMarketResponse
+  }
+
+  async getMarkets(): Promise<GetMarketResponse[]> {
+    const request = this.apiManager.path('markets/get_markets')
+    const response = await request.get()
+    return response.data as GetMarketResponse[]
+  }
+
+  async getOrderbook(opts: GetMarketOpts): Promise<GetOrderBookResponse> {
+    const queryParams = {
+      market: opts.market
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_orderbook', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetOrderBookResponse
+  }
+
+  async getPrices(opts: GetPricesOpts): Promise<GetPricesResponse> {
+    const queryParams = {
+      market: opts.market
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_prices', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPricesResponse
+  }
+
+  async getMarketStats(opts: GetMarketStatsOpts): Promise<GetMarketStatsResponse> {
+    const queryParams = {
+      market: opts.market
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_market_stats', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetMarketStatsResponse
+  }
+
+  async getInsuranceFundBalance(): Promise<GetInsuranceFundBalanceResponse> {
+    const request = this.apiManager.path('markets/get_insurence_fund_balance')
+    const response = await request.get()
+    return response.data as GetInsuranceFundBalanceResponse
+  }
+
+  async getLiquidityPools(): Promise<GetLiquidityPoolsResponse> {
+    const request = this.apiManager.path('markets/get_liquidity_pools')
+    const response = await request.get()
+    return response.data as GetLiquidityPoolsResponse
+  }
+
+  async getLeaderboard(opts: GetLeaderboardOpts): Promise<GetLeaderboardParams> {
+    const queryParams = {
+      market: opts.market,
+      limit: opts.limit,
+      offset: opts.offset,
+      order: opts.order,
+      from: opts.from,
+      to: opts.to,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_leaderboard', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetLeaderboardParams
+  }
+
+  // async getCandlesticks(opts: GetCandlesticksOpts): Promise<GetCandlesticksResponse> {
+
+  // }
+
+  
+//
+  async tx(tx: TxRequest): Promise<unknown> {
+    const request = this.apiManager.path("tradehub/txs")
+    const response = await request.post({ body: tx })
+    return response.data
+  }
+
 
   async getTxnFees(): Promise<GetTxnFeesResponse> {
     const request = this.apiManager.path('tradehub/get_txns_fees')
@@ -114,101 +346,11 @@ class APIClient {
     return response.data as GetAllValidatorsResponse
   }
 
-  async checkUsername(opts: CheckUserNameOpts): Promise<Boolean> {
-    const queryParams = { account: opts.username }
-    const routeParams = {}
-    const request = this.apiManager.path('account/username_check', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as Boolean
-  }
-
-  async getProfile(opts: GetProfileOpts): Promise<GetProfileResponse> {
-    const queryParams = { address: opts.address }
-    const routeParams = {}
-    const request = this.apiManager.path('account/get_profile', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetProfileResponse
-  }
-
-  async getPosition(opts: GetPositionOpts): Promise<GetPositionResponse> {
-    const queryParams = { account: opts.account, market: opts.market }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_position', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetPositionResponse
-  }
-
-  async getPositions(opts: GetPositionsOpts): Promise<GetPositionResponse> {
-    const queryParams = { account: opts.account }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_positions', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetPositionResponse
-  }
-
-  async getLeverage(opts: GetLeverageOpts): Promise<GetLeverageResponse> {
-    const queryParams = { account: opts.account }
-    const routeParams = {}
-    const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetLeverageResponse
-  }
-
-  async getOrder(opts: GetOrderOpts): Promise<GetOrderResponse> {
-    const queryParams = { order_id: opts.order_id }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_order', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetOrderResponse
-  }
-
-  async getOrders(opts: GetOrdersOpts): Promise<GetOrderResponse> {
-    const queryParams = {
-      account: opts.account,
-      market: opts.market,
-      limit: opts.limit,
-      before_id: opts.before_id,
-      after_id: opts.after_id,
-      order_status: opts.order_status,
-      order_type: opts.order_type,
-      order_by: opts.order_by,
-      initiator: opts.initiator,
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_orders', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetOrderResponse
-  }
-
-  async getAccountTrades(opts: GetAccountTradesOpts): Promise<GetAccountTradesResponse> {
-    const queryParams = {
-      account: opts.account,
-      market: opts.market,
-      limit: opts.limit,
-      before_id: opts.before_id,
-      after_id: opts.after_id,
-      order_by: opts.order_by,
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_account_trades', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetAccountTradesResponse
-  }
 
   async getNodes(): Promise<GetNodesResponse> {
     const request = this.apiManager.path('tradehub/get_nodes')
     const response = await request.get()
     return response.data as GetNodesResponse
-  }
-
-  async getWalletBalance(opts: GetWalletBalanceOpts): Promise<GetWalletBalanceResponse> {
-    const queryParams = {
-      account: opts.account,
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('account/get_balance', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetWalletBalanceResponse
   }
 
   async getActiveWallets(opts: GetActiveWalletsOpts): Promise<string> {
@@ -221,41 +363,6 @@ class APIClient {
     return response.data as string
   }
 
-  async getMarket(opts: GetMarketOpts): Promise<GetMarketResponse> {
-    const queryParams = {
-      market: opts.market
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('markets/get_market', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetMarketResponse
-  }
-
-  async getOrderbook(opts: GetMarketOpts): Promise<GetOrderBookResponse> {
-    const queryParams = {
-      market: opts.market
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('markets/get_orderbook', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetOrderBookResponse
-  }
-
-  async getMarkets(): Promise<GetMarketResponse[]> {
-    const request = this.apiManager.path('markets/get_markets')
-    const response = await request.get()
-    return response.data as GetMarketResponse[]
-  }
-
-  async getPrices(opts: GetPricesOpts): Promise<GetPricesResponse> {
-    const queryParams = {
-      market: opts.market
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('markets/get_prices', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetPricesResponse
-  }
 
   async getBlocks(opts: GetBlocksOpts): Promise<GetBlocksResponse> {
     const queryParams = {
@@ -266,6 +373,7 @@ class APIClient {
     const response = await request.get()
     return response.data as GetBlocksResponse
   }
+
 }
 
 export default APIClient

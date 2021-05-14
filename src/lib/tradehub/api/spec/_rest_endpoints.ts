@@ -12,6 +12,7 @@ export const TradehubEndpoints = {
   'account/get_balance': '/get_balance',
   'account/get_leverage': '/get_leverage',
   'account/get_active_wallets': '/get_active_wallets',
+  'account/get_realized_pnl': '/get_account_realized_pnl',
 
   // market api
   'markets/list': '/get_markets',
@@ -19,6 +20,10 @@ export const TradehubEndpoints = {
   'markets/get_markets': '/get_markets',
   'markets/get_prices': '/get_prices',
   'markets/get_orderbook': '/get_orderbook',
+  'markets/get_market_stats': '/get_market_stats',
+  'markets/get_insurence_fund_balance': '/get_insurence_fund_balance',
+  'markets/get_liquidity_pools': '/get_liquidity_pools',
+  'markets/get_leaderboard': '/get_leaderboard',
 
   // history api
   'history/get_position': '/get_position',
@@ -26,6 +31,8 @@ export const TradehubEndpoints = {
   'history/get_order': '/get_order',
   'history/get_orders': '/get_orders',
   'history/get_account_trades': '/get_trades_by_account',
+  'history/get_trades': '/get_trades',
+  'history/get_liquidation_trades': '/get_liquidations',
   
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',

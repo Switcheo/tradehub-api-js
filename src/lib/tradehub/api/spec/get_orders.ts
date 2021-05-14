@@ -1,3 +1,7 @@
+import { RestResponse } from "@lib/tradehub/models";
+
+export interface GetOrdersResponse extends Array<RestResponse.Order> { }
+
 /**
  * @param account Only returns orders made by this address
  * @param market The market (eg: swth_eth)
