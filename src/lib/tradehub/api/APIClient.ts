@@ -1,4 +1,4 @@
-import { GetActiveWalletsParams, GetLeaderboardParams } from '@lib/types';
+import { GetActiveWalletsParams, GetLeaderboardParams, GetPositionsCloseToLiquidationParams } from '@lib/types';
 import { bnOrZero, Network, NetworkConfigs, TxRequest } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
@@ -7,18 +7,41 @@ import {
   GetAccountTradesResponse,
   GetActiveWalletsOpts,
   GetAllValidatorsResponse,
+  GetBlockHeightfromUnixOpts,
+  GetBlockHeightfromUnixResponse,
   GetBlocksOpts,
   GetBlocksResponse,
+  GetCosmosBlockInfoOpts,
+  GetCosmosBlockInfoResponse,
   GetInsuranceFundBalanceResponse,
   GetLeaderboardOpts,
   GetLeverageOpts, GetLeverageResponse, GetLiquidationTradesResponse, GetLiquidityPoolsResponse, GetMarketOpts, GetMarketResponse, GetMarketStatsOpts, GetMarketStatsResponse, GetNodesResponse, GetOrderBookResponse, GetOrderOpts,
   GetOrderResponse,
   GetOrdersOpts, GetOrdersResponse, GetPositionOpts, GetPositionResponse,
+  GetPositionsCloseToLiquidationOpts,
+  GetPositionsCloseToLiquidationResponse,
+  GetPositionsLargestOpts,
+  GetPositionsLargestResponse,
   GetPositionsOpts,
+  GetPositionsWithHightstPnlOpts,
+  GetPositionsWithHightstPnlResponse,
   GetPricesOpts, GetPricesResponse, GetProfileOpts, GetProfileResponse,
+  GetRichListOpts,
+  GetRichListResponse,
+  GetTokenOpts,
+  GetTokenResponse,
+  GetTokensResponse,
+  GetTotalBalancesResponse,
   GetTradesOpts,
   GetTradesResponse,
+  GetTxLogOpts,
+  GetTxLogResponse,
   GetTxnFeesResponse,
+  GetTxOpts,
+  GetTxResponse,
+  GetTxsOpts,
+  GetTxsResponse,
+  GetTxTypesResponse,
   GetWalletBalanceOpts,
   GetWalletBalanceResponse,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
@@ -81,6 +104,121 @@ class APIClient {
     return result;
   }
 
+  // Generic
+
+  async tx(tx: TxRequest): Promise<unknown> {
+    const request = this.apiManager.path("tradehub/txs")
+    const response = await request.post({ body: tx })
+    return response.data
+  }
+
+  async getTx(opts: GetTxOpts): Promise<GetTxResponse> {
+    const queryParams = { id: opts.id }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_tx', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetTxResponse
+  }
+
+  async getTxs(opts: GetTxsOpts): Promise<GetTxsResponse> {
+    const queryParams = {
+      address: opts.address,
+      msg_type: opts.msg_type,
+      height: opts.height,
+      start_block: opts.start_block,
+      end_block: opts.end_block,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_by: opts.order_by,
+      limit: opts.limit,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_txs', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetTxsResponse
+  }
+
+  async getTxnFees(): Promise<GetTxnFeesResponse> {
+    const request = this.apiManager.path('tradehub/get_txns_fees')
+    const response = await request.get()
+    const fees = response.data!.result
+    const output: GetTxnFeesResponse = {}
+    for (const item of fees) {
+      output[item.msg_type] = bnOrZero(item.fee)
+    }
+    return output
+  }
+
+  // todo error in api call
+  async getTxLog(opts: GetTxLogOpts): Promise<GetTxLogResponse> {
+    const queryParams = { id: opts.id }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_tx_log', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetTxLogResponse
+  }
+
+  async getTxTypes(): Promise<GetTxTypesResponse> {
+    const request = this.apiManager.path('tradehub/get_tx_types')
+    const response = await request.get()
+    return response.data as GetTxTypesResponse
+  }
+
+  async getBlocks(opts: GetBlocksOpts): Promise<GetBlocksResponse> {
+    const queryParams = {
+      page: opts.page
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_blocks', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetBlocksResponse
+  }
+
+  // todo data, evidence null
+  async getCosmosBlockInfo(opts: GetCosmosBlockInfoOpts): Promise<GetCosmosBlockInfoResponse> {
+    const queryParams = {}
+    const routeParams = { blockheight: opts.blockheight }
+    const request = this.apiManager.path('tradehub/get_cosmos_block', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetCosmosBlockInfoResponse
+  }
+
+  async getBlockHeightfromUnix(opts: GetBlockHeightfromUnixOpts): Promise<GetBlockHeightfromUnixResponse> {
+    const queryParams = { unix: opts.unix }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_block_height_from_unix', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetBlockHeightfromUnixResponse
+  }
+
+  async getAverageBlocktime(): Promise<string> {
+    const request = this.apiManager.path('tradehub/get_average_block_time')
+    const response = await request.get()
+    return response.data as string
+  }
+
+  async getToken(opts: GetTokenOpts): Promise<GetTokenResponse> {
+    const queryParams = { token: opts.token }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_token', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetTokenResponse
+  }
+
+  async getTokens(): Promise<GetTokensResponse> {
+    const request = this.apiManager.path('tradehub/get_tokens')
+    const response = await request.get()
+    return response.data as GetTokensResponse
+  }
+
+  async getRichList(opts: GetRichListOpts): Promise<GetRichListResponse> {
+    const queryParams = { token: opts.token }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_rich_list', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetRichListResponse
+  }
+
   // Account
 
   async getAccount(opts: GetAccountOpts): Promise<GetAccountResponse> {
@@ -125,6 +263,12 @@ class APIClient {
     return response.data as GetWalletBalanceResponse
   }
 
+  async getTotalBalances(): Promise<GetTotalBalancesResponse> {
+    const request = this.apiManager.path('account/get_total_balances')
+    const response = await request.get()
+    return response.data as GetTotalBalancesResponse
+  }
+
   async getAccountRealizedPnl(opts: GetAccountRealizedPnlOpts): Promise<GetAccountRealizedPnlResponse> {
     const queryParams = {
       account: opts.account,
@@ -135,6 +279,16 @@ class APIClient {
     const request = this.apiManager.path('account/get_realized_pnl', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetAccountRealizedPnlResponse
+  }
+
+  async getActiveWallets(opts: GetActiveWalletsOpts): Promise<string> {
+    const queryParams = {
+      token: opts.token
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_active_wallets', routeParams, queryParams)
+    const response = await request.get();
+    return response.data as string
   }
 
   // History
@@ -309,41 +463,58 @@ class APIClient {
     return response.data as GetLeaderboardParams
   }
 
+  async getPositionsWithHighestPnL(opts: GetPositionsWithHightstPnlOpts): Promise<GetPositionsWithHightstPnlResponse> {
+    const queryParams = {
+      market: opts.market,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_highest_pnl_positions', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPositionsWithHightstPnlResponse
+  }
+
+  async getPositionsCloseToLiquidation(opts: GetPositionsCloseToLiquidationOpts): Promise<GetPositionsCloseToLiquidationResponse> {
+    const queryParams = {
+      market: opts.market,
+      direction: opts.direction,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_highest_pnl_positions', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPositionsCloseToLiquidationResponse
+  }
+
+  async getPositionsLargest(opts: GetPositionsLargestOpts): Promise<GetPositionsLargestResponse> {
+    const queryParams = {
+      market: opts.market,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/get_positions_largest', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetPositionsLargestResponse
+  }
+
   // async getCandlesticks(opts: GetCandlesticksOpts): Promise<GetCandlesticksResponse> {
 
   // }
 
+  // Validators
+
+  async getAllValidators(): Promise<GetAllValidatorsResponse> {
+    const request = this.apiManager.path('validators/get_all')
+    const response = await request.get()
+    return response.data as GetAllValidatorsResponse
+  }
   
 //
-  async tx(tx: TxRequest): Promise<unknown> {
-    const request = this.apiManager.path("tradehub/txs")
-    const response = await request.post({ body: tx })
-    return response.data
-  }
 
 
-  async getTxnFees(): Promise<GetTxnFeesResponse> {
-    const request = this.apiManager.path('tradehub/get_txns_fees')
-    const response = await request.get()
-    const fees = response.data!.result
-    const output: GetTxnFeesResponse = {}
-    for (const item of fees) {
-      output[item.msg_type] = bnOrZero(item.fee)
-    }
-    return output
-  }
 
   async getValidatorDelegations(opts: ListValidatorDelegationsOpts): Promise<ListValidatorDelegationsResponse> {
     const routeParams = { validator: opts.validator }
     const request = this.apiManager.path('validators/delegations', routeParams)
     const response = await request.get()
     return response.data as ListValidatorDelegationsResponse
-  }
-
-  async getAllValidators(): Promise<GetAllValidatorsResponse> {
-    const request = this.apiManager.path('validators/get_all')
-    const response = await request.get()
-    return response.data as GetAllValidatorsResponse
   }
 
 
@@ -353,26 +524,6 @@ class APIClient {
     return response.data as GetNodesResponse
   }
 
-  async getActiveWallets(opts: GetActiveWalletsOpts): Promise<string> {
-    const queryParams = {
-      token: opts.token
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('account/get_active_wallets', routeParams, queryParams)
-    const response = await request.get();
-    return response.data as string
-  }
-
-
-  async getBlocks(opts: GetBlocksOpts): Promise<GetBlocksResponse> {
-    const queryParams = {
-      page: opts.page
-    }
-    const routeParams = {}
-    const request = this.apiManager.path('tradehub/get_blocks', routeParams, queryParams)
-    const response = await request.get()
-    return response.data as GetBlocksResponse
-  }
 
 }
 

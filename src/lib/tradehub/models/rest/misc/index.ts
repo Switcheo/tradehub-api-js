@@ -1,3 +1,7 @@
 export * from './NodeData'
 export * from './TxnFee'
 export * from './Block'
+export * from './BlockHeight'
+export * from './TxnHistory'
+export * from './Txn'
+export * from './CosmosBlock'
