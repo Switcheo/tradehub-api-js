@@ -1,4 +1,6 @@
 import { GetActiveWalletsParams, GetLeaderboardParams, GetPositionsCloseToLiquidationParams } from '@lib/types';
+import BigNumber from 'bignumber.js';
+import dayjs from 'dayjs';
 import { bnOrZero, Network, NetworkConfigs, TxRequest } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
@@ -6,16 +8,30 @@ import {
   GetAccountTradesOpts,
   GetAccountTradesResponse,
   GetActiveWalletsOpts,
+  GetAllDelegatorDelegationsOpts,
+  GetAllDelegatorDelegationsResponse,
   GetAllValidatorsResponse,
+  GetAMMRewardPercentageResponse,
   GetBlockHeightfromUnixOpts,
   GetBlockHeightfromUnixResponse,
   GetBlocksOpts,
   GetBlocksResponse,
+  GetCandlesticksOpts,
+  GetCandlesticksResponse,
   GetCosmosBlockInfoOpts,
   GetCosmosBlockInfoResponse,
+  GetDelegatorDelegationRewardsOpts,
+  GetDelegatorDelegationRewardsResponse,
+  GetDelegatorDelegationsOpts,
+  GetDelegatorDelegationsResponse,
+  GetDelegatorRedelegationsOpts,
+  GetDelegatorRedelegationsResponse,
+  GetDelegatorUnbondingDelegationsOpts,
+  GetDelegatorUnbondingDelegationsResponse,
+  GetInflationStartTimeResponse,
   GetInsuranceFundBalanceResponse,
   GetLeaderboardOpts,
-  GetLeverageOpts, GetLeverageResponse, GetLiquidationTradesResponse, GetLiquidityPoolsResponse, GetMarketOpts, GetMarketResponse, GetMarketStatsOpts, GetMarketStatsResponse, GetNodesResponse, GetOrderBookResponse, GetOrderOpts,
+  GetLeverageOpts, GetLeverageResponse, GetLiquidationTradesResponse, GetLiquidityPoolsResponse, GetMarketOpts, GetMarketResponse, GetMarketsResponse, GetMarketStatsOpts, GetMarketStatsResponse, GetNodesResponse, GetOrderbookOpts, GetOrderbookResponse, GetOrderOpts,
   GetOrderResponse,
   GetOrdersOpts, GetOrdersResponse, GetPositionOpts, GetPositionResponse,
   GetPositionsCloseToLiquidationOpts,
@@ -23,17 +39,24 @@ import {
   GetPositionsLargestOpts,
   GetPositionsLargestResponse,
   GetPositionsOpts,
+  GetPositionsResponse,
   GetPositionsWithHightstPnlOpts,
   GetPositionsWithHightstPnlResponse,
   GetPricesOpts, GetPricesResponse, GetProfileOpts, GetProfileResponse,
   GetRichListOpts,
   GetRichListResponse,
+  GetStakedPoolTokenOpts,
+  GetStakedPoolTokenResponse,
+  GetStakingPoolResponse,
+  GetStakingValidatorsResponse,
   GetTokenOpts,
   GetTokenResponse,
   GetTokensResponse,
   GetTotalBalancesResponse,
   GetTradesOpts,
   GetTradesResponse,
+  GetTransfersOpts,
+  GetTransfersResponse,
   GetTxLogOpts,
   GetTxLogResponse,
   GetTxnFeesResponse,
@@ -42,6 +65,11 @@ import {
   GetTxsOpts,
   GetTxsResponse,
   GetTxTypesResponse,
+  GetUnbondedStakingValidatorsResponse,
+  GetUnbondingStakingValidatorsResponse,
+  GetVaultsOpts,
+  GetVaultsResponse,
+  GetVaultTypesResponse,
   GetWalletBalanceOpts,
   GetWalletBalanceResponse,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
@@ -113,7 +141,7 @@ class APIClient {
   }
 
   async getTx(opts: GetTxOpts): Promise<GetTxResponse> {
-    const queryParams = { id: opts.id }
+    const queryParams = { hash: opts.hash }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_tx', routeParams, queryParams)
     const response = await request.get()
@@ -151,7 +179,7 @@ class APIClient {
 
   // todo error in api call
   async getTxLog(opts: GetTxLogOpts): Promise<GetTxLogResponse> {
-    const queryParams = { id: opts.id }
+    const queryParams = { hash: opts.hash }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_tx_log', routeParams, queryParams)
     const response = await request.get()
@@ -164,6 +192,12 @@ class APIClient {
     return response.data as GetTxTypesResponse
   }
 
+  async getNodes(): Promise<GetNodesResponse> {
+    const request = this.apiManager.path('tradehub/get_nodes')
+    const response = await request.get()
+    return response.data as GetNodesResponse
+  }
+
   async getBlocks(opts: GetBlocksOpts): Promise<GetBlocksResponse> {
     const queryParams = {
       page: opts.page
@@ -174,11 +208,10 @@ class APIClient {
     return response.data as GetBlocksResponse
   }
 
-  // todo data, evidence null
+  // response data, evidence null | unknown
   async getCosmosBlockInfo(opts: GetCosmosBlockInfoOpts): Promise<GetCosmosBlockInfoResponse> {
-    const queryParams = {}
     const routeParams = { blockheight: opts.blockheight }
-    const request = this.apiManager.path('tradehub/get_cosmos_block', routeParams, queryParams)
+    const request = this.apiManager.path('tradehub/get_cosmos_block', routeParams)
     const response = await request.get()
     return response.data as GetCosmosBlockInfoResponse
   }
@@ -219,6 +252,22 @@ class APIClient {
     return response.data as GetRichListResponse
   }
 
+  // response array unknown
+  async getVaultTypes(): Promise<GetVaultTypesResponse> {
+    const request = this.apiManager.path('tradehub/get_vault_types')
+    const response = await request.get()
+    return response.data as GetTokensResponse
+  }
+
+  // response array unknown
+  async getVaults(opts: GetVaultsOpts): Promise<GetVaultsResponse> {
+    const queryParams = { account: opts.address }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_vaults', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetVaultsResponse
+  }
+
   // Account
 
   async getAccount(opts: GetAccountOpts): Promise<GetAccountResponse> {
@@ -230,7 +279,7 @@ class APIClient {
   }
 
   async checkUsername(opts: CheckUserNameOpts): Promise<Boolean> {
-    const queryParams = { account: opts.username }
+    const queryParams = { username: opts.username }
     const routeParams = {}
     const request = this.apiManager.path('account/username_check', routeParams, queryParams)
     const response = await request.get()
@@ -238,15 +287,19 @@ class APIClient {
   }
 
   async getProfile(opts: GetProfileOpts): Promise<GetProfileResponse> {
-    const queryParams = { address: opts.address }
+    const queryParams = { account: opts.account }
     const routeParams = {}
     const request = this.apiManager.path('account/get_profile', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetProfileResponse
   }
 
+  // response check
   async getLeverage(opts: GetLeverageOpts): Promise<GetLeverageResponse> {
-    const queryParams = { account: opts.account }
+    const queryParams = { 
+      account: opts.account, 
+      market: opts.market,
+    }
     const routeParams = {}
     const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
     const response = await request.get()
@@ -291,6 +344,16 @@ class APIClient {
     return response.data as string
   }
 
+  async getTransfers(opts: GetTransfersOpts): Promise<GetTransfersResponse> {
+    const queryParams = {
+      account: opts.account,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_transfers', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetTransfersResponse
+  }
+
   // History
 
   async getPosition(opts: GetPositionOpts): Promise<GetPositionResponse> {
@@ -301,12 +364,12 @@ class APIClient {
     return response.data as GetPositionResponse
   }
 
-  async getPositions(opts: GetPositionsOpts): Promise<GetPositionResponse> {
+  async getPositions(opts: GetPositionsOpts): Promise<GetPositionsResponse> {
     const queryParams = { account: opts.account }
     const routeParams = {}
     const request = this.apiManager.path('history/get_positions', routeParams, queryParams)
     const response = await request.get()
-    return response.data as GetPositionResponse
+    return response.data as GetPositionsResponse
   }
 
   async getOrder(opts: GetOrderOpts): Promise<GetOrderResponse> {
@@ -400,20 +463,20 @@ class APIClient {
     return response.data as GetMarketResponse
   }
 
-  async getMarkets(): Promise<GetMarketResponse[]> {
+  async getMarkets(): Promise<GetMarketsResponse> {
     const request = this.apiManager.path('markets/get_markets')
     const response = await request.get()
-    return response.data as GetMarketResponse[]
+    return response.data as GetMarketsResponse
   }
 
-  async getOrderbook(opts: GetMarketOpts): Promise<GetOrderBookResponse> {
+  async getOrderbook(opts: GetOrderbookOpts): Promise<GetOrderbookResponse> {
     const queryParams = {
       market: opts.market
     }
     const routeParams = {}
     const request = this.apiManager.path('markets/get_orderbook', routeParams, queryParams)
     const response = await request.get()
-    return response.data as GetOrderBookResponse
+    return response.data as GetOrderbookResponse
   }
 
   async getPrices(opts: GetPricesOpts): Promise<GetPricesResponse> {
@@ -479,7 +542,7 @@ class APIClient {
       direction: opts.direction,
     }
     const routeParams = {}
-    const request = this.apiManager.path('markets/get_highest_pnl_positions', routeParams, queryParams)
+    const request = this.apiManager.path('markets/get_positions_close_to_liquidation', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetPositionsCloseToLiquidationResponse
   }
@@ -494,9 +557,114 @@ class APIClient {
     return response.data as GetPositionsLargestResponse
   }
 
-  // async getCandlesticks(opts: GetCandlesticksOpts): Promise<GetCandlesticksResponse> {
+  // 404, also not in switcheo-chain
+  async getAMMRewardPercentage(): Promise<GetAMMRewardPercentageResponse> {
+    const request = this.apiManager.path('markets/get_amm_reward_percentage')
+    const response = await request.get()
+    return response.data as GetAMMRewardPercentageResponse
+  }
 
-  // }
+  async getCandlesticks(opts: GetCandlesticksOpts): Promise<GetCandlesticksResponse> {
+    const queryParams = {
+      market: opts.market,
+      resolution: opts.resolution,
+      from: opts.from,
+      to: opts.to
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('markets/candlesticks', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetCandlesticksResponse
+  }
+
+  // Staking
+
+  async getStakingPool(): Promise<GetStakingPoolResponse> {
+    const request = this.apiManager.path('staking/get_staking_pool')
+    const response = await request.get()
+    return response.data as GetStakingPoolResponse
+  }
+
+  async getDelegatorDelegations(opts: GetDelegatorDelegationsOpts): Promise<GetDelegatorDelegationsResponse> {
+    const routeParams = { address: opts.address }
+    const request = this.apiManager.path('staking/delegator_delegations', routeParams)
+    const response = await request.get()
+    return response.data as GetDelegatorDelegationsResponse
+  }
+
+  // response unknown
+  async getDelegatorUnbondingDelegations(opts: GetDelegatorUnbondingDelegationsOpts): Promise<GetDelegatorUnbondingDelegationsResponse> {
+    const routeParams = { address: opts.address }
+    const request = this.apiManager.path('staking/delegator_unbonding_delegations', routeParams)
+    const response = await request.get()
+    return response.data as GetDelegatorUnbondingDelegationsResponse
+  }
+
+  async getDelegatorRedelegations(opts: GetDelegatorRedelegationsOpts): Promise<GetDelegatorRedelegationsResponse> {
+    const queryParams = {
+      delegator: opts.delegator,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('staking/redelegations', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetDelegatorRedelegationsResponse
+  }
+
+  async getAllDelegatorDelegations(opts: GetAllDelegatorDelegationsOpts): Promise<GetAllDelegatorDelegationsResponse> {
+    const promises = [
+      this.getDelegatorDelegations(opts),
+      this.getDelegatorUnbondingDelegations(opts),
+      this.getDelegatorRedelegations(opts),
+    ]
+    return Promise.all(promises).then((responses) => {
+      return {
+        delegations: responses[0],
+        unbonding: responses[1],
+        redelegations: responses[2],
+      } as GetAllDelegatorDelegationsResponse
+    })
+  }
+
+  async getDelegatorDelegationRewards(opts: GetDelegatorDelegationRewardsOpts): Promise<GetDelegatorDelegationRewardsResponse> {
+    const routeParams = { address: opts.address }
+    const request = this.apiManager.path('staking/delegation_rewards', routeParams)
+    const response = await request.get()
+    return response.data as GetDelegatorDelegationRewardsResponse
+  }
+
+  async getStakedPoolTokenInfo(opts: GetStakedPoolTokenOpts): Promise<GetStakedPoolTokenResponse> {
+    const queryParams = {
+      pool_id: opts.pool_id,
+      account: opts.account,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('staking/get_staked_pool_token_info', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetStakedPoolTokenResponse
+  }
+
+  async getInflationStartTime(): Promise<GetInflationStartTimeResponse> {
+    const request = this.apiManager.path('staking/get_inflation_start_time')
+    const response = await request.get()
+    return response.data as GetInflationStartTimeResponse
+  }
+
+  async getWeeklyRewards(): Promise<number> {
+    const startTime: GetInflationStartTimeResponse = await this.getInflationStartTime()
+    const WEEKLY_DECAY = new BigNumber(0.9835)
+    const MIN_RATE = new BigNumber(0.0003)
+    const INITIAL_SUPPLY = new BigNumber(1000000000)
+    const SECONDS_IN_A_WEEK = new BigNumber(604800)
+
+    const difference = new BigNumber(dayjs().diff(dayjs(startTime.block_time), 'second'))
+    const currentWeek = difference.div(SECONDS_IN_A_WEEK).dp(0, BigNumber.ROUND_DOWN)
+
+    let inflationRate = WEEKLY_DECAY.pow(currentWeek)
+    if (inflationRate.lt(MIN_RATE)) {
+      inflationRate = MIN_RATE
+    }
+    return INITIAL_SUPPLY.div(52).times(inflationRate).toNumber()
+  }
 
   // Validators
 
@@ -506,24 +674,38 @@ class APIClient {
     return response.data as GetAllValidatorsResponse
   }
   
-//
-
-
-
   async getValidatorDelegations(opts: ListValidatorDelegationsOpts): Promise<ListValidatorDelegationsResponse> {
     const routeParams = { validator: opts.validator }
     const request = this.apiManager.path('validators/delegations', routeParams)
     const response = await request.get()
     return response.data as ListValidatorDelegationsResponse
   }
-
-
-  async getNodes(): Promise<GetNodesResponse> {
-    const request = this.apiManager.path('tradehub/get_nodes')
+  
+  async getStakingValidators(): Promise<GetStakingValidatorsResponse> {
+    const request = this.apiManager.path('validators/get_staking_validators')
     const response = await request.get()
-    return response.data as GetNodesResponse
+    return response.data as GetStakingValidatorsResponse
   }
 
+  async getUnbondingStakingValidators(): Promise<GetUnbondingStakingValidatorsResponse> {
+    const queryParams = {
+      status: "unbonding",
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('validators/get_staking_validators', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetUnbondingStakingValidatorsResponse
+  }
+
+  async getUnbondedStakingValidators(): Promise<GetUnbondedStakingValidatorsResponse> {
+    const queryParams = {
+      status: "unbonded",
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('validators/get_staking_validators', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as GetUnbondedStakingValidatorsResponse
+  }
 
 }
 

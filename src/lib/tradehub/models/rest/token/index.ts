@@ -1,3 +1,5 @@
 export * from './Token'
 export * from './TokenAmount'
 export * from './UserToken'
+export * from './StakingPoolToken'
+export * from './PoolToken'

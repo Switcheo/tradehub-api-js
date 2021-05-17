@@ -8,12 +8,14 @@ export const TradehubEndpoints = {
   'tradehub/get_tx_log': '/get_tx_log',
   'tradehub/get_tx_types': '/get_transaction_types',
   'tradehub/get_blocks': '/get_blocks',
-  'tradehub/get_cosmos_block': '/blocks',
-  'tradehub/get_block_height_from_unix': 'get_block_height_from_unix',
+  'tradehub/get_cosmos_block': '/blocks/:height',
+  'tradehub/get_block_height_from_unix': 'get_blockheight_from_unix',
   'tradehub/get_average_block_time': '/get_block_time',
   'tradehub/get_token': '/get_token',
   'tradehub/get_tokens': '/get_tokens',
   'tradehub/get_rich_list': '/get_rich_list',
+  'tradehub/get_vault_types': '/get_vault_types',
+  'tradehub/get_vaults': '/get_vaults',
 
   // account api
   'account/detail': '/get_account',
@@ -24,6 +26,7 @@ export const TradehubEndpoints = {
   'account/get_leverage': '/get_leverage',
   'account/get_active_wallets': '/get_active_wallets',
   'account/get_realized_pnl': '/get_account_realized_pnl',
+  'account/get_transfers': '/get_external_transfers',
 
   // market api
   'markets/list': '/get_markets',
@@ -32,11 +35,14 @@ export const TradehubEndpoints = {
   'markets/get_prices': '/get_prices',
   'markets/get_orderbook': '/get_orderbook',
   'markets/get_market_stats': '/get_market_stats',
-  'markets/get_insurence_fund_balance': '/get_insurence_fund_balance',
+  'markets/get_insurence_fund_balance': '/get_insurance_balance',
   'markets/get_liquidity_pools': '/get_liquidity_pools',
   'markets/get_leaderboard': '/get_leaderboard',
   'markets/get_highest_pnl_positions': '/get_positions_sorted_by_pnl',
+  'markets/get_positions_close_to_liquidation': '/get_positions_sorted_by_risk',
   'markets/get_positions_largest': '/get_positions_sorted_by_size',
+  'markets/get_amm_reward_percentage': '/get_amm_reward_percentage',
+  'markets/candlesticks': '/candlesticks',
 
   // history api
   'history/get_position': '/get_position',
@@ -47,7 +53,17 @@ export const TradehubEndpoints = {
   'history/get_trades': '/get_trades',
   'history/get_liquidation_trades': '/get_liquidations',
   
+  // staking api
+  'staking/get_staking_pool': '/staking/pool',
+  'staking/delegator_delegations': '/staking/delegators/:address/delegations',
+  'staking/delegator_unbonding_delegations': '/staking/delegators/:address/unbonding_delegations',
+  'staking/redelegations': '/staking/redelegations',
+  'staking/delegation_rewards': '/distribution/delegators/:address/rewards',
+  'staking/get_staked_pool_token_info': '/get_staked_pool_token',
+  'staking/get_inflation_start_time': '/get_inflation_start_time',
+
   // validators
   'validators/delegations': '/staking/validators/:validator/delegations',
   'validators/get_all': '/get_all_validators',
+  'validators/get_staking_validators': '/staking/validators',
 } as const

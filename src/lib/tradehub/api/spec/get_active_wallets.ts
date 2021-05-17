@@ -1,3 +1,3 @@
 export interface GetActiveWalletsOpts {
-    token: string
+    token?: string
 }

@@ -7,4 +7,5 @@ export interface GetLeverageResponse extends Array<RestResponse.Leverage> { }
  */
 export interface GetLeverageOpts {
   account: string
+  market: string
 }

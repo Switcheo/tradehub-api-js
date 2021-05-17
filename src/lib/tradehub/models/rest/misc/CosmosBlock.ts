@@ -43,11 +43,11 @@ interface CosmosBlockVersion {
 }
 
 interface CosmosBlockData {
-    txs: null | object
+    txs: null | unknown
 }
 
 interface CosmosBlockEvidence {
-    evidence: null | object
+    evidence: null | unknown
 }
 
 interface CosmosBlockCommit {

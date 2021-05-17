@@ -1,3 +1,7 @@
+import { RestResponse } from "@lib/tradehub/models";
+
+export interface GetCandlesticksResponse extends Array<RestResponse.Candlestick> {}
+
 export interface GetCandlesticksOpts {
     market: string
     resolution: CandlesticksResolution

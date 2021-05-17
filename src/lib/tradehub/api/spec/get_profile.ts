@@ -6,5 +6,5 @@ export interface GetProfileResponse extends RestResponse.Profile { }
  * @param address TradeHub address to query
  */
 export interface GetProfileOpts {
-  address?: string
+  account?: string
 }
