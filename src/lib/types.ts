@@ -17,6 +17,7 @@ export const EDIT_MARGIN_MSG_TYPE = 'position/MsgSetMargin'
 // Tokens
 export const MINT_TOKEN_MSG_TYPE = 'coin/MsgMintToken'
 export const CREATE_TOKEN_MSG_TYPE = 'coin/MsgCreateToken'
+export const SYNC_TOKEN_MSG_TYPE = 'coin/MsgSyncToken'
 export const CREATE_WITHDRAWAL_TYPE = 'coin/MsgWithdraw'
 export const SEND_TOKENS_TYPE = 'cosmos-sdk/MsgSend'
 
@@ -355,6 +356,10 @@ export interface CreateTokenMsg {
   is_collateral: boolean,
   lock_proxy_hash: string,
   delegated_supply: string,
+  originator?: string,
+}
+export interface SyncTokenMsg {
+  denom: string,
   originator?: string,
 }
 

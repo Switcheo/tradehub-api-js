@@ -118,6 +118,7 @@ export interface REST {
   // private admin
   createOracle(msg: types.CreateOracleMsg, options?: types.Options): Promise<any>
   createToken(msg: types.CreateTokenMsg, options?: types.Options): Promise<any>
+  syncToken(msg: types.SyncTokenMsg, options?: types.Options): Promise<any>
   createTokens(msgs: types.CreateTokenMsg[], options?: types.Options): Promise<any>
   createMarket(msg: types.CreateMarketMsg, options?: types.Options): Promise<any>
   createMarkets(msgs: types.CreateMarketMsg[], options?: types.Options): Promise<any>
@@ -1108,6 +1109,16 @@ export class RestClient implements REST {
 
   public async createToken(msg: types.CreateTokenMsg, options?: types.Options) {
     return this.createTokens([msg], options)
+  }
+
+  public async syncToken(msg: types.SyncTokenMsg, options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
+    if (!msg.originator) msg.originator = address
+    if ((!options || !options.fee) && this.wallet.fees) {
+      const amount = new BigNumber(this.getFee(types.SYNC_TOKEN_MSG_TYPE)).toString()
+      return this.wallet.signAndBroadcast([msg], [types.SYNC_TOKEN_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+    }
+    return this.wallet.signAndBroadcast([msg], [types.SYNC_TOKEN_MSG_TYPE], options)
   }
 
   public async createTokens(msgs: types.CreateTokenMsg[], options?: types.Options) {
