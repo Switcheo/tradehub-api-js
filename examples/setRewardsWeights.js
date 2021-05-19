@@ -3,7 +3,7 @@ const { RestClient } = require("../.")
 const setupAccount = require("./setupAccount")
 require('dotenv').config()
 
-const network = 'MAINNET'
+const network = 'LOCALHOST'
 async function set() {
   const wallet = await setupAccount(process.env.MNEMONICS, network)
   const client = new RestClient({ wallet, network })
@@ -12,23 +12,11 @@ async function set() {
   const params = {
       weights: [
           {
-            pool_id: '15',
-            weight: '2',
-          },
-          {
-            pool_id: '16',
+            pool_id: '1',
             weight: '1',
           },
           {
-            pool_id: '17',
-            weight: '1',
-          },
-          {
-            pool_id: '18',
-            weight: '1',
-          },
-          {
-            pool_id: '19',
+            pool_id: '2',
             weight: '1',
           },
       ],
