@@ -26,8 +26,8 @@ export interface Market {
   last_price_protected_band: number
   index_oracle_id: string
   expiry_time: string
-  is_active: true
-  is_settled: false
+  is_active: boolean
+  is_settled: boolean
   closed_block_height: number
   created_block_height: number
 }

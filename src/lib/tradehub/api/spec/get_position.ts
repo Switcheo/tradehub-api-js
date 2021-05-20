@@ -1,6 +1,6 @@
 import { RestResponse } from "@lib/tradehub/models";
 
-export interface GetPositionResponse extends Array<RestResponse.Position> { }
+export interface GetPositionResponse extends Array<RestResponse.Position> {}
 
 /**
  * @param account TradeHub address to query
@@ -9,8 +9,4 @@ export interface GetPositionResponse extends Array<RestResponse.Position> { }
 export interface GetPositionOpts {
   account: string
   market: string
-}
-
-export interface GetPositionsOpts {
-  account: string
 }

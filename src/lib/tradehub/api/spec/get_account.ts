@@ -7,5 +7,5 @@ export interface GetAccountResponse extends CosmosResponse<TypedResponse<RestRes
  * @param address TradeHub address to query
  */
 export interface GetAccountOpts {
-  address?: string
+  address: string
 }
