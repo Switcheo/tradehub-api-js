@@ -1,9 +1,9 @@
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
-import { RPCParams as _RPCParams, RestResponse as _RestResponse } from "../models";
+import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
 import { Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
-import { ModGovernance, ModMarket, ModOrder } from "./modules";
+import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
 import { SDKProvider } from "./modules/module";
 
 export interface TradeHubSDKInitOpts {
@@ -25,6 +25,7 @@ class TradeHubSDK implements SDKProvider {
   debugMode: boolean
 
   // modules
+  admin: ModAdmin
   order: ModOrder
   market: ModMarket
   governance: ModGovernance
@@ -51,6 +52,7 @@ class TradeHubSDK implements SDKProvider {
     this.order = new ModOrder(this);
     this.market = new ModMarket(this);
     this.governance = new ModGovernance(this);
+    this.admin = new ModAdmin(this);
   }
 
   public generateOpts(): TradeHubSDKInitOpts {
