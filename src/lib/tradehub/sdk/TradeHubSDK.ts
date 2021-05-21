@@ -1,10 +1,11 @@
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
-import { Network, SimpleMap } from "../utils";
+import { Blockchain, Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
 import { SDKProvider } from "./modules/module";
+import { NEOClient, ETHClient } from "../clients";
 
 export interface TradeHubSDKInitOpts {
   network?: Network
@@ -23,6 +24,10 @@ class TradeHubSDK implements SDKProvider {
   network: Network
   api: APIClient
   debugMode: boolean
+
+  neo: NEOClient
+  eth: ETHClient
+  bsc: ETHClient
 
   // modules
   admin: ModAdmin
@@ -47,6 +52,20 @@ class TradeHubSDK implements SDKProvider {
       this.log("setting BigNumber print mode for console logs")
       BigNumber.prototype[require('util').inspect.custom] = BigNumber.prototype.valueOf;
     }
+
+    this.neo = NEOClient.instance({
+      network: this.network,
+    })
+
+    this.eth = ETHClient.instance({
+      network: this.network,
+      blockchain: Blockchain.Ethereum,
+    })
+
+    this.bsc = ETHClient.instance({
+      network: this.network,
+      blockchain: Blockchain.BinanceSmartChain,
+    })
 
     // initialize modules
     this.order = new ModOrder(this);

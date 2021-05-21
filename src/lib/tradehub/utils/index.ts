@@ -1,4 +1,5 @@
 export * from "./address";
+export * from "./blockchain"
 export * from "./constants";
 export * from "./misc";
 export * from "./network";
