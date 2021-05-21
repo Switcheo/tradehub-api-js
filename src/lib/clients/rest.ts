@@ -91,6 +91,10 @@ export interface REST {
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
   getGasFees() : Promise<GasFees>
   getRewardsDistributed(): Promise<types.RewardsDistributedResponse>
+  getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
+  getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
+  getGasFees() : Promise<GasFees>
+  getAccountRealizedPnl(params: types.GetIndividualPnlParams): Promise<types.GetIndivPnlResponse>
 
   // cosmos
   getStakingValidators(): Promise<any>
@@ -104,9 +108,29 @@ export interface REST {
   getAllDelegatorDelegations(params?: types.AddressOnlyGetterParams): Promise<any>
   getDelegatorDelegationRewards(params?: types.AddressOnlyGetterParams): Promise<any>
   getDistributionParams(): Promise<any>
+  createValidator(msg: types.CreateValidatorMsg, options?: types.Options): Promise<any>
+  delegateTokens(msg: types.DelegateTokensMsg, options?: types.Options): Promise<any>
+  redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options?: types.Options): Promise<any>
+  unbondTokens(msg: types.BeginUnbondingTokensMsg, options?: types.Options): Promise<any>
+  withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options?: types.Options): Promise<any>
+  withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options): Promise<any>
 
   // private admin
+  createOracle(msg: types.CreateOracleMsg, options?: types.Options): Promise<any>
+  createToken(msg: types.CreateTokenMsg, options?: types.Options): Promise<any>
+  syncToken(msg: types.SyncTokenMsg, options?: types.Options): Promise<any>
+  createTokens(msgs: types.CreateTokenMsg[], options?: types.Options): Promise<any>
+  createMarket(msg: types.CreateMarketMsg, options?: types.Options): Promise<any>
+  createMarkets(msgs: types.CreateMarketMsg[], options?: types.Options): Promise<any>
+  createVaultType(msg: types.CreateVaultTypeMsg, options?: types.Options): Promise<any>
+  linkPool(msg: types.LinkPoolMsg, options?: types.Options): Promise<any>
+  unlinkPool(msg: types.UnlinkPoolMsg, options?: types.Options): Promise<any>
+  changeSwapFee(msg: types.ChangeSwapFeeMsg, options?: types.Options): Promise<any>
+  setRewardsWeights(msg: types.SetRewardsWeightsMsg, options?: types.Options): Promise<any>
+  setRewardCurve(msg: types.SetRewardCurveMsg, options?: types.Options): Promise<any>
+  setCommitmentCurve(msg: types.SetCommitmentCurveMsg, options?: types.Options): Promise<any>
   setTradingFlag(msg: types.SetTradingFlagMsg, options?: types.Options): Promise<any>
+  setMsgFee(msg: types.SetMsgFeeMsg, options?: types.Options): Promise<any>
 
   // private
   send(msg: types.SendTokensMsg, options?: types.Options): Promise<any>
@@ -117,55 +141,35 @@ export interface REST {
   editOrder(msg: types.EditOrderMsg, options?: types.Options): Promise<any>
   editOrders(msgs: types.EditOrderMsg[], options?: types.Options): Promise<any>
   cancelAll(msg: types.CancelAllMsg, options?: types.Options): Promise<any>
-  updateProfile(msg: types.UpdateProfileMsg, options?: types.Options): Promise<any>
   setLeverage(msg: types.SetLeverageMsg, options?: types.Options): Promise<any>
   setLeverages(msgs: types.SetLeverageMsg[], options?: types.Options): Promise<any>
-  createMarket(msg: types.CreateMarketMsg, options?: types.Options): Promise<any>
-  createMarkets(msgs: types.CreateMarketMsg[], options?: types.Options): Promise<any>
   updateMarket(msg: types.UpdateMarketMsg, options?: types.Options): Promise<any>
   initiateSettlement(msg: types.InitiateSettlementMsg, options?: types.Options): Promise<any>
   initiateSettlements(msgs: types.InitiateSettlementMsg[], options?: types.Options): Promise<any>
   editMargin(params: types.EditMarginMsg, options?: types.Options): Promise<any>
   editMargins(msgs: types.EditMarginMsg[], options?: types.Options): Promise<any>
-  createToken(msg: types.CreateTokenMsg, options?: types.Options): Promise<any>
-  createTokens(msgs: types.CreateTokenMsg[], options?: types.Options): Promise<any>
-  createVaultType(msg: types.CreateVaultTypeMsg, options?: types.Options): Promise<any>
+  createPool(msg: types.CreatePoolMsg, options?: types.Options): Promise<any>
+  createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options): Promise<any>
+  addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options): Promise<any>
+  removeLiquidity(msg: types.RemoveLiquidityMsg, options?: types.Options): Promise<any>
+  stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options): Promise<any>
+  unstakePoolToken(msg: types.UnstakePoolTokenMsg, options?: types.Options): Promise<any>
+  claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options): Promise<any>
+  submitProposal<T>(msg: types.SubmitProposalMsg<T>, options?: types.Options): Promise<any>
+  depositProposal(msg: types.DepositProposalMsg, options?: types.Options): Promise<any>
+  voteProposal(msg: types.VoteProposalMsg, options?: types.Options): Promise<any>
+  createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options): Promise<any>
+  activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options): Promise<any>
+  updateProfile(msg: types.UpdateProfileMsg, options?: types.Options): Promise<any>
   addCollateral(msg: types.AddCollateralMsg, options?: types.Options): Promise<any>
   removeCollateral(msg: types.RemoveCollateralMsg, options?: types.Options): Promise<any>
   addDebt(msg: types.AddDebtMsg, options?: types.Options): Promise<any>
   removeDebt(msg: types.RemoveDebtMsg, options?: types.Options): Promise<any>
-  addLiquidity(msg: types.AddLiquidityMsg, options?: types.Options): Promise<any>
-  removeLiquidity(msg: types.RemoveLiquidityMsg, options?: types.Options): Promise<any>
-  createPool(msg: types.CreatePoolMsg, options?: types.Options): Promise<any>
-  createPoolWithLiquidity(msg: types.CreatePoolWithLiquidityMsg, options?: types.Options): Promise<any>
-  linkPool(msg: types.LinkPoolMsg, options?: types.Options): Promise<any>
-  unlinkPool(msg: types.UnlinkPoolMsg, options?: types.Options): Promise<any>
-  submitProposal<T>(msg: types.SubmitProposalMsg<T>, options?: types.Options): Promise<any>
-  depositProposal(msg: types.DepositProposalMsg, options?: types.Options): Promise<any>
-  voteProposal(msg: types.VoteProposalMsg, options?: types.Options): Promise<any>
-  createOracle(msg: types.CreateOracleMsg, options?: types.Options): Promise<any>
-  createVote(msg: types.CreateVoteMsg, options?: types.Options): Promise<any>
-  createValidator(msg: types.CreateValidatorMsg, options?: types.Options): Promise<any>
-  delegateTokens(msg: types.DelegateTokensMsg, options?: types.Options): Promise<any>
-  unbondTokens(msg: types.BeginUnbondingTokensMsg, options?: types.Options): Promise<any>
-  redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options?: types.Options): Promise<any>
-  withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options?: types.Options): Promise<any>
-  withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams, options?: types.Options): Promise<any>
-  createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options): Promise<any>
-  activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options): Promise<any>
   createWithdrawal(msg: types.CreateWithdrawalMsg, blockchain: string, options?: types.Options): Promise<any>
+  createVote(msg: types.CreateVoteMsg, options?: types.Options): Promise<any>
+
+  // test
   mintTokens(msg: types.MintTokenRequest): Promise<any>
-  setRewardsWeights(msg: types.SetRewardsWeightsMsg, options?: types.Options): Promise<any>
-  setRewardCurve(msg: types.SetRewardCurveMsg, options?: types.Options): Promise<any>
-  setCommitmentCurve(msg: types.SetCommitmentCurveMsg, options?: types.Options): Promise<any>
-  stakePoolToken(msg: types.StakePoolTokenMsg, options?: types.Options): Promise<any>
-  unstakePoolToken(msg: types.UnstakePoolTokenMsg, options?: types.Options): Promise<any>
-  claimPoolRewards(msg: types.ClaimPoolRewardsMsg, options?: types.Options): Promise<any>
-  setMsgFee(msg: types.SetMsgFeeMsg, options?: types.Options): Promise<any>
-  getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
-  getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
-  getGasFees() : Promise<GasFees>
-  getAccountRealizedPnl(params: types.GetIndividualPnlParams): Promise<types.GetIndivPnlResponse>
 }
 
 export class RestClient implements REST {
@@ -445,7 +449,7 @@ export class RestClient implements REST {
     }
     return this.fetchJson(`/candlesticks?market=${market}&resolution=${resolution}&from=${from}&to=${to}`)
   }
-  
+
   public async getMarket(params: types.MarketOnlyGetterParams) {
     return this.fetchJson(`/get_market?market=${params.market}`)
   }
@@ -1107,6 +1111,16 @@ export class RestClient implements REST {
     return this.createTokens([msg], options)
   }
 
+  public async syncToken(msg: types.SyncTokenMsg, options?: types.Options) {
+    const address = this.wallet.pubKeyBech32
+    if (!msg.originator) msg.originator = address
+    if ((!options || !options.fee) && this.wallet.fees) {
+      const amount = new BigNumber(this.getFee(types.SYNC_TOKEN_MSG_TYPE)).toString()
+      return this.wallet.signAndBroadcast([msg], [types.SYNC_TOKEN_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+    }
+    return this.wallet.signAndBroadcast([msg], [types.SYNC_TOKEN_MSG_TYPE], options)
+  }
+
   public async createTokens(msgs: types.CreateTokenMsg[], options?: types.Options) {
     const address = this.wallet.pubKeyBech32
     msgs = msgs.map(msg => {
@@ -1264,6 +1278,7 @@ export class RestClient implements REST {
     }
     return this.wallet.signAndBroadcast([msg], [types.LINK_POOL_MSG_TYPE], options)
   }
+
   public async unlinkPool(msg: types.UnlinkPoolMsg, options?: types.Options) {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32
@@ -1274,6 +1289,18 @@ export class RestClient implements REST {
     }
     return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], options)
   }
+
+  public async changeSwapFee(msg: types.ChangeSwapFeeMsg, options?: types.Options) {
+    if (!msg.originator) {
+      msg.originator = this.wallet.pubKeyBech32
+    }
+    if ((!options || !options.fee) && this.wallet.fees) {
+      const amount = this.getFee(types.CHANGE_SWAP_FEE_MSG_TYPE)
+      return this.wallet.signAndBroadcast([msg], [types.CHANGE_SWAP_FEE_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+    }
+    return this.wallet.signAndBroadcast([msg], [types.CHANGE_SWAP_FEE_MSG_TYPE], options)
+  }
+
   public async setRewardsWeights(msg: types.SetRewardsWeightsMsg, options?: types.Options) {
     if (!msg.originator) {
       msg.originator = this.wallet.pubKeyBech32

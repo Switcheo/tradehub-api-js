@@ -17,6 +17,7 @@ export const EDIT_MARGIN_MSG_TYPE = 'position/MsgSetMargin'
 // Tokens
 export const MINT_TOKEN_MSG_TYPE = 'coin/MsgMintToken'
 export const CREATE_TOKEN_MSG_TYPE = 'coin/MsgCreateToken'
+export const SYNC_TOKEN_MSG_TYPE = 'coin/MsgSyncToken'
 export const CREATE_WITHDRAWAL_TYPE = 'coin/MsgWithdraw'
 export const SEND_TOKENS_TYPE = 'cosmos-sdk/MsgSend'
 
@@ -51,6 +52,7 @@ export const CREATE_POOL_MSG_TYPE = 'liquiditypool/CreatePool'
 export const CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE = 'liquiditypool/CreatePoolWithLiquidity'
 export const LINK_POOL_MSG_TYPE = 'liquiditypool/LinkPool'
 export const UNLINK_POOL_MSG_TYPE = 'liquiditypool/UnlinkPool'
+export const CHANGE_SWAP_FEE_MSG_TYPE = 'liquiditypool/ChangeSwapFee'
 export const SET_REWARDS_WEIGHTS_MSG_TYPE = 'liquiditypool/SetRewardsWeights'
 export const SET_REWARD_CURVE_MSG_TYPE = 'liquiditypool/SetRewardCurve'
 export const SET_COMMITMENT_CURVE_MSG_TYPE = 'liquiditypool/SetCommitmentCurve'
@@ -356,6 +358,10 @@ export interface CreateTokenMsg {
   delegated_supply: string,
   originator?: string,
 }
+export interface SyncTokenMsg {
+  denom: string,
+  originator?: string,
+}
 
 export interface MintParams {
   toAddress: string
@@ -408,6 +414,13 @@ export interface RewardsWeight {
   pool_id: string,
   weight: string,
 }
+
+export interface ChangeSwapFeeMsg {
+  pool_id: string,
+  swap_fee: string,
+  originator?: string,
+}
+
 export interface SetRewardsWeightsMsg {
   weights: RewardsWeight[],
   originator?: string,
