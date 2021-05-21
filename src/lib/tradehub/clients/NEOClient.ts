@@ -3,29 +3,32 @@ import { TokenInitInfo } from "@lib/types";
 import { logger } from "@lib/utils";
 import Neon, { rpc } from '@cityofzion/neon-js'
 
-export interface NEOOpts {
+export interface NEOClientOpts {
   network: Network,
   blockchain?: Blockchain,
 }
 
-export class NEO {
+export class NEOClient {
   static SUPPORTED_BLOCKCHAINS = [Blockchain.Neo]
+  static blockchainNameMap = {
+    [Blockchain.Neo]: 'Neo',
+  }
 
   private constructor(
     public readonly network: Network,
     public readonly blockchain: Blockchain,
   ) { }
 
-  public static instance(opts: NEOOpts) {
+  public static instance(opts: NEOClientOpts) {
     const {
       network,
       blockchain = Blockchain.Neo,
     } = opts
 
-    if (!NEO.SUPPORTED_BLOCKCHAINS.includes(blockchain))
+    if (!NEOClient.SUPPORTED_BLOCKCHAINS.includes(blockchain))
       throw new Error(`unsupported blockchain - ${blockchain}`)
 
-    return new NEO(network, blockchain)
+    return new NEOClient(network, blockchain)
   }
 
   public async retrieveNEP5Info(scriptHash: string): Promise<TokenInitInfo> {
@@ -49,7 +52,7 @@ export class NEO {
   }
 
   public getProviderUrl() {
-    return NetworkConfigs[this.network][this.blockchain].RpcURL;
+    return NetworkConfigs[this.network][NEOClient.blockchainNameMap[this.blockchain]].RpcURL;
   }
 
 }

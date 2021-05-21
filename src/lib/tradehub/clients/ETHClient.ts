@@ -3,26 +3,30 @@ import { TokenInitInfo } from "@lib/types";
 import { ethers } from "ethers";
 import { Blockchain, Network, NetworkConfigs } from "../utils";
 
-export interface ETHOpts {
+export interface ETHClientOpts {
   network: Network,
   blockchain: Blockchain,
 }
 
-export class ETH {
+export class ETHClient {
   static SUPPORTED_BLOCKCHAINS = [Blockchain.BinanceSmartChain, Blockchain.Ethereum]
+  static blockchainNameMap = {
+    [Blockchain.BinanceSmartChain]: 'Bsc',
+    [Blockchain.Ethereum]: 'Eth',
+  }
 
   private constructor(
     public readonly network: Network,
     public readonly blockchain: Blockchain,
   ) { }
 
-  public static instance(opts: ETHOpts) {
+  public static instance(opts: ETHClientOpts) {
     const { network, blockchain } = opts
 
-    if (!ETH.SUPPORTED_BLOCKCHAINS.includes(blockchain))
+    if (!ETHClient.SUPPORTED_BLOCKCHAINS.includes(blockchain))
       throw new Error(`unsupported blockchain - ${blockchain}`)
 
-    return new ETH(network, blockchain)
+    return new ETHClient(network, blockchain)
   }
 
   public async retrieveERC20Info(address: string): Promise<TokenInitInfo> {
@@ -40,22 +44,22 @@ export class ETH {
   }
 
   public getPayerUrl() {
-    return NetworkConfigs[this.network][ETH.SUPPORTED_BLOCKCHAINS[this.blockchain]].PayerUrl
+    return NetworkConfigs[this.network][ETHClient.blockchainNameMap[this.blockchain]].PayerUrl
   }
 
   public getProviderUrl() {
-    return NetworkConfigs[this.network][ETH.SUPPORTED_BLOCKCHAINS[this.blockchain]].RpcURL
+    return NetworkConfigs[this.network][ETHClient.blockchainNameMap[this.blockchain]].RpcURL
   }
 
   public getLockProxyAddress() {
-    return NetworkConfigs[this.network][ETH.SUPPORTED_BLOCKCHAINS[this.blockchain]].LockProxyAddr
+    return NetworkConfigs[this.network][ETHClient.blockchainNameMap[this.blockchain]].LockProxyAddr
   }
 
   public getBalanceReaderAddress() {
-    return NetworkConfigs[this.network][ETH.SUPPORTED_BLOCKCHAINS[this.blockchain]].BalanceReader
+    return NetworkConfigs[this.network][ETHClient.blockchainNameMap[this.blockchain]].BalanceReader
   }
 
   public getWalletBytecodeHash() {
-    return NetworkConfigs[this.network][ETH.SUPPORTED_BLOCKCHAINS[this.blockchain]].ByteCodeHash
+    return NetworkConfigs[this.network][ETHClient.blockchainNameMap[this.blockchain]].ByteCodeHash
   }
 }

@@ -1,5 +1,5 @@
 export enum Blockchain {
-  Neo = 'Neo',
-  Ethereum = 'Eth',
-  BinanceSmartChain = 'Bsc',
+  Neo = 'neo',
+  Ethereum = 'eth',
+  BinanceSmartChain = 'bsc',
 }

@@ -5,7 +5,7 @@ import { Blockchain, Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
 import { SDKProvider } from "./modules/module";
-import { NEO, ETH } from "../blockchain";
+import { NEOClient, ETHClient } from "../clients";
 
 export interface TradeHubSDKInitOpts {
   network?: Network
@@ -25,9 +25,9 @@ class TradeHubSDK implements SDKProvider {
   api: APIClient
   debugMode: boolean
 
-  neo: NEO
-  eth: ETH
-  bsc: ETH
+  neo: NEOClient
+  eth: ETHClient
+  bsc: ETHClient
 
   // modules
   admin: ModAdmin
@@ -53,16 +53,16 @@ class TradeHubSDK implements SDKProvider {
       BigNumber.prototype[require('util').inspect.custom] = BigNumber.prototype.valueOf;
     }
 
-    this.neo = NEO.instance({
+    this.neo = NEOClient.instance({
       network: this.network,
     })
 
-    this.eth = ETH.instance({
+    this.eth = ETHClient.instance({
       network: this.network,
       blockchain: Blockchain.Ethereum,
     })
 
-    this.bsc = ETH.instance({
+    this.bsc = ETHClient.instance({
       network: this.network,
       blockchain: Blockchain.BinanceSmartChain,
     })
