@@ -1,7 +1,7 @@
-import { GetActiveWalletsParams, GetLeaderboardParams, GetPositionsCloseToLiquidationParams } from '@lib/types';
+import { GetLeaderboardParams } from '@lib/types';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
-import { bnOrZero, Network, NetworkConfigs, TxRequest } from '../utils';
+import { bnOrZero, BroadcastTx, Network, NetworkConfigs } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
   CheckUserNameOpts, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountRealizedPnlResponse, GetAccountResponse,
@@ -134,7 +134,7 @@ class APIClient {
 
   // Generic
 
-  async tx(tx: TxRequest): Promise<unknown> {
+  async tx(tx: BroadcastTx): Promise<unknown> {
     const request = this.apiManager.path("tradehub/txs")
     const response = await request.post({ body: tx })
     return response.data

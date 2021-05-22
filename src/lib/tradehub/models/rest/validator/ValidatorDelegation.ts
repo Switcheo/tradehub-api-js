@@ -1,6 +1,6 @@
 import { TokenAmount } from '../token/TokenAmount'
 
-export interface Delegation {
+export interface ValidatorDelegation {
   delegator_address: string
   validator_address: string
   shares: number

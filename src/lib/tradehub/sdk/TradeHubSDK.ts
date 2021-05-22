@@ -1,11 +1,12 @@
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
+import { ETHClient, NEOClient } from "../clients";
 import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
+import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
-import { NEOClient, ETHClient } from "../clients";
 
 export interface TradeHubSDKInitOpts {
   network?: Network
@@ -31,6 +32,7 @@ class TradeHubSDK implements SDKProvider {
 
   // modules
   admin: ModAdmin
+  account: ModAccount
   order: ModOrder
   market: ModMarket
   governance: ModGovernance
@@ -72,6 +74,7 @@ class TradeHubSDK implements SDKProvider {
     this.market = new ModMarket(this);
     this.governance = new ModGovernance(this);
     this.admin = new ModAdmin(this);
+    this.account = new ModAccount(this);
   }
 
   public generateOpts(): TradeHubSDKInitOpts {

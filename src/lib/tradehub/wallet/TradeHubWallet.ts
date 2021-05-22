@@ -4,7 +4,7 @@ import secp256k1 from 'secp256k1';
 import { sha256 } from 'sha.js';
 import { APIClient } from "../api";
 import { RestResponse } from "../models";
-import { NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest } from "../utils";
+import { BroadcastTx, NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest, TxResponse } from "../utils";
 import { TradeHubSigner, TradeHubSignerTypes } from "./TradeHubSigner";
 
 export type TradeHubWalletInitOpts = {
@@ -63,6 +63,8 @@ export class TradeHubWallet {
   account?: number
   sequence?: number
 
+  txBroadcastQueue: TxRequest[] = []
+
   constructor(opts: TradeHubWalletInitOpts) {
     this.debugMode = opts.debugMode ?? false
 
@@ -84,7 +86,7 @@ export class TradeHubWallet {
     } else {
       throw new Error("cannot instantiate wallet signer")
     }
-    
+
     this.bech32Address = SWTHAddress.publicKeyToAddress(Buffer.from(this.pubKeyBase64, "base64"), {
       network: this.network,
     });
@@ -133,9 +135,9 @@ export class TradeHubWallet {
   }
 
   public async init(force: boolean = false): Promise<TradeHubWallet> {
-    // if account number is already loaded, skip initialization
+    // if account is already loaded, skip initialization
     // unless force flag is marked as true.
-    if (!force && this.account > 0)
+    if (!force && this.sequence !== undefined)
       return this;
 
     // reload account, sets account and sequence numbers
@@ -145,9 +147,11 @@ export class TradeHubWallet {
     return this;
   }
 
-  public async sendTx(msg: TxMsg) {
+  public async sendTxs(msgs: TxMsg[], memo?: string): Promise<TxResponse> {
     const { account, sequence } = this.checkAccountInit();
-    const doc = this.genSignDoc([msg]).prepare(account, sequence);
+    this.log("sendTx", account, sequence);
+
+    const doc = this.genSignDoc(msgs, memo).prepare(account, sequence);
     const signature = this.sign(doc);
 
     const tx: TradeHubTx = {
@@ -157,21 +161,33 @@ export class TradeHubWallet {
       signatures: [signature],
     };
 
-    const txRequest: TxRequest = {
+    const broadcastTx: BroadcastTx = {
       mode: "block",
       tx,
     };
 
-    if (this.debugMode) {
-      this.log("sendTx", JSON.stringify(txRequest));
+    this.log("sendTx", JSON.stringify(broadcastTx));
+
+    const response = (await this.api.tx(broadcastTx)) as TxResponse;
+    if (response.code) {
+      // tx failed
+      console.error(response);
+      throw new Error(`[${response.code}] ${response.raw_log}`);
+    } else {
+      // tx successful
+      this.sequence++;
     }
 
-    return this.api.tx(txRequest);
+    return response;
   }
 
-  private genSignDoc(msgs: TxMsg[]): PreSignDoc {
+  public async sendTx(msg: TxMsg, memo?: string): Promise<TxResponse> {
+    return this.sendTxs([msg], memo);
+  }
+
+  private genSignDoc(msgs: TxMsg[], memo?: string): PreSignDoc {
     const configs: NetworkConfig = NetworkConfigs[this.network];
-    const preSignDoc = new PreSignDoc(configs.ChainId);
+    const preSignDoc = new PreSignDoc(configs.ChainId, memo);
     return preSignDoc.appendMsg(...msgs);
   }
 

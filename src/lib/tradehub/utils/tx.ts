@@ -40,17 +40,13 @@ export const DEFAULT_FEE = new TxFee(
   DEFAULT_GAS,
 );
 
-export class BasicTxDoc {
-  
-}
-
 export class PreSignDoc {
   public msgs: TxMsg[] = []
 
   constructor(
     public readonly chainId: string,
-    public readonly fee: TxFee = DEFAULT_FEE,
     public readonly memo: string = "",
+    public readonly fee: TxFee = DEFAULT_FEE,
   ) { }
 
   public appendMsg(...msgs: TxMsg[]): PreSignDoc {
@@ -112,7 +108,34 @@ export interface TradeHubTx {
   signatures: TradeHubSignature[];
 }
 
-export interface TxRequest {
+export interface BroadcastTx {
   mode: string;
   tx: TradeHubTx;
+}
+
+export interface TxRequest {
+  msg: TxMsg;
+  promise: Promise<TxResponse>;
+}
+
+export interface TxLog {
+  msg_index: number;
+  log: string;
+  events: unknown[]
+}
+
+export interface TxResponse {
+  height: string;
+  txhash: string;
+  raw_log: string;
+
+  gas_wanted: string;
+  gas_used: string;
+
+  // only if tx succeeds
+  logs: TxLog[];
+
+  // only if tx fails
+  code?: number;
+  codespace?: string;
 }
