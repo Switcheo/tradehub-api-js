@@ -338,6 +338,8 @@ export class RestClient implements REST {
       afterId,
       orderStatus,
       orderType,
+      beforeBlock,
+      afterBlock,
     } = params
 
     let url = '/get_orders?'
@@ -362,6 +364,12 @@ export class RestClient implements REST {
     if (afterId) {
       url += `after_id=${afterId}&`
     }
+    if (beforeBlock) {
+      url += `before_block=${beforeBlock}&`
+    }
+    if (afterBlock) {
+      url += `after_block=${afterBlock}&`
+    }
     if (orderStatus) {
       url += `order_status=${orderStatus}&`
     }
@@ -379,6 +387,8 @@ export class RestClient implements REST {
       beforeId,
       afterId,
       orderType,
+      beforeBlock,
+      afterBlock,
     } = params
 
     let url = '/get_orders?'
@@ -402,6 +412,12 @@ export class RestClient implements REST {
     }
     if (afterId) {
       url += `after_id=${afterId}&`
+    }
+    if (beforeBlock) {
+      url += `before_block=${beforeBlock}&`
+    }
+    if (afterBlock) {
+      url += `after_block=${afterBlock}&`
     }
     if (orderType) {
       url += `order_type=${orderType}&`

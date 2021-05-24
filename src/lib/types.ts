@@ -162,6 +162,8 @@ export interface GetOrdersGetterParams {
   limit?: number
   beforeId?: number
   afterId?: number
+  beforeBlock?: number
+  afterBlock?: number
   orderStatus?: string
   orderType?: string
 }
