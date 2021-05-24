@@ -156,6 +156,7 @@ export interface SWTHAddressOptions extends AddressOptions {
 type SWTHAddressType = AddressBuilder<SWTHAddressOptions> & {
   getBech32Prefix(net?: Network, type?: Bech32Type): string
   addrPrefix: { [index: string]: string }
+  getAddressBytes(bech32Address: string, networkConfig: Network): Uint8Array
 }
 
 export const SWTHAddress: SWTHAddressType = {
@@ -241,6 +242,15 @@ export const SWTHAddress: SWTHAddressType = {
     consensus: 'cons',
     public: 'pub',
   },
+
+  getAddressBytes: (bech32Address: string, net: Network): Uint8Array => {
+    const prefix = SWTHAddress.getBech32Prefix(net, 'main')
+    const { prefix: b32Prefix, words } = bech32.decode(bech32Address)
+    if (b32Prefix !== prefix) {
+      throw new Error("Prefix doesn't match")
+    }
+    return new Uint8Array(bech32.fromWords(words))
+  }
 }
 
 export const NEOAddress: AddressBuilder<AddressOptions> = {
