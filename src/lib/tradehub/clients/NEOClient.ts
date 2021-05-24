@@ -1,11 +1,25 @@
-import { Blockchain, Network, NetworkConfigs } from "../utils";
 import { TokenInitInfo } from "@lib/types";
 import { logger } from "@lib/utils";
-import Neon, { rpc } from '@cityofzion/neon-js'
+import Neon, { rpc, api } from '@cityofzion/neon-js'
+import {
+  wallet as neonWallet,
+  rpc as neonRPC,
+  sc as neonScript,
+  u as neonUtils
+} from '@cityofzion/neon-core'
+import { APIClient } from "../api";
+import { RestResponse } from "../models";
+import { Blockchain, Network, NetworkConfigs } from "../utils";
+import { chunk } from 'lodash'
+import BigNumber from "bignumber.js";
 
 export interface NEOClientOpts {
   network: Network,
   blockchain?: Blockchain,
+}
+
+interface ScriptResult {
+  stack: ReadonlyArray<{ type: string, value: string }>
 }
 
 export class NEOClient {
@@ -31,6 +45,62 @@ export class NEOClient {
     return new NEOClient(network, blockchain)
   }
 
+  private parseHexNum(hex: string, exp: number = 0): string {
+    if (!hex || typeof (hex) !== 'string') return '0'
+    const res: string = hex.length % 2 !== 0 ? `0${hex}` : hex
+    return new BigNumber(res ? neonUtils.reverseHex(res) : '00', 16).shiftedBy(-exp).toString()
+  }
+
+  public async getExternalBalances(api: APIClient, address: string, url: string, whitelistDenoms?: string[]) {
+    const tokenList = await api.getTokens()
+    const account = new neonWallet.Account(address)
+    const tokens = tokenList.filter(token =>
+      token.blockchain == this.blockchain &&
+      token.asset_id.length == 40 &&
+      token.lock_proxy_hash.length == 40
+    )
+
+    const client: neonRPC.RPCClient =
+      new neonRPC.RPCClient(url, '2.5.2') // TODO: should we change the RPC version??
+
+    // NOTE: fetching of tokens is chunked in sets of 15 as we may hit
+    // the gas limit on the RPC node and error out otherwise
+    const promises: Promise<{}>[] = // tslint:disable-line
+      chunk(tokens, 75).map(async (partition: ReadonlyArray<RestResponse.TokenObject>) => {
+
+        let acc = {}
+        for (const token of partition) {
+          if (whitelistDenoms && !whitelistDenoms.includes(token.denom)) continue
+          const sb: neonScript.ScriptBuilder = new neonScript.ScriptBuilder()
+          sb.emitAppCall(Neon.u.reverseHex(token.asset_id),
+            'balanceOf', [neonUtils.reverseHex(account.scriptHash)])
+
+          try {
+            const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
+            acc[token.denom.toUpperCase()] = response.stack[0].type === 'Integer' // Happens on polychain devnet
+              ? response.stack[0].value
+              : this.parseHexNum(response.stack[0].value)
+
+          } catch (err) {
+            console.error('Could not retrieve external balance for ', token.denom)
+            console.error(err)
+          }
+
+        }
+
+        return acc
+      })
+
+    const result = await Promise.all(promises).then((results: any[]) => {
+      return results.reduce((acc: {}, res: {}) => ({ ...acc, ...res }), {})
+    })
+
+    for (let i = 0; i < tokens.length; i++) {
+      (tokens[i] as any).external_balance = result[(tokens[i] as any).denom.toUpperCase()]
+    }
+    return tokens
+  }
+
   public async retrieveNEP5Info(scriptHash: string): Promise<TokenInitInfo> {
     const url = this.getProviderUrl()
     const sb = Neon.create.scriptBuilder()
@@ -53,6 +123,41 @@ export class NEOClient {
 
   public getProviderUrl() {
     return NetworkConfigs[this.network][NEOClient.blockchainNameMap[this.blockchain]].RpcURL;
+  }
+
+  public async wrapNeoToNneo(neoAmount: number, account, rpcUrl) {
+    const wrapperContractScriptHash = 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6'
+    const wrapperContractAddress = neonWallet.getAddressFromScriptHash(wrapperContractScriptHash)
+
+    // Build config
+    const intent = api.makeIntent({ NEO: neoAmount }, wrapperContractAddress);
+    console.log('intent', intent)
+    const props = {
+      scriptHash: wrapperContractScriptHash,
+      operation: "mintTokens",
+      args: []
+    }
+
+    const script = Neon.create.script(props)
+    const apiProvider = new api.neoscan.instance("MainNet")
+
+    const config = {
+      api: apiProvider, // Network
+      url: rpcUrl,
+      account, // Sender's Account
+      intents: intent,
+      script: script
+    }
+
+    // Neon API
+    return Neon.doInvoke(config)
+      .then(res => {
+        console.log("\n\n--- Response ---")
+        console.log(res)
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
 }
