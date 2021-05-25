@@ -48,9 +48,7 @@
     "resolveJsonModule": true
   },
   "include": [
-    "src/**/*.ts",
-    "examples/src/createOrder.ts",
-    "examples/src/setupAccount.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules/**"

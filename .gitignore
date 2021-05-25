@@ -8,8 +8,10 @@ coverage
 .nyc_output
 *.log
 
-examples/.env
-mnemonics.json
 .env
+mnemonics.json
+
+examples/.env
 examples/starter.js
 examples/test.js
+examplesV2/*.js
