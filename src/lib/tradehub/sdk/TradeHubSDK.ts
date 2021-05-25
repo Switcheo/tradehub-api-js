@@ -2,8 +2,9 @@ import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { ETHClient, NEOClient } from "../clients";
 import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
-import { Blockchain, Network, SimpleMap } from "../utils";
+import { Blockchain, Network, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
+import { WSConnector } from "../websocket";
 import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
 import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
@@ -26,6 +27,8 @@ class TradeHubSDK implements SDKProvider {
   api: APIClient
   debugMode: boolean
 
+  ws: WSConnector
+
   neo: NEOClient
   eth: ETHClient
   bsc: ETHClient
@@ -47,6 +50,11 @@ class TradeHubSDK implements SDKProvider {
     this.network = opts.network
     this.api = new APIClient(this.network)
     this.txFees = opts.txFees
+
+    this.ws = new WSConnector({
+      endpoint: NetworkConfigs[this.network].WsURL,
+      debugMode: this.debugMode,
+    });
 
     this.log("constructor result opts", this.generateOpts())
 
@@ -101,6 +109,7 @@ class TradeHubSDK implements SDKProvider {
   public async initialize(wallet?: TradeHubWallet) {
     this.log("initialize…");
     await this.reloadTxnFees();
+    await this.ws.connect();
 
     if (wallet) {
       this.log("reloading wallet account");
@@ -145,16 +154,16 @@ class TradeHubSDK implements SDKProvider {
     return this.connect(wallet)
   }
 
-  private checkWallet(): TradeHubWallet {
-    if (!this.wallet) {
-      throw new Error("wallet not connected")
-    }
-
-    return this.wallet
-  }
-
   public getConnectedWallet(): TradeHubWallet {
     return this.checkWallet();
+  }
+
+  private checkWallet(): TradeHubWallet {
+    if (!this.wallet) {
+      throw new Error("wallet not connected");
+    }
+
+    return this.wallet;
   }
 }
 

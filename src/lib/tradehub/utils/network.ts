@@ -16,6 +16,7 @@ export interface EthNetworkConfig {
 
 export interface NeoNetworkConfig {
   RpcURL: string
+  WrapperScriptHash: string
 }
 
 export interface NetworkConfig {
@@ -74,6 +75,7 @@ export const NetworkConfigs: {
 
     Neo: {
       RpcURL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
+      WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
   },
 
@@ -109,6 +111,7 @@ export const NetworkConfigs: {
 
     Neo: {
       RpcURL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
+      WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
   },
 
@@ -144,6 +147,7 @@ export const NetworkConfigs: {
 
     Neo: {
       RpcURL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
+      WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
   },
 
@@ -179,6 +183,7 @@ export const NetworkConfigs: {
 
     Neo: {
       RpcURL: 'https://seed1.switcheo.network:443',
+      WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
   },
 }

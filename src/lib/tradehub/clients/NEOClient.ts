@@ -120,29 +120,22 @@ export class NEOClient {
     return { address: scriptHash, decimals, name, symbol }
   }
 
-  public getConfig(): NeoNetworkConfig {
-    return NetworkConfigs[this.network][NEOClient.BLOCKCHAIN_KEY[this.blockchain]];
-  }
-
-  public getProviderUrl() {
-    return this.getConfig().RpcURL;
-  }
-
-  public async wrapNeoToNneo(neoAmount: number, account, rpcUrl) {
-    const wrapperContractScriptHash = 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6'
-    const wrapperContractAddress = neonWallet.getAddressFromScriptHash(wrapperContractScriptHash)
+  public async wrapNeoToNneo(neoAmount: BigNumber, account, rpcUrl) {
+    const wrapperContractScriptHash = this.getConfig().WrapperScriptHash;
+    const wrapperContractAddress = neonWallet.getAddressFromScriptHash(wrapperContractScriptHash);
 
     // Build config
-    const intent = api.makeIntent({ NEO: neoAmount }, wrapperContractAddress);
-    console.log('intent', intent)
+    const intent = api.makeIntent({ NEO: neoAmount.toNumber() }, wrapperContractAddress);
+    logger('intent', intent);
+
     const props = {
       scriptHash: wrapperContractScriptHash,
       operation: "mintTokens",
       args: []
-    }
+    };
 
-    const script = Neon.create.script(props)
-    const apiProvider = new api.neoscan.instance("MainNet")
+    const script = Neon.create.script(props);
+    const apiProvider = new api.neoscan.instance("MainNet");
 
     const config = {
       api: apiProvider, // Network
@@ -150,17 +143,18 @@ export class NEOClient {
       account, // Sender's Account
       intents: intent,
       script: script
-    }
+    };
 
     // Neon API
-    return Neon.doInvoke(config)
-      .then(res => {
-        console.log("\n\n--- Response ---")
-        console.log(res)
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    const response = await Neon.doInvoke(config);
+    logger("neo wrapper response", response);
   }
 
+  public getConfig(): NeoNetworkConfig {
+    return NetworkConfigs[this.network][NEOClient.BLOCKCHAIN_KEY[this.blockchain]];
+  }
+
+  public getProviderUrl() {
+    return this.getConfig().RpcURL;
+  }
 }

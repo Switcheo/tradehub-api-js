@@ -1,4 +1,3 @@
-import { logger } from '@lib/utils'
 import NodeWebSocket from 'ws'
 import { generateChannelId, parseChannelId } from './channel'
 import * as WSConnectorTypes from './types'
@@ -630,6 +629,6 @@ export class WSConnector {
   private debugLog(...args: any[]) {
     if (!this.debugMode) return
 
-    logger(...args)
+    console.log(...args);
   }
 }

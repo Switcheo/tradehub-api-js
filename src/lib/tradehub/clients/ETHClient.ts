@@ -6,8 +6,7 @@ import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import { APIClient } from "../api";
 import { RestResponse } from "../models";
-import { Blockchain, EthNetworkConfig, Network, NetworkConfigs, SWTHAddress } from "../utils";
-import stripHexPrefix from "strip-hex-prefix";
+import { appendHexPrefix, Blockchain, EthNetworkConfig, Network, NetworkConfigs, stripHexPrefix, SWTHAddress } from "../utils";
 
 export interface ETHClientOpts {
   network: Network,
@@ -61,10 +60,10 @@ export class ETHClient {
     const tokens = tokenList.filter(token =>
       token.blockchain == this.blockchain &&
       token.asset_id.length == 40 &&
-      ("0x" + token.lock_proxy_hash).toLowerCase() == lockProxyAddress &&
+      token.lock_proxy_hash.toLowerCase() == stripHexPrefix(lockProxyAddress) &&
       (!whitelistDenoms || whitelistDenoms.includes(token.denom))
     )
-    const assetIds = tokens.map(token => "0x" + token.asset_id)
+    const assetIds = tokens.map(token => appendHexPrefix(token.asset_id))
     const provider = this.getProvider()
     const contractAddress = this.getBalanceReaderAddress()
     const contract = new ethers.Contract(contractAddress, ABIs.balanceReader, provider)
@@ -115,9 +114,9 @@ export class ETHClient {
 
     const networkConfigs = NetworkConfigs[this.network]
 
-    const assetId = `0x${token.asset_id}`
-    const targetProxyHash = `0x${this.getTargetProxyHash(token)}`
-    const feeAddress = `0x${networkConfigs.FeeAddress}`
+    const assetId = appendHexPrefix(token.asset_id);
+    const targetProxyHash = appendHexPrefix(this.getTargetProxyHash(token));
+    const feeAddress = appendHexPrefix(networkConfigs.FeeAddress);
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
 
     const swthAddress = ethers.utils.hexlify(address)
@@ -127,7 +126,7 @@ export class ETHClient {
 
     const nonce = await rpcProvider.getTransactionCount(ethAddress)
     const contract = new ethers.Contract(contractAddress, ABIs.lockProxy, rpcProvider)
-    const lockResultTx = await contract.connect(signer).lock( // eslint-disable-line no-await-in-loop
+    const lockResultTx = await contract.connect(signer).lock(
       assetId, // _assetHash
       targetProxyHash, // _targetProxyHash
       swthAddress, // _toAddress
@@ -180,9 +179,9 @@ export class ETHClient {
 
     const networkConfigs = NetworkConfigs[this.network]
 
-    const assetId = "0x" + token.asset_id
-    const targetProxyHash = "0x" + this.getTargetProxyHash(token)
-    const feeAddress = "0x" + networkConfigs.FeeAddress
+    const assetId = appendHexPrefix(token.asset_id)
+    const targetProxyHash = appendHexPrefix(this.getTargetProxyHash(token))
+    const feeAddress = appendHexPrefix(networkConfigs.FeeAddress)
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
     const nonce = Math.floor(Math.random() * 1000000000) // random nonce to prevent replay attacks
     const message = ethers.utils.solidityKeccak256(
@@ -199,7 +198,7 @@ export class ETHClient {
     } | undefined
 
     const { address, signature } = await getSignatureCallback(message)
-    const signatureBytes = ethers.utils.arrayify("0x" + signature)
+    const signatureBytes = ethers.utils.arrayify(appendHexPrefix(signature))
     const rsv = ethers.utils.splitSignature(signatureBytes)
 
     logger("sign result", address, signature)
@@ -265,7 +264,7 @@ export class ETHClient {
     const provider = this.getProvider()
     const code = await provider.getCode(address)
     // non-contract addresses should return 0x
-    return code != "0x"
+    return code !== "0x"
   }
 
   public async retrieveERC20Info(address: string): Promise<TokenInitInfo> {

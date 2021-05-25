@@ -9,3 +9,11 @@ export const sortObject = (input: any): unknown => {
 
   return output
 }
+
+export const stripHexPrefix = (input: string) => {
+  return input?.slice(0, 2) === "0x" ? input.slice(2) : input;
+};
+
+export const appendHexPrefix = (input: string) => {
+  return input?.slice(0, 2) === "0x" ? input : `0x${input}`;
+};
