@@ -221,8 +221,7 @@ export interface GetPositionsGetterParams {
   afterId?: number
   limit?: number
   orderBy?: string
-  onlyOpen?: string
-  onlyClosed?: string
+  status?: string
   pagination?: string
 }
 

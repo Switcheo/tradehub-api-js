@@ -272,8 +272,7 @@ export class RestClient implements REST {
       beforeId,
       orderBy,
       limit,
-      onlyOpen,
-      onlyClosed,
+      status,
       pagination,
     } = params
 
@@ -299,11 +298,8 @@ export class RestClient implements REST {
     if (afterId) {
       url += `after_id=${afterId}&`
     }
-    if (onlyOpen) {
-      url += `only_open=${onlyOpen}&`
-    }
-    if (onlyClosed) {
-      url += `only_closed=${onlyClosed}&`
+    if (status) {
+      url += `status=${status}&`
     }
     if (pagination) {
       url += `pagination=${pagination}&`
