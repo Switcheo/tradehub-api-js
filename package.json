@@ -85,7 +85,7 @@
     "strip-hex-prefix": "^1.0.0",
     "truffle-privatekey-provider": "^1.3.0",
     "wif": "^2.0.6",
-    "ws": "^7.4.1"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@bitjson/npm-scripts-info": "^1.0.0",
