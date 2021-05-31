@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js";
+import { SimpleMap } from "./types";
 
 export const BN_ONE = new BigNumber(1);
 export const BN_ZERO = new BigNumber(0);
@@ -103,3 +104,48 @@ export const TxTypes = {
     SET_MESSAGE_FEE_PROPOSAL_TYPE: 'fee/SetMsgFeeProposal',
   },
 } as const
+
+export const CommonAssetName: SimpleMap = {
+  swth: 'swth',
+  'swth-n': 'swth',
+  'swth-b': 'swth',
+  dai: 'dai',
+  flm1: 'flm',
+  eth1: 'eth',
+  btc1: 'btc',
+  usdc1: 'usdc',
+  wbtc1: 'wbtc',
+  cel1: 'cel',
+  nex1: 'nex',
+  nneo2: 'nneo',
+  bnb1: 'bnb',
+  bnb2: 'bnb',
+  busd1: 'busd',
+  btcb1: 'btcb',
+  busdt1: 'busdt',
+  bbelt1: 'bbelt',
+  elink1: 'link',
+  elink2: 'link',
+  euni1: 'uni',
+  euni2: 'uni',
+  ncgas1: 'cgas',
+};
+
+export const CoinGeckoTokenNames: SimpleMap = {
+  swth: 'switcheo',
+  btc: 'bitcoin',
+  dai: 'dai',
+  uni: 'uniswap',
+  link: 'link',
+  nneo: 'neo',
+  eth: 'ethereum',
+  flm: 'flamingo-finance',
+  usdc: 'usd-coin',
+  cel: 'celsius-degree-token',
+  nex: 'neon-exchange',
+  wbtc: 'wrapped-bitcoin',
+  bnb: 'binancecoin',
+  busd: 'binance-usd',
+  btcb: 'binance-bitcoin',
+  tru: 'truebit-protocol',
+};

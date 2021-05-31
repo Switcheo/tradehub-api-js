@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { ETHClient, NEOClient } from "../clients";
+import TokenClient from "../clients/TokenClient";
 import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
@@ -37,6 +38,8 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   neo: NEOClient
   eth: ETHClient
   bsc: ETHClient
+
+  token: TokenClient
 
   // modules
   admin: ModAdmin
@@ -79,17 +82,19 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
 
     this.neo = NEOClient.instance({
       configProvider: this,
-    })
+    });
 
     this.eth = ETHClient.instance({
       configProvider: this,
       blockchain: Blockchain.Ethereum,
-    })
+    });
 
     this.bsc = ETHClient.instance({
       configProvider: this,
       blockchain: Blockchain.BinanceSmartChain,
-    })
+    });
+
+    this.token = TokenClient.instance(this.api);
 
     // initialize modules
     this.order = new ModOrder(this);
@@ -128,6 +133,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.log("initialize…");
     await this.reloadTxnFees();
     await this.ws.connect();
+    await this.token.initialize();
 
     if (wallet) {
       this.log("reloading wallet account");
