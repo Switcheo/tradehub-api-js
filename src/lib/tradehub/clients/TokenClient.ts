@@ -28,6 +28,9 @@ class TokenClient {
   public getCommonDenom(denom: string): string {
     return CommonAssetName[denom] ?? denom;
   }
+  public getDecimals(denom: string): number | undefined {
+    return (this.tokens[denom] ?? this.poolTokens[denom])?.decimals
+  }
   public getSymbol(denom: string): string {
     const commonDenom = this.getCommonDenom(denom);
     return this.symbols[commonDenom] ?? commonDenom.toUpperCase();
