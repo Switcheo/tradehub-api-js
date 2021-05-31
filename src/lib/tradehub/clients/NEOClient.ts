@@ -10,10 +10,10 @@ import BigNumber from "bignumber.js";
 import { chunk } from 'lodash';
 import { APIClient } from "../api";
 import { RestResponse } from "../models";
-import { Blockchain, NeoNetworkConfig, Network, NetworkConfigs } from "../utils";
+import { Blockchain, NeoNetworkConfig, NetworkConfigProvider } from "../utils";
 
 export interface NEOClientOpts {
-  network: Network,
+  configProvider: NetworkConfigProvider,
   blockchain?: Blockchain,
 }
 
@@ -28,20 +28,20 @@ export class NEOClient {
   }
 
   private constructor(
-    public readonly network: Network,
+    public readonly configProvider: NetworkConfigProvider,
     public readonly blockchain: Blockchain,
   ) { }
 
   public static instance(opts: NEOClientOpts) {
     const {
-      network,
+      configProvider,
       blockchain = Blockchain.Neo,
     } = opts
 
     if (!NEOClient.SUPPORTED_BLOCKCHAINS.includes(blockchain))
       throw new Error(`unsupported blockchain - ${blockchain}`)
 
-    return new NEOClient(network, blockchain)
+    return new NEOClient(configProvider, blockchain)
   }
 
   private parseHexNum(hex: string, exp: number = 0): string {
@@ -151,7 +151,8 @@ export class NEOClient {
   }
 
   public getConfig(): NeoNetworkConfig {
-    return NetworkConfigs[this.network][NEOClient.BLOCKCHAIN_KEY[this.blockchain]];
+    const networkConfig = this.configProvider.getConfig();
+    return networkConfig[NEOClient.BLOCKCHAIN_KEY[this.blockchain]];
   }
 
   public getProviderUrl() {

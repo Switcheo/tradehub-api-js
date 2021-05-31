@@ -6,10 +6,10 @@ import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import { APIClient } from "../api";
 import { RestResponse } from "../models";
-import { appendHexPrefix, Blockchain, EthNetworkConfig, Network, NetworkConfigs, stripHexPrefix, SWTHAddress } from "../utils";
+import { appendHexPrefix, Blockchain, EthNetworkConfig, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
 
 export interface ETHClientOpts {
-  network: Network,
+  configProvider: NetworkConfigProvider,
   blockchain: Blockchain,
 }
 
@@ -41,17 +41,17 @@ export class ETHClient {
   }
 
   private constructor(
-    public readonly network: Network,
+    public readonly configProvider: NetworkConfigProvider,
     public readonly blockchain: Blockchain,
   ) { }
 
   public static instance(opts: ETHClientOpts) {
-    const { network, blockchain } = opts
+    const { configProvider, blockchain } = opts
 
     if (!ETHClient.SUPPORTED_BLOCKCHAINS.includes(blockchain))
       throw new Error(`unsupported blockchain - ${blockchain}`)
 
-    return new ETHClient(network, blockchain)
+    return new ETHClient(configProvider, blockchain)
   }
 
   public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]) {
@@ -112,11 +112,11 @@ export class ETHClient {
       throw new Error("Minimum gas required: 150,000")
     }
 
-    const networkConfigs = NetworkConfigs[this.network]
+    const networkConfig = this.getNetworkConfig();
 
     const assetId = appendHexPrefix(token.asset_id);
     const targetProxyHash = appendHexPrefix(this.getTargetProxyHash(token));
-    const feeAddress = appendHexPrefix(networkConfigs.FeeAddress);
+    const feeAddress = appendHexPrefix(networkConfig.FeeAddress);
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
 
     const swthAddress = ethers.utils.hexlify(address)
@@ -154,7 +154,8 @@ export class ETHClient {
   }
 
   public async getDepositContractAddress(swthBech32Addres: string, ownerEthAddress: string) {
-    const addressBytes = SWTHAddress.getAddressBytes(swthBech32Addres, this.network)
+    const network = this.getNetworkConfig().Network
+    const addressBytes = SWTHAddress.getAddressBytes(swthBech32Addres, network)
     const swthAddress = ethers.utils.hexlify(addressBytes)
 
     const provider = this.getProvider()
@@ -177,11 +178,11 @@ export class ETHClient {
       return "insufficient balance"
     }
 
-    const networkConfigs = NetworkConfigs[this.network]
+    const networkConfig = this.getNetworkConfig()
 
     const assetId = appendHexPrefix(token.asset_id)
     const targetProxyHash = appendHexPrefix(this.getTargetProxyHash(token))
-    const feeAddress = appendHexPrefix(networkConfigs.FeeAddress)
+    const feeAddress = appendHexPrefix(networkConfig.FeeAddress)
     const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
     const nonce = Math.floor(Math.random() * 1000000000) // random nonce to prevent replay attacks
     const message = ethers.utils.solidityKeccak256(
@@ -210,7 +211,8 @@ export class ETHClient {
       s: rsv.s,
     }
 
-    const addressBytes = SWTHAddress.getAddressBytes(swthAddress, this.network)
+    const network = this.getNetworkConfig().Network;
+    const addressBytes = SWTHAddress.getAddressBytes(swthAddress, network)
     const swthAddressHex = ethers.utils.hexlify(addressBytes)
     const body = {
       OwnerAddress: signatureResult.owner,
@@ -254,8 +256,8 @@ export class ETHClient {
   }
 
   public async getFeeInfo(denom: string) {
-    const networkConfigs = NetworkConfigs[this.network]
-    const url = `${networkConfigs.FeeURL}/fees?denom=${denom}`
+    const networkConfig = this.getNetworkConfig();
+    const url = `${networkConfig.FeeURL}/fees?denom=${denom}`
     const result = await fetch(url).then(res => res.json()) as RestResponse.FeeResult
     return result
   }
@@ -284,7 +286,8 @@ export class ETHClient {
    * @param token
    */
   public getTargetProxyHash(token: RestResponse.Token) {
-    const addressBytes = SWTHAddress.getAddressBytes(token.originator, this.network)
+    const networkConfig = this.getNetworkConfig();
+    const addressBytes = SWTHAddress.getAddressBytes(token.originator, networkConfig.Network)
     const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))
     return addressHex
   }
@@ -293,8 +296,13 @@ export class ETHClient {
     return new ethers.providers.JsonRpcProvider(this.getProviderUrl())
   }
 
+  public getNetworkConfig(): NetworkConfig {
+    return this.configProvider.getConfig();
+  }
+
   public getConfig(): EthNetworkConfig {
-    return NetworkConfigs[this.network][ETHClient.BLOCKCHAIN_KEY[this.blockchain]];
+    const networkConfig = this.getNetworkConfig();
+    return networkConfig[ETHClient.BLOCKCHAIN_KEY[this.blockchain]];
   }
 
   public getPayerUrl() {

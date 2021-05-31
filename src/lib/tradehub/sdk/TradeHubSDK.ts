@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { ETHClient, NEOClient } from "../clients";
 import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
-import { Blockchain, Network, NetworkConfigs, SimpleMap } from "../utils";
+import { Blockchain, Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector } from "../websocket";
 import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
@@ -13,19 +13,24 @@ export interface TradeHubSDKInitOpts {
   network?: Network
   debugMode?: boolean
   txFees?: SimpleMap<BigNumber>
+
+  config?: Partial<NetworkConfig>
 }
 
 const DEFAULT_OPTS: TradeHubSDKInitOpts = {
   network: Network.MainNet,
 }
 
-class TradeHubSDK implements SDKProvider {
+class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   static Network = Network
   static APIClient = APIClient
 
   network: Network
   api: APIClient
   debugMode: boolean
+  configOverride: Partial<NetworkConfig>
+
+  networkConfig: NetworkConfig
 
   ws: WSConnector
 
@@ -47,12 +52,21 @@ class TradeHubSDK implements SDKProvider {
   constructor(opts: TradeHubSDKInitOpts = DEFAULT_OPTS) {
     this.debugMode = opts.debugMode ?? false
 
-    this.network = opts.network
-    this.api = new APIClient(this.network)
+    this.network = opts.network ?? DEFAULT_OPTS.network
+    this.configOverride = opts.config ?? {}
     this.txFees = opts.txFees
 
+    this.networkConfig = {
+      ...NetworkConfigs[this.network],
+      ...this.configOverride,
+    };
+
+    this.api = new APIClient(this.networkConfig.RestURL, {
+      debugMode: this.debugMode,
+    });
+
     this.ws = new WSConnector({
-      endpoint: NetworkConfigs[this.network].WsURL,
+      endpoint: this.networkConfig.WsURL,
       debugMode: this.debugMode,
     });
 
@@ -64,16 +78,16 @@ class TradeHubSDK implements SDKProvider {
     }
 
     this.neo = NEOClient.instance({
-      network: this.network,
+      configProvider: this,
     })
 
     this.eth = ETHClient.instance({
-      network: this.network,
+      configProvider: this,
       blockchain: Blockchain.Ethereum,
     })
 
     this.bsc = ETHClient.instance({
-      network: this.network,
+      configProvider: this,
       blockchain: Blockchain.BinanceSmartChain,
     })
 
@@ -83,6 +97,10 @@ class TradeHubSDK implements SDKProvider {
     this.governance = new ModGovernance(this);
     this.admin = new ModAdmin(this);
     this.account = new ModAccount(this);
+  }
+
+  public getConfig(): NetworkConfig {
+    return this.networkConfig;
   }
 
   public generateOpts(): TradeHubSDKInitOpts {

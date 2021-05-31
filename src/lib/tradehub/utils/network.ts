@@ -20,7 +20,7 @@ export interface NeoNetworkConfig {
 }
 
 export interface NetworkConfig {
-  Name: Network
+  Network: Network
   Bech32Prefix: string
   
   RestURL: string
@@ -37,6 +37,10 @@ export interface NetworkConfig {
   Neo: NeoNetworkConfig
 }
 
+export interface NetworkConfigProvider {
+  getConfig(): NetworkConfig
+}
+
 const localhost = process.env.REST_HOST ?? '127.0.0.1'
 const restPort = process.env.REST_PORT ?? '5001'
 
@@ -44,7 +48,7 @@ export const NetworkConfigs: {
   [key in Network]: NetworkConfig
 } = {
   [Network.LocalHost]: {
-    Name: Network.LocalHost,
+    Network: Network.LocalHost,
     Bech32Prefix: 'tswth',
 
     RestURL: `http://${localhost}:${restPort}`,
@@ -80,7 +84,7 @@ export const NetworkConfigs: {
   },
 
   [Network.DevNet]: {
-    Name: Network.DevNet,
+    Network: Network.DevNet,
     Bech32Prefix: 'swth',
 
     RestURL: 'https://dev-tradescan.switcheo.org',
@@ -116,7 +120,7 @@ export const NetworkConfigs: {
   },
 
   [Network.TestNet]: {
-    Name: Network.TestNet,
+    Network: Network.TestNet,
     Bech32Prefix: 'tswth',
 
     RestURL: 'https://test-tradescan.switcheo.org',
@@ -152,7 +156,7 @@ export const NetworkConfigs: {
   },
 
   [Network.MainNet]: {
-    Name: Network.MainNet,
+    Network: Network.MainNet,
     Bech32Prefix: 'swth',
 
     RestURL: `https://tradescan.switcheo.org`,

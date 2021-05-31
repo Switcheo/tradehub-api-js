@@ -10,6 +10,8 @@ import { TradeHubSigner, TradeHubSignerTypes } from "./TradeHubSigner";
 export type TradeHubWalletInitOpts = {
   debugMode?: boolean
   network?: Network
+
+  config?: Partial<NetworkConfig>
 } & ({
   // connect with mnemonic
   mnemonic: string
@@ -52,6 +54,9 @@ export class TradeHubWallet {
   debugMode: boolean
   api: APIClient
 
+  configOverride: Partial<NetworkConfig>
+  networkConfig: NetworkConfig
+
   mnemonic?: string
   privateKey?: Buffer
   signer: TradeHubSigner
@@ -68,6 +73,7 @@ export class TradeHubWallet {
   constructor(opts: TradeHubWalletInitOpts) {
     this.debugMode = opts.debugMode ?? false
 
+    this.configOverride = opts.config ?? {};
     this.updateNetwork(opts.network ?? Network.MainNet);
 
     this.mnemonic = opts.mnemonic
@@ -94,7 +100,12 @@ export class TradeHubWallet {
 
   public updateNetwork(network: Network): TradeHubWallet {
     this.network = network
-    this.api = new APIClient(network, {
+    this.networkConfig = {
+      ...NetworkConfigs[network],
+      ...this.configOverride,
+    };
+
+    this.api = new APIClient(this.networkConfig.RestURL, {
       debugMode: this.debugMode,
     });
 

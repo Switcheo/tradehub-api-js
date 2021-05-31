@@ -1,7 +1,7 @@
 import { GetLeaderboardParams } from '@lib/types';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
-import { bnOrZero, BroadcastTx, Network, NetworkConfigs } from '../utils';
+import { bnOrZero, BroadcastTx } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
   CheckUserNameOpts, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountRealizedPnlResponse, GetAccountResponse,
@@ -87,10 +87,9 @@ class APIClient {
   public static DEBUG_HEADERS: boolean = false
 
   constructor(
-    public readonly network: Network,
+    restUrl: string,
     opts?: APIClientOpts,
   ) {
-    const restUrl = NetworkConfigs[network].RestURL;
     const responseParser: ResponseParser = this.parseResponse.bind(this);
     this.apiManager = new APIManager(restUrl, TradehubEndpoints, responseParser)
 
