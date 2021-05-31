@@ -3,7 +3,7 @@ import { APIClient } from "../api";
 import { ETHClient, NEOClient } from "../clients";
 import TokenClient from "../clients/TokenClient";
 import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
-import { Blockchain, Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
+import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector } from "../websocket";
 import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
@@ -23,13 +23,13 @@ const DEFAULT_OPTS: TradeHubSDKInitOpts = {
 }
 
 class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
-  static Network = Network
   static APIClient = APIClient
 
   network: Network
   api: APIClient
   debugMode: boolean
   configOverride: Partial<NetworkConfig>
+  initialized: boolean
 
   networkConfig: NetworkConfig
 
@@ -55,9 +55,10 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   constructor(opts: TradeHubSDKInitOpts = DEFAULT_OPTS) {
     this.debugMode = opts.debugMode ?? false
 
-    this.network = opts.network ?? DEFAULT_OPTS.network
-    this.configOverride = opts.config ?? {}
-    this.txFees = opts.txFees
+    this.network = opts.network ?? DEFAULT_OPTS.network;
+    this.configOverride = opts.config ?? {};
+    this.txFees = opts.txFees;
+    this.initialized = false;
 
     this.networkConfig = {
       ...NetworkConfigs[this.network],
@@ -127,6 +128,25 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.txFees = await this.api.getTxnFees();
   }
 
+  public static parseNetwork(network: string, defaultNetwork: Network | null = DEFAULT_OPTS.network) {
+    switch (network?.toLowerCase?.()) {
+      case "main":
+      case "mainnet":
+        return Network.MainNet;
+      case "test":
+      case "testnet":
+        return Network.TestNet;
+      case "dev":
+      case "devnet":
+        return Network.DevNet;
+      case "local":
+      case "localhost":
+        return Network.LocalHost;
+    }
+
+    return defaultNetwork;
+  }
+
   /* CONNECT WALLET FUNCTIONS */
 
   public async initialize(wallet?: TradeHubWallet) {
@@ -146,6 +166,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       }
     }
 
+    this.initialized = true;
     this.log("initialize complete");
   }
 
@@ -208,6 +229,8 @@ class ConnectedTradeHubSDK extends TradeHubSDK {
 namespace TradeHubSDK {
   export import RPCParams = _RPCParams;
   export import RestResponse = _RestResponse;
+
+  export import Network = _Network;
 }
 
 export default TradeHubSDK
