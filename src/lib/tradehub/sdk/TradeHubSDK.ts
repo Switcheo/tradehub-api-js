@@ -114,6 +114,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       network: this.network,
       debugMode: this.debugMode,
       txFees: this.txFees,
+      config: this.configOverride,
     }
   }
 
@@ -179,6 +180,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     const wallet = TradeHubWallet.withPrivateKey(privateKey, {
       debugMode: this.debugMode,
       network: this.network,
+      config: this.configOverride,
     })
     return this.connect(wallet)
   }
@@ -187,6 +189,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     const wallet = TradeHubWallet.withMnemonic(mnemonic, {
       debugMode: this.debugMode,
       network: this.network,
+      config: this.configOverride,
     })
     return this.connect(wallet)
   }
@@ -195,6 +198,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     const wallet = TradeHubWallet.withSigner(signer, bech32Address, {
       debugMode: this.debugMode,
       network: this.network,
+      config: this.configOverride,
     })
     return this.connect(wallet)
   }
