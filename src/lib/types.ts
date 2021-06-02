@@ -505,7 +505,7 @@ export interface RemoveDebtMsg {
 export type ProposalValue = ProposalParameterChangeValue | ProposalTokenValue |
   ProposalMarketValue | ProposalSettlementPriceValue | ProposalOracleValue | ProposalOracleResultValue |
   ProposalLinkPoolValue | ProposalUnlinkPoolValue | ProposalCreateTokenValue | ProposalSetPoolRewardWeightsValue |
-  ProposalSetCommitmentCurveValue | ProposalCreateMarketValue
+  ProposalSetCommitmentCurveValue | ProposalCreateMarketValue | ProposalUpdateMarketValue;
 
 export interface ProposalParameterChangeValue {
   title: string,
@@ -689,6 +689,29 @@ export interface ProposalCreateMarketValue {
     maker_fee: string,
     originator: string,
   }
+}
+
+export interface ProposalUpdateMarketValue {
+  title: string;
+  description: string;
+  market: {
+      name: string;
+      display_name: string;
+      description: string;
+      min_quantity: string;
+      maker_fee: string;
+      taker_fee: string;
+      risk_step_size: string;
+      initial_margin_base: string;
+      initial_margin_step: string;
+      maintenance_margin_ratio: string;
+      max_liquidation_order_ticket: string;
+      max_liquidation_order_duration: string;
+      impact_size: string;
+      mark_price_band: string;
+      last_price_protected_band: string;
+      is_active: boolean;
+  };
 }
 
 export interface SubmitProposalMsg<ProposalValue> {
