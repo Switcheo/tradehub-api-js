@@ -4,6 +4,7 @@ import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig, stripHexPrefix} from "../utils";
 import { RestResponse } from "../models";
+// import { Token } from "@lib/models";
 
 
 export interface ZILClientOpts {
@@ -58,16 +59,51 @@ export class ZILClient {
           token.lock_proxy_hash.toLowerCase() == stripHexPrefix(lockProxyAddress) &&
           (!whitelistDenoms || whitelistDenoms.includes(token.denom))
         )
+
+        // todo delete me
+        // const dummy1: Token = {
+        //   name: 'ZIL-USDT',
+        //   symbol: 'zUSDT',
+        //   denom: '',
+        //   decimals: Number(12),
+        //   chain_id: Number(888),
+        //   is_active: true,
+        //   is_collateral: false,
+        //   lock_proxy_hash: '',
+        //   delegated_supply: '',
+        //   originator: '',
+        //   asset_id: "ced1f00d5088ef3d246fc622e9b0e5173f2216bf",
+        //   blockchain: "zil",
+        // }
+        // tokens.push(dummy1)
+        // const dummy2: Token = {
+        //     name: 'ZIL-USDC',
+        //     symbol: 'zUSDC',
+        //     denom: '',
+        //     decimals: Number(12),
+        //     chain_id: Number(888),
+        //     is_active: true,
+        //     is_collateral: false,
+        //     lock_proxy_hash: '',
+        //     delegated_supply: '',
+        //     originator: '',
+        //     asset_id: "ca684b1ea0787937ee481bea03257283b09279bf",
+        //     blockchain: "zil",
+        //   }
+        // tokens.push(dummy2)
+        // todo delete me
+
         const requests = tokens.map(token => [token.asset_id, "balances", [appendHexPrefix(address)]])
         const zilliqa = new Zilliqa(this.getProviderUrl());
-        const results = await zilliqa.blockchain.getSmartContractSubStateBatch(requests)
-        if (results.error !== undefined) {
-            throw new Error(results.error.message)
+        const results = await zilliqa.blockchain.getSmartContractSubStateBatch(requests) as any
+        const batch_result = results.batch_result
+        if (batch_result.error !== undefined) {
+            throw new Error(batch_result.error.message)
         }
-
-        // todo
-
-
+        for (let r of batch_result) {
+            (tokens[r.id - 1] as any).external_balance = r.result.balances[appendHexPrefix(address)]
+        }
+        return tokens
     }
  
     public getNetworkConfig(): NetworkConfig {
