@@ -1,4 +1,5 @@
 import { BN_ONE, TxTypes } from "@lib/tradehub/utils";
+import { CreateTokenMsg } from "@lib/types";
 import BaseModule from "./module";
 
 class ModAdmin extends BaseModule {
@@ -12,6 +13,14 @@ class ModAdmin extends BaseModule {
         denom: "swth",
         originator: this.getWallet().bech32Address,
       },
+    });
+  }
+
+  public async createToken(params: CreateTokenMsg): Promise<unknown> {
+
+    return this.getWallet().sendTx({
+      type: TxTypes.Coin.CREATE_TOKEN,
+      value: params,
     });
   }
 }

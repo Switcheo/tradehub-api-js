@@ -6,7 +6,7 @@ import "./_setup";
   console.log("mnemonic:", mnemonic);
 
   const sdk = new TradeHubSDK({
-    network: TradeHubSDK.Network.TestNet,
+    network: TradeHubSDK.Network.DevNet,
     debugMode: true,
   });
 
@@ -15,7 +15,7 @@ import "./_setup";
 
   await connectedSDK.initialize();
 
-  const recipientAddress = "tswth1p5fz7v286hmr8huhfxx4qzzgsgge6smktswwm6";
+  const recipientAddress = "swth1p5fz7v286hmr8huhfxx4qzzgsgge6smk08l7zl";
   const result = await connectedSDK.admin.mintTokens(recipientAddress);
   console.log(result);
 })().catch(console.error).finally(() => process.exit(0));
