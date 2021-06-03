@@ -19,6 +19,11 @@ export interface NeoNetworkConfig {
   WrapperScriptHash: string
 }
 
+export interface ZilNetworkConfig {
+  RpcURL: string
+  LockProxyAddr: string
+}
+
 export interface NetworkConfig {
   Network: Network
   Bech32Prefix: string
@@ -35,6 +40,7 @@ export interface NetworkConfig {
   Bsc: EthNetworkConfig
 
   Neo: NeoNetworkConfig
+  Zil: ZilNetworkConfig
 }
 
 export interface NetworkConfigProvider {
@@ -81,6 +87,11 @@ export const NetworkConfigs: {
       RpcURL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
       WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
+
+    Zil: {
+      RpcURL: '',
+      LockProxyAddr: '',
+    }
   },
 
   [Network.DevNet]: {
@@ -117,6 +128,11 @@ export const NetworkConfigs: {
       RpcURL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
       WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
+
+    Zil: {
+      RpcURL: 'https://poly-api.zilliqa.com',
+      LockProxyAddr: '',
+    }
   },
 
   [Network.TestNet]: {
@@ -153,6 +169,11 @@ export const NetworkConfigs: {
       RpcURL: 'https://g30trj885e.execute-api.ap-southeast-1.amazonaws.com',
       WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
+
+    Zil: {
+      RpcURL: '',
+      LockProxyAddr: '',
+    }
   },
 
   [Network.MainNet]: {
@@ -189,5 +210,10 @@ export const NetworkConfigs: {
       RpcURL: 'https://seed1.switcheo.network:443',
       WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
+
+    Zil: {
+      RpcURL: '',
+      LockProxyAddr: '',
+    }
   },
 }

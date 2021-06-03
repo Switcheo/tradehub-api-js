@@ -1,1 +1,1 @@
-export * from "@lib/tradehub/utils/address"
+export * from "../tradehub/utils/address"

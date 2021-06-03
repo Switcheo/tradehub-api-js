@@ -1,5 +1,5 @@
-import { logger } from '@lib/utils'
-import fetch from '@lib/utils/fetch'
+import { logger } from '../../utils'
+import fetch from '../../utils/fetch'
 import querystring from 'query-string'
 
 export interface RequestResult {
