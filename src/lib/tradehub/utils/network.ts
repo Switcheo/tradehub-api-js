@@ -131,7 +131,7 @@ export const NetworkConfigs: {
 
     Zil: {
       RpcURL: 'https://poly-api.zilliqa.com',
-      LockProxyAddr: '',
+      LockProxyAddr: '0xfc85a264c86148213ca4afb5dd9596d95234f0ba',
     }
   },
 
