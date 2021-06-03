@@ -4,8 +4,6 @@ import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig, stripHexPrefix} from "../utils";
 import { RestResponse } from "../models";
-// import { Token } from "@lib/models";
-
 
 export interface ZILClientOpts {
     configProvider: NetworkConfigProvider,
@@ -71,6 +69,22 @@ export class ZILClient {
             (tokens[r.id - 1] as any).external_balance = r.result.balances[appendHexPrefix(address)]
         }
         return tokens
+    }
+
+    public async checkAllowanceZRC2(token: RestResponse.Token, owner: string, spender: string) {
+        const contractAddress = token.asset_id
+        const zilliqa = new Zilliqa(this.getProviderUrl())
+        const resp = await zilliqa.blockchain.getSmartContractSubState(contractAddress, "allowances",[owner,spender])
+        if (resp.error !== undefined) {
+            throw new Error(resp.error.message)
+        }
+
+        if (resp.result === null) {
+            return new BigNumber("0")
+        }
+
+        return new BigNumber(resp.result.allowances[owner][spender])
+
     }
  
     public getNetworkConfig(): NetworkConfig {
