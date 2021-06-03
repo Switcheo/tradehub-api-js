@@ -11,10 +11,10 @@ const PARAMS: CreateTokenMsg = {
   decimals: '12',
   native_decimals: '12',
   blockchain: 'zil',
-  chain_id: '<chainid>',
+  chain_id: '110',
   asset_id: 'ced1f00d5088ef3d246fc622e9b0e5173f2216bf',
   is_collateral: false,
-  lock_proxy_hash: '<lp addr>',
+  lock_proxy_hash: '90cc3b304addf373cd6e78dbf64c36139fa55aab',
   delegated_supply: '0',
 };
 
