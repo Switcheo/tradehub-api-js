@@ -19,6 +19,11 @@ export interface NeoNetworkConfig {
   WrapperScriptHash: string
 }
 
+export interface ZilNetworkConfig {
+  RpcURL: string
+  LockProxyAddr: string
+}
+
 export interface NetworkConfig {
   Network: Network
   Bech32Prefix: string
