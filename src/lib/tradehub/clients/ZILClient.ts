@@ -1,6 +1,8 @@
-import { Wallet } from "@zilliqa-js/account"
-import BigNumber from "bignumber.js"
-import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig } from "../utils"
+import { Wallet } from "@zilliqa-js/account";
+import { Zilliqa} from "@zilliqa-js/zilliqa";
+import BigNumber from "bignumber.js";
+import { APIClient } from "../api";
+import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig, stripHexPrefix} from "../utils";
 import { RestResponse } from "../models";
 
 
@@ -47,8 +49,27 @@ export class ZILClient {
         return new ZILClient(configProvider,blockchain)
     }
 
+    public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]) {
+        const tokenList = await api.getTokens()
+        const lockProxyAddress = this.getLockProxyAddress().toLowerCase()
+        const tokens = tokenList.filter(token =>
+          token.blockchain == this.blockchain &&
+          token.asset_id.length == 40 &&
+          token.lock_proxy_hash.toLowerCase() == stripHexPrefix(lockProxyAddress) &&
+          (!whitelistDenoms || whitelistDenoms.includes(token.denom))
+        )
+        const requests = tokens.map(token => [token.asset_id, "balances", [appendHexPrefix(address)]])
+        const zilliqa = new Zilliqa(this.getProviderUrl());
+        const results = await zilliqa.blockchain.getSmartContractSubStateBatch(requests)
+        if (results.error !== undefined) {
+            throw new Error(results.error.message)
+        }
+
+        // todo
 
 
+    }
+ 
     public getNetworkConfig(): NetworkConfig {
         return this.configProvider.getConfig();
     }
