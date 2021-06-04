@@ -3,7 +3,7 @@ import { Wallet } from "@zilliqa-js/account"
 import { APIClient } from "../src/lib/tradehub/api";
 import { ApproveZRC2Params, LockParams, ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
 import { RestResponse } from "../src/lib/tradehub/models";
-import { Blockchain } from "../src/lib/tradehub/utils";
+import { Blockchain, SWTHAddress } from "../src/lib/tradehub/utils";
 import { Network, NetworkConfigProvider, NetworkConfigs } from "../src/lib/tradehub/utils/network";
 import { getAddressFromPrivateKey } from "@zilliqa-js/crypto";
 import BigNumber from "bignumber.js";
@@ -26,18 +26,18 @@ async function run() {
     console.log(tokens)
 
     const token: RestResponse.Token = {
-      name: 'Zilliqa USD',
-      symbol: 'zUSD',
-      denom: 'zusd6',
+      name: 'Zilliqa USDT',
+      symbol: 'zUSDT',
+      denom: 'zusdt',
       decimals: 12,
       blockchain: 'zil',
       chain_id: 110,
       asset_id: 'ced1f00d5088ef3d246fc622e9b0e5173f2216bf',
       is_active: true,
       is_collateral: false,
-      lock_proxy_hash: 'fc85a264c86148213ca4afb5dd9596d95234f0ba',
+      lock_proxy_hash: 'a5484b227f35f5e192e444146a3d9e09f4cdad80',
       delegated_supply: '0',
-      originator: 'swth1pacamg4ey0nx6mrhr7qyhfj0g3pw359cnjyv6d',
+      originator: 'swth1pacamg4ey0nx6mrhr7qyhfj0g3pw359cnjyv6d' 
     }
 
     // check allowance
@@ -68,20 +68,22 @@ async function run() {
     // console.log("transaction confirmed! receipt is: ", tx.getReceipt())
 
     // lock deposit
+
     const lockDepositParams: LockParams = {
-        address: Uint8Array.from(Buffer.from("a476fcedc061797fa2a6f80bd9e020a056904298", 'hex')),
-        amount: new BigNumber("99"),
+        address: SWTHAddress.getAddressBytes("swth1pacamg4ey0nx6mrhr7qyhfj0g3pw359cnjyv6d", Network.DevNet),
+        amount: new BigNumber("1000000000000"),
         token: token,
         gasPrice: new BigNumber("2000000000"),
         zilAddress: address,
         gasLimit: new BigNumber(25000),
         signer: wallet,
     }
-    console.log("sending lock deposit transactions")
-    const tx = await client.lockDeposit(lockDepositParams)
-    console.log("performing transaction confirmation, transaction id is: ", tx.id)
-    await tx.confirm(tx.id)
-    console.log("transaction confirmed! receipt is: ", tx.getReceipt())
+    console.log("lock deposit parameters: ", lockDepositParams)
+    // console.log("sending lock deposit transactions")
+    // const tx = await client.lockDeposit(lockDepositParams)
+    // console.log("performing transaction confirmation, transaction id is: ", tx.id)
+    // await tx.confirm(tx.id)
+    // console.log("transaction confirmed! receipt is: ", tx.getReceipt())
 
 }
 
