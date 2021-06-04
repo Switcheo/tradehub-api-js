@@ -10,6 +10,7 @@ import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilN
 import { RestResponse } from "../models";
 
 const uint128Max = "340282366920938463463374607431768211356"
+const zeroAddress = "0000000000000000000000000000000000000000"
 
 export interface ZILClientOpts {
     configProvider: NetworkConfigProvider,
@@ -167,10 +168,15 @@ export class ZILClient {
         const nonce = balanceAndNonceResp.result.nonce + 1
         const version = bytes.pack(this.getConfig().ChainId,Number(1))
 
+        let nativeAmt = new BN(0)
+        if (token.asset_id == zeroAddress) {
+            nativeAmt = new BN(amount.toString())
+        }
+
         const callParams = {
             version: version,
             nonce: nonce,
-            amount: new BN(0),
+            amount: nativeAmt,
             gasPrice: new BN(gasPrice.toString()),
             gasLimit: Long.fromString(gasLimit.toString()),
         }
