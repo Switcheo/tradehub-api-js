@@ -1,6 +1,4 @@
-import BN from "bn.js";
 import { Zilliqa } from "@zilliqa-js/zilliqa";
-import { Long } from "@zilliqa-js/util";
 import { Wallet } from "@zilliqa-js/account"
 import { APIClient } from "../src/lib/tradehub/api";
 import { ApproveZRC2Params, ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
@@ -8,6 +6,7 @@ import { RestResponse } from "../src/lib/tradehub/models";
 import { Blockchain } from "../src/lib/tradehub/utils";
 import { Network, NetworkConfigProvider, NetworkConfigs } from "../src/lib/tradehub/utils/network";
 import { getAddressFromPrivateKey } from "@zilliqa-js/crypto";
+import BigNumber from "bignumber.js";
 
 async function run() {
     console.log("testing zilliqa client")
@@ -54,13 +53,17 @@ async function run() {
     // approve zrc2 (increase allowance)
     const approveZRC2Params: ApproveZRC2Params = {
         token: token,
-        gasPrice: new BN("2000000000"),
-        gasLimit: Long.fromNumber(25000),
+        gasPrice: new BigNumber("2000000000"),
+        gasLimit: new BigNumber(25000),
         zilAddress: address,
         signer: wallet,
     }
-
-    await client.approveZRC2(approveZRC2Params)
+    
+    console.log("sending approve transactions")
+    const tx = await client.approveZRC2(approveZRC2Params)
+    console.log("performing transaction confirmation, transaction id is: ", tx.id)
+    await tx.confirm(tx.id)
+    console.log("transaction confirmed! receipt is: ", tx.getReceipt())
 
 }
 

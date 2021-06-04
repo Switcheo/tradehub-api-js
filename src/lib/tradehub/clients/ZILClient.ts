@@ -1,6 +1,6 @@
 import { Transaction } from "@zilliqa-js/account";
 import { Zilliqa} from "@zilliqa-js/zilliqa";
-import { BN, bytes } from "@zilliqa-js/util";
+import { BN, bytes, Long } from "@zilliqa-js/util";
 import { toChecksumAddress } from "@zilliqa-js/crypto"
 import { Signer, RPCMethod } from "@zilliqa-js/core"
 import BigNumber from "bignumber.js";
@@ -14,8 +14,8 @@ export interface ZILClientOpts {
 }
 
 interface ZILTxParams {
-    gasPrice: BN
-    gasLimit: Long
+    gasPrice: BigNumber
+    gasLimit: BigNumber
     zilAddress: string
     signer: Signer
 }
@@ -91,8 +91,8 @@ export class ZILClient {
             version: version,
             nonce: nonce,
             amount: new BN(0),
-            gasPrice: gasPrice,
-            gasLimit: gasLimit,
+            gasPrice: new BN(gasPrice.toString()),
+            gasLimit: Long.fromString(gasLimit.toString()),
         }
 
         const data = {
@@ -120,7 +120,11 @@ export class ZILClient {
         )
         await signer.sign(tx)
         const response = await zilliqa.provider.send(RPCMethod.CreateTransaction, { ...tx.txParams })
-        console.log(response)
+        if (response.error !== undefined) {
+            throw new Error(response.error.message)
+        }
+        tx.id = response.result.TranID
+        return tx
     }
 
     public async checkAllowanceZRC2(token: RestResponse.Token, owner: string, spender: string) {
