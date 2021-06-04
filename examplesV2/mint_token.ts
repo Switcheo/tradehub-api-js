@@ -15,7 +15,7 @@ import "./_setup";
 
   await connectedSDK.initialize();
 
-  const recipientAddress = "swth1p5fz7v286hmr8huhfxx4qzzgsgge6smk08l7zl";
+  const recipientAddress = "swth1pacamg4ey0nx6mrhr7qyhfj0g3pw359cnjyv6d";
   const result = await connectedSDK.admin.mintTokens(recipientAddress);
   console.log(result);
 })().catch(console.error).finally(() => process.exit(0));

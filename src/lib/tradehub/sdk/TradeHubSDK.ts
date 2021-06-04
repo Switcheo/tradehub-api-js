@@ -6,7 +6,7 @@ import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../model
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector } from "../websocket";
-import { ModAdmin, ModGovernance, ModMarket, ModOrder } from "./modules";
+import { ModAdmin, ModCoin, ModGovernance, ModMarket, ModOrder } from "./modules";
 import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
 
@@ -45,6 +45,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   admin: ModAdmin
   account: ModAccount
   order: ModOrder
+  coin: ModCoin
   market: ModMarket
   governance: ModGovernance
 
@@ -102,6 +103,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.market = new ModMarket(this);
     this.governance = new ModGovernance(this);
     this.admin = new ModAdmin(this);
+    this.coin = new ModCoin(this);
     this.account = new ModAccount(this);
   }
 
