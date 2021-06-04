@@ -5,8 +5,11 @@ import { toChecksumAddress } from "@zilliqa-js/crypto"
 import { Signer, RPCMethod } from "@zilliqa-js/core"
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
-import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig, stripHexPrefix} from "../utils";
+import { ethers } from "ethers";
+import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig, stripHexPrefix, SWTHAddress } from "../utils";
 import { RestResponse } from "../models";
+
+const uint128Max = "340282366920938463463374607431768211356"
 
 export interface ZILClientOpts {
     configProvider: NetworkConfigProvider,
@@ -106,10 +109,11 @@ export class ZILClient {
                 {
                     vname: 'amount',
                     type: 'Uint128',
-                    value: "340282366920938463463374607431768211356"
+                    value: uint128Max,
                 },
               ],
         }
+
         const tx = new Transaction(
             {
                 ...callParams,
@@ -141,6 +145,112 @@ export class ZILClient {
 
         return new BigNumber(resp.result.allowances[owner][spender])
 
+    }
+
+    public async lockDeposit(params: LockParams) {
+        const { address, amount, token, gasPrice, gasLimit, zilAddress, signer } = params
+        const networkConfig = this.getNetworkConfig()
+
+        const assetId = appendHexPrefix(token.asset_id)
+        const targetProxyHash = appendHexPrefix(this.getTargetProxyHash(token))
+        const feeAddress = appendHexPrefix(networkConfig.FeeAddress);
+        const toAssetHash = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(token.denom))
+        const swthAddress = ethers.utils.hexlify(address)
+        const contractAddress = this.getLockProxyAddress()
+
+        const zilliqa = new Zilliqa(this.getProviderUrl())
+        const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
+        if (balanceAndNonceResp.error !== undefined) {
+            throw new Error(balanceAndNonceResp.error.message)
+        }
+
+        const nonce = balanceAndNonceResp.result.nonce + 1
+        const version = bytes.pack(this.getConfig().ChainId,Number(1))
+
+        const callParams = {
+            version: version,
+            nonce: nonce,
+            amount: new BN(0),
+            gasPrice: new BN(gasPrice.toString()),
+            gasLimit: Long.fromString(gasLimit.toString()),
+        }
+
+        const data = {
+            _tag: "lock",
+            params: [
+                {
+                  vname: 'tokenAddr',
+                  type: 'ByStr20',
+                  value: assetId,
+                },
+                {
+                    vname: 'targetProxyHash',
+                    type: 'ByStr',
+                    value: targetProxyHash,
+                },
+                {
+                    vname: 'toAddress',
+                    type: 'ByStr',
+                    value: swthAddress,
+                },
+                {
+                    vname: 'toAssetHash',
+                    type: 'ByStr',
+                    value: toAssetHash,
+                },
+                {
+                    vname: 'feeAddr',
+                    type: 'ByStr',
+                    value: feeAddress,
+                },
+                {
+                    vname: 'amount',
+                    type: 'Uint256',
+                    value: amount.toString(),
+                },
+                {
+                    vname: 'feeAmount',
+                    type: 'Uint256',
+                    value: "0",
+                },
+                {
+                    vname: 'callAmount',
+                    type: 'Uint256',
+                    value: "0",
+                },
+              ],
+        }
+
+
+        const tx = new Transaction(
+            {
+                ...callParams,
+                toAddr: toChecksumAddress(contractAddress),
+                data: JSON.stringify(data),
+            },
+            zilliqa.provider,
+        )
+        await signer.sign(tx)
+        const response = await zilliqa.provider.send(RPCMethod.CreateTransaction, { ...tx.txParams })
+        if (response.error !== undefined) {
+            throw new Error(response.error.message)
+        }
+        tx.id = response.result.TranID
+        return tx
+
+    }
+
+    /**
+     * TargetProxyHash is a hash of token originator address that is used
+     * for lockproxy asset registration and identification
+     * 
+     * @param token
+     */
+    public getTargetProxyHash(token: RestResponse.Token) {
+      const networkConfig = this.getNetworkConfig();
+      const addressBytes = SWTHAddress.getAddressBytes(token.originator, networkConfig.Network)
+      const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))
+      return addressHex
     }
  
     public getNetworkConfig(): NetworkConfig {

@@ -1,7 +1,7 @@
 import { Zilliqa } from "@zilliqa-js/zilliqa";
 import { Wallet } from "@zilliqa-js/account"
 import { APIClient } from "../src/lib/tradehub/api";
-import { ApproveZRC2Params, ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
+import { ApproveZRC2Params, LockParams, ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
 import { RestResponse } from "../src/lib/tradehub/models";
 import { Blockchain } from "../src/lib/tradehub/utils";
 import { Network, NetworkConfigProvider, NetworkConfigs } from "../src/lib/tradehub/utils/network";
@@ -46,6 +46,8 @@ async function run() {
     
     const privateKey = ''
     const address = getAddressFromPrivateKey(privateKey)
+
+
     const zilliqa = new Zilliqa(client.getProviderUrl())
     const wallet  = new Wallet(zilliqa.network.provider)
     wallet.addByPrivateKey(privateKey)
@@ -58,9 +60,25 @@ async function run() {
         zilAddress: address,
         signer: wallet,
     }
-    
-    console.log("sending approve transactions")
-    const tx = await client.approveZRC2(approveZRC2Params)
+    console.log("approve zrc2 token parameters: ", approveZRC2Params)
+    // console.log("sending approve transactions")
+    // const tx = await client.approveZRC2(approveZRC2Params)
+    // console.log("performing transaction confirmation, transaction id is: ", tx.id)
+    // await tx.confirm(tx.id)
+    // console.log("transaction confirmed! receipt is: ", tx.getReceipt())
+
+    // lock deposit
+    const lockDepositParams: LockParams = {
+        address: Uint8Array.from(Buffer.from("a476fcedc061797fa2a6f80bd9e020a056904298", 'hex')),
+        amount: new BigNumber("99"),
+        token: token,
+        gasPrice: new BigNumber("2000000000"),
+        zilAddress: address,
+        gasLimit: new BigNumber(25000),
+        signer: wallet,
+    }
+    console.log("sending lock deposit transactions")
+    const tx = await client.lockDeposit(lockDepositParams)
     console.log("performing transaction confirmation, transaction id is: ", tx.id)
     await tx.confirm(tx.id)
     console.log("transaction confirmed! receipt is: ", tx.getReceipt())
