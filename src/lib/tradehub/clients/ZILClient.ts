@@ -1,5 +1,8 @@
-import { Wallet } from "@zilliqa-js/account";
+import { Transaction } from "@zilliqa-js/account";
 import { Zilliqa} from "@zilliqa-js/zilliqa";
+import { BN, bytes } from "@zilliqa-js/util";
+import { toChecksumAddress } from "@zilliqa-js/crypto"
+import { Signer, RPCMethod } from "@zilliqa-js/core"
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig, stripHexPrefix} from "../utils";
@@ -11,10 +14,10 @@ export interface ZILClientOpts {
 }
 
 interface ZILTxParams {
-    gasPrice: BigNumber
-    gasLimit: BigNumber
+    gasPrice: BN
+    gasLimit: Long
     zilAddress: string
-    wallet: Wallet
+    signer: Signer
 }
 
 export interface LockParams extends ZILTxParams {
@@ -59,7 +62,7 @@ export class ZILClient {
         )
 
         const requests = tokens.map(token => [token.asset_id, "balances", [appendHexPrefix(address)]])
-        const zilliqa = new Zilliqa(this.getProviderUrl());
+        const zilliqa = new Zilliqa(this.getProviderUrl())
         const results = await zilliqa.blockchain.getSmartContractSubStateBatch(requests) as any
         const batch_result = results.batch_result
         if (batch_result.error !== undefined) {
@@ -69,6 +72,55 @@ export class ZILClient {
             (tokens[r.id - 1] as any).external_balance = r.result.balances[appendHexPrefix(address)]
         }
         return tokens
+    }
+
+    public async approveZRC2(params: ApproveZRC2Params) {
+        const { token, gasPrice, gasLimit, zilAddress, signer } = params
+        const contractAddress = token.asset_id
+        const zilliqa = new Zilliqa(this.getProviderUrl())
+
+        const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
+        if (balanceAndNonceResp.error !== undefined) {
+            throw new Error(balanceAndNonceResp.error.message)
+        }
+
+        const nonce = balanceAndNonceResp.result.nonce + 1
+        const version = bytes.pack(this.getConfig().ChainId,Number(1))
+
+        const callParams = {
+            version: version,
+            nonce: nonce,
+            amount: new BN(0),
+            gasPrice: gasPrice,
+            gasLimit: gasLimit,
+        }
+
+        const data = {
+            _tag: "IncreaseAllowance",
+            params: [
+                {
+                  vname: 'spender',
+                  type: 'ByStr20',
+                  value: appendHexPrefix(token.lock_proxy_hash),
+                },
+                {
+                    vname: 'amount',
+                    type: 'Uint128',
+                    value: "340282366920938463463374607431768211356"
+                },
+              ],
+        }
+        const tx = new Transaction(
+            {
+                ...callParams,
+                toAddr: toChecksumAddress(contractAddress),
+                data: JSON.stringify(data),
+            },
+            zilliqa.provider,
+        )
+        await signer.sign(tx)
+        const response = await zilliqa.provider.send(RPCMethod.CreateTransaction, { ...tx.txParams })
+        console.log(response)
     }
 
     public async checkAllowanceZRC2(token: RestResponse.Token, owner: string, spender: string) {

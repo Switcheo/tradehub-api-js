@@ -1,8 +1,13 @@
+import BN from "bn.js";
+import { Zilliqa } from "@zilliqa-js/zilliqa";
+import { Long } from "@zilliqa-js/util";
+import { Wallet } from "@zilliqa-js/account"
 import { APIClient } from "../src/lib/tradehub/api";
-import { ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
+import { ApproveZRC2Params, ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
 import { RestResponse } from "../src/lib/tradehub/models";
 import { Blockchain } from "../src/lib/tradehub/utils";
 import { Network, NetworkConfigProvider, NetworkConfigs } from "../src/lib/tradehub/utils/network";
+import { getAddressFromPrivateKey } from "@zilliqa-js/crypto";
 
 async function run() {
     console.log("testing zilliqa client")
@@ -36,8 +41,27 @@ async function run() {
       originator: 'swth1pacamg4ey0nx6mrhr7qyhfj0g3pw359cnjyv6d',
     }
 
+    // check allowance
     const allowace = await client.checkAllowanceZRC2(token,"0x2141bf8b6d2213d4d7204e2ddab92653dc245c5f","0xa476fcedc061797fa2a6f80bd9e020a056904298")
     console.log(allowace)
+    
+    const privateKey = '8c96c599fdb70e6ebdebe9b10473fd7b12b5e8924a724e2b9570436c44eb0ecd'
+    const address = getAddressFromPrivateKey(privateKey)
+    const zilliqa = new Zilliqa(client.getProviderUrl())
+    const wallet  = new Wallet(zilliqa.network.provider)
+    wallet.addByPrivateKey(privateKey)
+
+    // approve zrc2 (increase allowance)
+    const approveZRC2Params: ApproveZRC2Params = {
+        token: token,
+        gasPrice: new BN("2000000000"),
+        gasLimit: Long.fromNumber(25000),
+        zilAddress: address,
+        signer: wallet,
+    }
+
+    await client.approveZRC2(approveZRC2Params)
+
 }
 
 run()

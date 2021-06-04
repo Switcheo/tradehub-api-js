@@ -21,6 +21,7 @@ export interface NeoNetworkConfig {
 
 export interface ZilNetworkConfig {
   RpcURL: string
+  ChainId: number
   LockProxyAddr: string
 }
 
@@ -91,6 +92,7 @@ export const NetworkConfigs: {
     Zil: {
       RpcURL: '',
       LockProxyAddr: '',
+      ChainId: 1,
     }
   },
 
@@ -132,6 +134,7 @@ export const NetworkConfigs: {
     Zil: {
       RpcURL: 'https://poly-api.zilliqa.com',
       LockProxyAddr: '0xfc85a264c86148213ca4afb5dd9596d95234f0ba',
+      ChainId: 888,
     }
   },
 
@@ -173,6 +176,7 @@ export const NetworkConfigs: {
     Zil: {
       RpcURL: '',
       LockProxyAddr: '',
+      ChainId: 333,
     }
   },
 
@@ -214,6 +218,7 @@ export const NetworkConfigs: {
     Zil: {
       RpcURL: '',
       LockProxyAddr: '',
+      ChainId: 1,
     }
   },
 }
