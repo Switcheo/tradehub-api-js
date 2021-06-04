@@ -45,7 +45,7 @@ async function run() {
     const allowace = await client.checkAllowanceZRC2(token,"0x2141bf8b6d2213d4d7204e2ddab92653dc245c5f","0xa476fcedc061797fa2a6f80bd9e020a056904298")
     console.log(allowace)
     
-    const privateKey = '8c96c599fdb70e6ebdebe9b10473fd7b12b5e8924a724e2b9570436c44eb0ecd'
+    const privateKey = ''
     const address = getAddressFromPrivateKey(privateKey)
     const zilliqa = new Zilliqa(client.getProviderUrl())
     const wallet  = new Wallet(zilliqa.network.provider)
