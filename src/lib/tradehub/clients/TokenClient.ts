@@ -4,6 +4,11 @@ import { APIClient } from "../api";
 import { Token } from "../models/rest";
 import { bnOrZero, CoinGeckoTokenNames, CommonAssetName, SimpleMap } from "../utils";
 
+const SYMBOL_OVERRIDE: {
+  [symbol: string]: string
+} = {
+  NNEO: "nNEO",
+}
 
 class TokenClient {
   public readonly tokens: SimpleMap<Token> = {};
@@ -40,8 +45,56 @@ class TokenClient {
     return this.usdValues[commonDenom];
   }
 
-  public static isPoolToken(denom: string) {
-    return denom.match(/-lp\d+$/i) !== null;
+  public getTokenName(denom: string): string {
+    if (typeof denom !== 'string') return '';
+    denom = denom.toLowerCase();
+
+    const symbol = this.getSymbol(denom);
+    if (TokenClient.isPoolToken(denom)) {
+      const match = symbol.match(/^([a-z\d.-]+)-(\d+)-([a-z\d.-]+)-(\d+)-lp\d+$/i);
+      // inconsistent implementation of isPoolToken, exit
+      if (match === null) return symbol;
+
+      const denomA = match[1];
+      const denomB = match[3];
+
+      const symbolA = this.getTokenName(denomA);
+      const symbolB = this.getTokenName(denomB);
+
+      return `${symbolA}-${symbolB}`
+    }
+
+    if (SYMBOL_OVERRIDE[symbol]) {
+      return SYMBOL_OVERRIDE[symbol]
+    }
+
+    return symbol;
+  }
+  public getTokenDesc(denom: string) {
+    if (typeof denom !== 'string') return '';
+    denom = denom.toLowerCase();
+
+    if (TokenClient.isPoolToken(denom)) {
+      const match = denom.match(/^([a-z\d.-]+)-(\d+)-([a-z\d.-]+)-(\d+)-lp\d+$/i);
+      // inconsistent implementation of isPoolToken, exit
+      if (match === null) return this.getSymbol(denom);
+
+      const denomA = match[1];
+      const weightA = match[2];
+      const denomB = match[3];
+      const weightB = match[4];
+
+      const symbolA = this.getTokenName(denomA);
+      const symbolB = this.getTokenName(denomB);
+
+      return `${weightA}% ${symbolA} / ${weightB}% ${symbolB}`;
+    }
+
+    return this.tokens[denom]?.name ?? this.getSymbol(denom);
+  }
+
+  public static isPoolToken(denom: string): boolean {
+    return denom.match(/^([a-z\d.-]+)-(\d+)-([a-z\d.-]+)-(\d+)-lp\d+$/i) !== null;
   }
 
   public async reloadTokens(): Promise<SimpleMap<Token>> {

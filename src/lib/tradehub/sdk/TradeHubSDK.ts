@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
+import * as _RestTypes from "../api/spec";
 import { ETHClient, NEOClient } from "../clients";
 import TokenClient from "../clients/TokenClient";
 import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
@@ -24,6 +25,7 @@ const DEFAULT_OPTS: TradeHubSDKInitOpts = {
 
 class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   static APIClient = APIClient
+  static TokenClient = TokenClient
 
   network: Network
   api: APIClient
@@ -235,6 +237,7 @@ class ConnectedTradeHubSDK extends TradeHubSDK {
 namespace TradeHubSDK {
   export import RPCParams = _RPCParams;
   export import RestResponse = _RestResponse;
+  export import RestTypes = _RestTypes;
 
   export import Network = _Network;
 }
