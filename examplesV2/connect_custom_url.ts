@@ -9,7 +9,7 @@ import "./_setup";
   const sdk = new TradeHubSDK({
     network: TradeHubSDK.Network.TestNet,
     debugMode: true,
-    networkConfig: {
+    config: {
       RestURL: "https://tradescan.switcheo.org",
     },
   });

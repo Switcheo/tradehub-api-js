@@ -7,7 +7,7 @@ export const BN_ZERO = new BigNumber(0);
 export const SWTH_DECIMALS = 8;
 export const ONE_SWTH = BN_ONE.shiftedBy(SWTH_DECIMALS);
 
-export const DEFAULT_GAS = new BigNumber(1000).shiftedBy(SWTH_DECIMALS);
+export const DEFAULT_GAS = new BigNumber(100000000000);
 
 export const TxTypes = {
   Order: {

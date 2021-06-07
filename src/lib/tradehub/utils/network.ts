@@ -28,13 +28,13 @@ export interface ZilNetworkConfig {
 export interface NetworkConfig {
   Network: Network
   Bech32Prefix: string
-  
+
   RestURL: string
   WsURL: string
-  
+
   FeeURL: string
   FeeAddress: string
-  
+
   ChainId: string
 
   Eth: EthNetworkConfig
@@ -60,10 +60,10 @@ export const NetworkConfigs: {
 
     RestURL: `http://${localhost}:${restPort}`,
     WsURL: `ws://${localhost}:5000/ws`,
-    
+
     FeeURL: `http://${localhost}:9001`,
     FeeAddress: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
-    
+
     ChainId: 'switcheochain',
 
     Eth: {
@@ -102,10 +102,10 @@ export const NetworkConfigs: {
 
     RestURL: 'https://dev-tradescan.switcheo.org',
     WsURL: 'wss://dev-ws.dem.exchange/ws',
-    
+
     FeeURL: `http://13.251.218.38:9001`,
     FeeAddress: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
-    
+
     ChainId: 'switcheochain',
 
     Eth: {
@@ -144,10 +144,10 @@ export const NetworkConfigs: {
 
     RestURL: 'https://test-tradescan.switcheo.org',
     WsURL: 'wss://test-ws.dem.exchange/ws',
-    
+
     FeeURL: `http://54.255.42.175:9001`,
     FeeAddress: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
-    
+
     ChainId: 'switcheochain',
 
     Eth: {
@@ -186,10 +186,10 @@ export const NetworkConfigs: {
 
     RestURL: `https://tradescan.switcheo.org`,
     WsURL: `wss://ws.dem.exchange/ws`,
-    
+
     FeeURL: `https://fees.switcheo.org`,
     FeeAddress: '08d8f59e475830d9a1bb97d74285c4d34c6dac08', // swth1prv0t8j8tqcdngdmjlt59pwy6dxxmtqgycy2h7
-    
+
     ChainId: 'switcheo-tradehub-1',
 
     Eth: {
