@@ -16,12 +16,12 @@ import "./_setup";
   console.log("connected wallet:", connectedSDK.wallet.bech32Address);
 
   const token = await connectedSDK.coin.withdraw({
-    amount: new BigNumber(1).toString(10),
-    denom: "zusd",
-    to_address: "<zil address>",
+    amount: new BigNumber(100).toString(10),
+    denom: "swth-e",
+    to_address: "F284ecc0eFAB1D9c3eD06D04F3A1256393F8e704".toLowerCase(),
     fee_address: "swth1prv0t8j8tqcdngdmjlt59pwy6dxxmtqgycy2h7",
-    fee_amount: "0",
+    fee_amount: "1",
     originator: connectedSDK.wallet.bech32Address,
   })
-  console.log("create token response", token);
+  console.log("create withdraw response", token);
 })().catch(console.error).finally(() => process.exit(0))
