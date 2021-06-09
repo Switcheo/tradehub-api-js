@@ -11,6 +11,9 @@ import { ModAdmin, ModCoin, ModGovernance, ModMarket, ModOrder } from "./modules
 import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
 
+export * as RestTypes from "../api/spec";
+export * from "../models";
+
 export interface TradeHubSDKInitOpts {
   network?: Network
   debugMode?: boolean

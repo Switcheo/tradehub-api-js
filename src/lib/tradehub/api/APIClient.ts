@@ -1,24 +1,20 @@
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { RestResponse } from '../models';
-import { ResultsPaged } from '../models/rest/helper';
 import { bnOrZero, BroadcastTx, SimpleMap } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
   CheckUserNameOpts, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountResponse,
   GetAccountTradesOpts,
-
   GetActiveWalletsOpts,
   GetAllDelegatorDelegationsOpts,
   GetAllDelegatorDelegationsResponse,
   GetAMMRewardPercentageResponse,
   GetBlockHeightfromUnixOpts,
-
   GetBlocksOpts,
   GetCandlesticksOpts,
   GetCandlesticksResponse,
   GetCosmosBlockInfoOpts,
-
   GetDelegatorDelegationRewardsOpts,
   GetDelegatorDelegationRewardsResponse,
   GetDelegatorDelegationsOpts,
@@ -41,29 +37,16 @@ import {
   GetStakingPoolResponse,
   GetStakingValidatorsResponse,
   GetTokenOpts,
-
-
-
   GetTradesOpts,
-
   GetTransfersOpts,
-
   GetTxLogOpts,
-
-
   GetTxOpts,
-
   GetTxsOpts,
-
-
   GetUnbondedStakingValidatorsResponse,
   GetUnbondingStakingValidatorsResponse,
-
-
-
   GetWalletBalanceOpts,
-
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
+  ResultsPaged,
   TradehubEndpoints
 } from './spec';
 
@@ -500,7 +483,7 @@ class APIClient {
     return response.data as RestResponse.Leaderboard
   }
 
-  async getPositionsWithHighestPnL(opts: GetPositionsWithHightstPnlOpts): Promise<ResultsPaged<RestResponse.Position>> {
+  async getPositionsByPNL(opts: GetPositionsWithHightstPnlOpts): Promise<ResultsPaged<RestResponse.Position>> {
     const queryParams = {
       market: opts.market,
     }
@@ -510,7 +493,7 @@ class APIClient {
     return response.data as ResultsPaged<RestResponse.Position>
   }
 
-  async getPositionsCloseToLiquidation(opts: GetPositionsCloseToLiquidationOpts): Promise<ResultsPaged<RestResponse.Position>> {
+  async getPositionsByRisk(opts: GetPositionsCloseToLiquidationOpts): Promise<ResultsPaged<RestResponse.Position>> {
     const queryParams = {
       market: opts.market,
       direction: opts.direction,
@@ -521,7 +504,7 @@ class APIClient {
     return response.data as ResultsPaged<RestResponse.Position>
   }
 
-  async getPositionsLargest(opts: GetPositionsLargestOpts): Promise<ResultsPaged<RestResponse.Position>> {
+  async getPositionsBySize(opts: GetPositionsLargestOpts): Promise<ResultsPaged<RestResponse.Position>> {
     const queryParams = {
       market: opts.market,
     }
