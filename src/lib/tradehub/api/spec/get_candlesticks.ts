@@ -1,6 +1,6 @@
-import { RestResponse } from "@lib/tradehub/models";
+import { RestModels } from "@lib/tradehub/models";
 
-export interface GetCandlesticksResponse extends Array<RestResponse.Candlestick> {}
+export interface GetCandlesticksResponse extends Array<RestModels.Candlestick> {}
 
 export interface GetCandlesticksOpts {
     market: string

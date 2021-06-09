@@ -7,7 +7,7 @@ import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { ethers } from "ethers";
 import { appendHexPrefix, Blockchain, NetworkConfig, NetworkConfigProvider, ZilNetworkConfig, stripHexPrefix, SWTHAddress } from "../utils";
-import { RestResponse } from "../models";
+import { RestModels } from "../models";
 
 const uint128Max = "340282366920938463463374607431768211356"
 const zeroAddress = "0000000000000000000000000000000000000000"
@@ -27,12 +27,12 @@ interface ZILTxParams {
 export interface LockParams extends ZILTxParams {
     address: Uint8Array
     amount: BigNumber
-    token: RestResponse.Token
+    token: RestModels.Token
     signCompleteCallback?: () => void
 }
 
 export interface ApproveZRC2Params extends ZILTxParams {
-    token: RestResponse.Token
+    token: RestModels.Token
     signCompleteCallback?: () => void
   }
 
@@ -132,7 +132,7 @@ export class ZILClient {
         return tx
     }
 
-    public async checkAllowanceZRC2(token: RestResponse.Token, owner: string, spender: string) {
+    public async checkAllowanceZRC2(token: RestModels.Token, owner: string, spender: string) {
         const contractAddress = token.asset_id
         const zilliqa = new Zilliqa(this.getProviderUrl())
         const resp = await zilliqa.blockchain.getSmartContractSubState(contractAddress, "allowances",[owner,spender])
@@ -252,7 +252,7 @@ export class ZILClient {
      * 
      * @param token
      */
-    public getTargetProxyHash(token: RestResponse.Token) {
+    public getTargetProxyHash(token: RestModels.Token) {
       const networkConfig = this.getNetworkConfig();
       const addressBytes = SWTHAddress.getAddressBytes(token.originator, networkConfig.Network)
       const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))

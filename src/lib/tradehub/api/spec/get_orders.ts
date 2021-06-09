@@ -1,6 +1,6 @@
-import { RestResponse } from "@lib/tradehub/models";
+import { RestModels } from "@lib/tradehub/models";
 
-export interface GetOrdersResponse extends Array<RestResponse.Order> { }
+export interface GetOrdersResponse extends Array<RestModels.Order> { }
 
 /**
  * @param account Only returns orders made by this address
@@ -16,7 +16,7 @@ export interface GetOrdersResponse extends Array<RestResponse.Order> { }
 export interface GetOrdersOpts {
   account?: string
   market?: string
-  limit?: string
+  limit?: number
   before_id?: string
   after_id?: string
   order_status?: string

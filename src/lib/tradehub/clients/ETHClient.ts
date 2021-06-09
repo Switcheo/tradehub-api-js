@@ -5,7 +5,7 @@ import { logger } from "@lib/utils/logger";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import { APIClient } from "../api";
-import { RestResponse } from "../models";
+import { RestModels } from "../models";
 import { appendHexPrefix, Blockchain, EthNetworkConfig, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
 
 export interface ETHClientOpts {
@@ -23,11 +23,11 @@ interface ETHTxParams {
 export interface LockParams extends ETHTxParams {
   address: Uint8Array
   amount: BigNumber
-  token: RestResponse.Token
+  token: RestModels.Token
   signCompleteCallback?: () => void
 }
 export interface ApproveERC20Params extends ETHTxParams {
-  token: RestResponse.Token
+  token: RestModels.Token
   signCompleteCallback?: () => void
 }
 
@@ -97,7 +97,7 @@ export class ETHClient {
     return approveResultTx
   }
 
-  public async checkAllowanceERC20(token: RestResponse.Token, owner: string, spender: string) {
+  public async checkAllowanceERC20(token: RestModels.Token, owner: string, spender: string) {
     const contractAddress = token.asset_id
     const rpcProvider = this.getProvider()
     const contract = new ethers.Contract(contractAddress, ABIs.erc20, rpcProvider)
@@ -237,7 +237,7 @@ export class ETHClient {
     return result
   }
 
-  public async getDepositFeeAmount(token: RestResponse.Token, depositAddress: string) {
+  public async getDepositFeeAmount(token: RestModels.Token, depositAddress: string) {
     const feeInfo = await this.getFeeInfo(token.denom)
     if (!feeInfo.details?.deposit?.fee) {
       throw new Error("unsupported token")
@@ -258,7 +258,7 @@ export class ETHClient {
   public async getFeeInfo(denom: string) {
     const networkConfig = this.getNetworkConfig();
     const url = `${networkConfig.FeeURL}/fees?denom=${denom}`
-    const result = await fetch(url).then(res => res.json()) as RestResponse.FeeResult
+    const result = await fetch(url).then(res => res.json()) as RestModels.FeeResult
     return result
   }
 
@@ -285,7 +285,7 @@ export class ETHClient {
    * 
    * @param token
    */
-  public getTargetProxyHash(token: RestResponse.Token) {
+  public getTargetProxyHash(token: RestModels.Token) {
     const networkConfig = this.getNetworkConfig();
     const addressBytes = SWTHAddress.getAddressBytes(token.originator, networkConfig.Network)
     const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))

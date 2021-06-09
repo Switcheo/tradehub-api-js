@@ -3,7 +3,7 @@ import { APIClient } from "../api";
 import * as _RestTypes from "../api/spec";
 import { ETHClient, NEOClient } from "../clients";
 import TokenClient from "../clients/TokenClient";
-import { RestResponse as _RestResponse, RPCParams as _RPCParams } from "../models";
+import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector } from "../websocket";
@@ -13,6 +13,9 @@ import { SDKProvider } from "./modules/module";
 
 export * as RestTypes from "../api/spec";
 export * from "../models";
+
+/** @deprecated use RestModels */
+export { RestModels as RestResponse } from "../models";
 
 export interface TradeHubSDKInitOpts {
   network?: Network
@@ -241,7 +244,9 @@ class ConnectedTradeHubSDK extends TradeHubSDK {
 
 namespace TradeHubSDK {
   export import RPCParams = _RPCParams;
-  export import RestResponse = _RestResponse;
+  /** @deprecated use RestModels */
+  export import RestResponse = _RestModels;
+  export import RestModels = _RestModels;
   export import RestTypes = _RestTypes;
 
   export import Network = _Network;

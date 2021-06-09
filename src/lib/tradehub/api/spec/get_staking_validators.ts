@@ -1,4 +1,4 @@
-import { RestResponse } from "@lib/tradehub/models";
+import { RestModels } from "@lib/tradehub/models";
 import { CosmosResponse } from "./util";
 
-export interface GetStakingValidatorsResponse extends CosmosResponse<Array<RestResponse.StakingValidators>> {}
+export interface GetStakingValidatorsResponse extends CosmosResponse<Array<RestModels.StakingValidators>> {}

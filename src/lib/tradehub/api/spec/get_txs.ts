@@ -1,6 +1,6 @@
-import { RestResponse } from "@lib/tradehub/models";
+import { RestModels } from "@lib/tradehub/models";
 
-export interface GetTxsResponse extends Array<RestResponse.Txn> {}
+export interface GetTxsResponse extends Array<RestModels.Txn> {}
 
 export interface GetTxsOpts {
     address?: string

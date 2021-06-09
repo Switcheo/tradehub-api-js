@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
-import { RestResponse } from '../models';
+import { RestModels } from '../models';
 import { bnOrZero, BroadcastTx, SimpleMap } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
@@ -24,7 +24,7 @@ import {
   GetDelegatorUnbondingDelegationsOpts,
   GetDelegatorUnbondingDelegationsResponse,
   GetLeaderboardOpts,
-  GetLeverageOpts, GetMarketOpts, GetMarketStatsOpts, GetOrderbookOpts, GetOrderOpts,
+  GetLeverageOpts, GetMarketOpts, GetMarketsOpts, GetMarketStatsOpts, GetOrderbookOpts, GetOrderOpts,
   GetOrdersOpts, GetPositionOpts,
   GetPositionsCloseToLiquidationOpts,
   GetPositionsLargestOpts,
@@ -38,6 +38,7 @@ import {
   GetStakingValidatorsResponse,
   GetTokenOpts,
   GetTradesOpts,
+
   GetTransfersOpts,
   GetTxLogOpts,
   GetTxOpts,
@@ -46,6 +47,7 @@ import {
   GetUnbondingStakingValidatorsResponse,
   GetWalletBalanceOpts,
   ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
+  ResultsMinMax,
   ResultsPaged,
   TradehubEndpoints
 } from './spec';
@@ -113,15 +115,15 @@ class APIClient {
     return response.data
   }
 
-  async getTx(opts: GetTxOpts): Promise<RestResponse.TxnHistory> {
+  async getTx(opts: GetTxOpts): Promise<RestModels.TxnHistory> {
     const queryParams = { hash: opts.hash }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_tx', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.TxnHistory
+    return response.data as RestModels.TxnHistory
   }
 
-  async getTxs(opts: GetTxsOpts): Promise<RestResponse.Txn[]> {
+  async getTxs(opts: GetTxsOpts): Promise<RestModels.Txn[]> {
     const queryParams = {
       address: opts.address,
       msg_type: opts.msg_type,
@@ -136,7 +138,7 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_txs', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Txn[]
+    return response.data as RestModels.Txn[]
   }
 
   async getTxnFees(): Promise<SimpleMap<BigNumber>> {
@@ -151,12 +153,12 @@ class APIClient {
   }
 
   // todo error in api call
-  async getTxLog(opts: GetTxLogOpts): Promise<RestResponse.TxLog> {
+  async getTxLog(opts: GetTxLogOpts): Promise<RestModels.TxLog> {
     const queryParams = { hash: opts.hash }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_tx_log', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.TxLog
+    return response.data as RestModels.TxLog
   }
 
   async getTxTypes(): Promise<string[]> {
@@ -165,36 +167,36 @@ class APIClient {
     return response.data as string[]
   }
 
-  async getNodes(): Promise<RestResponse.NodeData> {
+  async getNodes(): Promise<RestModels.NodeData> {
     const request = this.apiManager.path('tradehub/get_nodes')
     const response = await request.get()
-    return response.data as RestResponse.NodeData
+    return response.data as RestModels.NodeData
   }
 
-  async getBlocks(opts: GetBlocksOpts): Promise<RestResponse.Block[]> {
+  async getBlocks(opts: GetBlocksOpts): Promise<RestModels.Block[]> {
     const queryParams = {
       page: opts.page
     }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_blocks', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Block[]
+    return response.data as RestModels.Block[]
   }
 
   // response data, evidence null | unknown
-  async getCosmosBlockInfo(opts: GetCosmosBlockInfoOpts): Promise<RestResponse.CosmosBlock> {
+  async getCosmosBlockInfo(opts: GetCosmosBlockInfoOpts): Promise<RestModels.CosmosBlock> {
     const routeParams = { blockheight: opts.blockheight }
     const request = this.apiManager.path('tradehub/get_cosmos_block', routeParams)
     const response = await request.get()
-    return response.data as RestResponse.CosmosBlock
+    return response.data as RestModels.CosmosBlock
   }
 
-  async getBlockHeightfromUnix(opts: GetBlockHeightfromUnixOpts): Promise<RestResponse.BlockHeight> {
+  async getBlockHeightfromUnix(opts: GetBlockHeightfromUnixOpts): Promise<RestModels.BlockHeight> {
     const queryParams = { unix: opts.unix }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_block_height_from_unix', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.BlockHeight
+    return response.data as RestModels.BlockHeight
   }
 
   async getAverageBlocktime(): Promise<string> {
@@ -203,26 +205,26 @@ class APIClient {
     return response.data as string
   }
 
-  async getToken(opts: GetTokenOpts): Promise<RestResponse.Token> {
+  async getToken(opts: GetTokenOpts): Promise<RestModels.Token> {
     const queryParams = { token: opts.token }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_token', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Token
+    return response.data as RestModels.Token
   }
 
-  async getTokens(): Promise<RestResponse.Token[]> {
+  async getTokens(): Promise<RestModels.Token[]> {
     const request = this.apiManager.path('tradehub/get_tokens')
     const response = await request.get()
-    return response.data as RestResponse.Token[]
+    return response.data as RestModels.Token[]
   }
 
-  async getRichList(opts: GetRichListOpts): Promise<RestResponse.UserToken[]> {
+  async getRichList(opts: GetRichListOpts): Promise<RestModels.UserToken[]> {
     const queryParams = { token: opts.token }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_rich_list', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.UserToken[]
+    return response.data as RestModels.UserToken[]
   }
 
   // Account
@@ -243,43 +245,43 @@ class APIClient {
     return response.data as Boolean
   }
 
-  async getProfile(opts: GetProfileOpts): Promise<RestResponse.Profile> {
+  async getProfile(opts: GetProfileOpts): Promise<RestModels.Profile> {
     const queryParams = { account: opts.account }
     const routeParams = {}
     const request = this.apiManager.path('account/get_profile', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Profile
+    return response.data as RestModels.Profile
   }
 
   // response check
-  async getLeverage(opts: GetLeverageOpts): Promise<RestResponse.Leverage[]> {
-    const queryParams = { 
-      account: opts.account, 
+  async getLeverage(opts: GetLeverageOpts): Promise<RestModels.Leverage[]> {
+    const queryParams = {
+      account: opts.account,
       market: opts.market,
     }
     const routeParams = {}
     const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Leverage[]
+    return response.data as RestModels.Leverage[]
   }
 
-  async getWalletBalance(opts: GetWalletBalanceOpts): Promise<RestResponse.Balances> {
+  async getWalletBalance(opts: GetWalletBalanceOpts): Promise<RestModels.Balances> {
     const queryParams = {
       account: opts.account,
     }
     const routeParams = {}
     const request = this.apiManager.path('account/get_balance', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Balances
+    return response.data as RestModels.Balances
   }
 
-  async getTotalBalances(): Promise<RestResponse.Balance[]> {
+  async getTotalBalances(): Promise<RestModels.Balance[]> {
     const request = this.apiManager.path('account/get_total_balances')
     const response = await request.get()
-    return response.data as RestResponse.Balance[]
+    return response.data as RestModels.Balance[]
   }
 
-  async getAccountRealizedPnl(opts: GetAccountRealizedPnlOpts): Promise<RestResponse.RealizedPnl> {
+  async getAccountRealizedPnl(opts: GetAccountRealizedPnlOpts): Promise<RestModels.RealizedPnl> {
     const queryParams = {
       account: opts.account,
       from: opts.from,
@@ -288,7 +290,7 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('account/get_realized_pnl', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.RealizedPnl
+    return response.data as RestModels.RealizedPnl
   }
 
   async getActiveWallets(opts: GetActiveWalletsOpts): Promise<string> {
@@ -301,43 +303,43 @@ class APIClient {
     return response.data as string
   }
 
-  async getTransfers(opts: GetTransfersOpts): Promise<RestResponse.Transfer[]> {
+  async getTransfers(opts: GetTransfersOpts): Promise<RestModels.Transfer[]> {
     const queryParams = {
       account: opts.account,
     }
     const routeParams = {}
     const request = this.apiManager.path('account/get_transfers', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Transfer[]
+    return response.data as RestModels.Transfer[]
   }
 
   // History
 
-  async getPosition(opts: GetPositionOpts): Promise<RestResponse.Position> {
+  async getPosition(opts: GetPositionOpts): Promise<RestModels.Position> {
     const queryParams = { account: opts.account, market: opts.market }
     const routeParams = {}
     const request = this.apiManager.path('history/get_position', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Position
+    return response.data as RestModels.Position
   }
 
-  async getPositions(opts: GetPositionsOpts): Promise<RestResponse.Position[]> {
+  async getPositions(opts: GetPositionsOpts): Promise<RestModels.Position[]> {
     const queryParams = { account: opts.account }
     const routeParams = {}
     const request = this.apiManager.path('history/get_positions', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Position[]
+    return response.data as RestModels.Position[]
   }
 
-  async getOrder(opts: GetOrderOpts): Promise<RestResponse.Order> {
+  async getOrder(opts: GetOrderOpts): Promise<RestModels.Order> {
     const queryParams = { order_id: opts.order_id }
     const routeParams = {}
     const request = this.apiManager.path('history/get_order', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Order
+    return response.data as RestModels.Order
   }
 
-  async getOrders(opts: GetOrdersOpts): Promise<RestResponse.Order[]> {
+  async getOrders(opts: GetOrdersOpts): Promise<RestModels.Order[]> {
     const queryParams = {
       account: opts.account,
       market: opts.market,
@@ -352,28 +354,29 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('history/get_orders', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Order[]
+    return response.data as RestModels.Order[]
   }
 
-  async getOpenOrders(opts: GetOrdersOpts): Promise<RestResponse.Order[]> {
+  async getOrdersPaged(opts: GetOrdersOpts): Promise<ResultsMinMax<RestModels.Order>> {
     const queryParams = {
       account: opts.account,
       market: opts.market,
       limit: opts.limit,
       before_id: opts.before_id,
       after_id: opts.after_id,
-      order_status: 'open',
+      order_status: opts.order_status,
       order_type: opts.order_type,
       order_by: opts.order_by,
       initiator: opts.initiator,
+      pagination: true,
     }
     const routeParams = {}
     const request = this.apiManager.path('history/get_orders', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Order[]
+    return response.data as ResultsMinMax<RestModels.Order>
   }
 
-  async getAccountTrades(opts: GetAccountTradesOpts): Promise<RestResponse.AccountTrade[]> {
+  async getAccountTrades(opts: GetAccountTradesOpts): Promise<RestModels.AccountTrade[]> {
     const queryParams = {
       account: opts.account,
       market: opts.market,
@@ -385,10 +388,26 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('history/get_account_trades', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.AccountTrade[]
+    return response.data as RestModels.AccountTrade[]
   }
 
-  async getTrades(opts: GetTradesOpts): Promise<RestResponse.Trade[]> {
+  async getAccountTradesPaged(opts: GetAccountTradesOpts): Promise<ResultsMinMax<RestModels.AccountTrade>> {
+    const queryParams = {
+      account: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_by: opts.order_by,
+      pagination: true,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_account_trades', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as ResultsMinMax<RestModels.AccountTrade>
+  }
+
+  async getTrades(opts: GetTradesOpts): Promise<RestModels.Trade[]> {
     const queryParams = {
       account: opts.account,
       market: opts.market,
@@ -399,76 +418,92 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('history/get_trades', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Trade[]
+    return response.data as RestModels.Trade[]
   }
 
-  async getLiquidationTrades(): Promise<RestResponse.AccountTrade[]> {
+  async getTradesPaged(opts: GetTradesOpts): Promise<ResultsMinMax<RestModels.Trade>> {
+    const queryParams = {
+      account: opts.account,
+      market: opts.market,
+      limit: opts.limit,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      pagination: true,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('history/get_trades', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as ResultsMinMax<RestModels.Trade>
+  }
+
+  async getLiquidationTrades(): Promise<RestModels.AccountTrade[]> {
     const request = this.apiManager.path('history/get_liquidation_trades')
     const response = await request.get()
-    return response.data as RestResponse.AccountTrade[]
+    return response.data as RestModels.AccountTrade[]
   }
 
   // Market
 
-  async getMarket(opts: GetMarketOpts): Promise<RestResponse.Market> {
+  async getMarket(opts: GetMarketOpts): Promise<RestModels.Market> {
     const queryParams = {
       market: opts.market
     }
     const routeParams = {}
     const request = this.apiManager.path('markets/get_market', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Market
+    return response.data as RestModels.Market
   }
 
-  async getMarkets(): Promise<RestResponse.Market[]> {
-    const request = this.apiManager.path('markets/get_markets')
+  async getMarkets(opts: GetMarketsOpts = {}): Promise<RestModels.Market[]> {
+    const queryParams = { ...opts }
+    const request = this.apiManager.path('markets/get_markets', {}, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Market[]
+    return response.data as RestModels.Market[]
   }
 
-  async getOrderbook(opts: GetOrderbookOpts): Promise<RestResponse.OrderBook> {
+  async getOrderbook(opts: GetOrderbookOpts): Promise<RestModels.OrderBook> {
     const queryParams = {
       market: opts.market
     }
     const routeParams = {}
     const request = this.apiManager.path('markets/get_orderbook', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.OrderBook
+    return response.data as RestModels.OrderBook
   }
 
-  async getPrices(opts: GetPricesOpts): Promise<RestResponse.Price> {
+  async getPrices(opts: GetPricesOpts): Promise<RestModels.Price> {
     const queryParams = {
       market: opts.market
     }
     const routeParams = {}
     const request = this.apiManager.path('markets/get_prices', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Price
+    return response.data as RestModels.Price
   }
 
-  async getMarketStats(opts: GetMarketStatsOpts): Promise<RestResponse.MarketStat[]> {
+  async getMarketStats(opts: GetMarketStatsOpts): Promise<RestModels.MarketStat[]> {
     const queryParams = {
       market: opts.market
     }
     const routeParams = {}
     const request = this.apiManager.path('markets/get_market_stats', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.MarketStat[]
+    return response.data as RestModels.MarketStat[]
   }
 
-  async getInsuranceFundBalance(): Promise<RestResponse.InsuranceFundBalance[]> {
+  async getInsuranceFundBalance(): Promise<RestModels.InsuranceFundBalance[]> {
     const request = this.apiManager.path('markets/get_insurence_fund_balance')
     const response = await request.get()
-    return response.data as RestResponse.InsuranceFundBalance[]
+    return response.data as RestModels.InsuranceFundBalance[]
   }
 
-  async getLiquidityPools(): Promise<RestResponse.LiquidityPool[]> {
+  async getLiquidityPools(): Promise<RestModels.LiquidityPool[]> {
     const request = this.apiManager.path('markets/get_liquidity_pools')
     const response = await request.get()
-    return response.data as RestResponse.LiquidityPool[]
+    return response.data as RestModels.LiquidityPool[]
   }
 
-  async getLeaderboard(opts: GetLeaderboardOpts): Promise<RestResponse.Leaderboard> {
+  async getLeaderboard(opts: GetLeaderboardOpts): Promise<RestModels.Leaderboard> {
     const queryParams = {
       market: opts.market,
       limit: opts.limit,
@@ -480,20 +515,20 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('markets/get_leaderboard', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestResponse.Leaderboard
+    return response.data as RestModels.Leaderboard
   }
 
-  async getPositionsByPNL(opts: GetPositionsWithHightstPnlOpts): Promise<ResultsPaged<RestResponse.Position>> {
+  async getPositionsByPNL(opts: GetPositionsWithHightstPnlOpts): Promise<ResultsPaged<RestModels.Position>> {
     const queryParams = {
       market: opts.market,
     }
     const routeParams = {}
     const request = this.apiManager.path('markets/get_positions_sorted_by_pnl', routeParams, queryParams)
     const response = await request.get()
-    return response.data as ResultsPaged<RestResponse.Position>
+    return response.data as ResultsPaged<RestModels.Position>
   }
 
-  async getPositionsByRisk(opts: GetPositionsCloseToLiquidationOpts): Promise<ResultsPaged<RestResponse.Position>> {
+  async getPositionsByRisk(opts: GetPositionsCloseToLiquidationOpts): Promise<ResultsPaged<RestModels.Position>> {
     const queryParams = {
       market: opts.market,
       direction: opts.direction,
@@ -501,17 +536,17 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('markets/get_positions_sorted_by_risk', routeParams, queryParams)
     const response = await request.get()
-    return response.data as ResultsPaged<RestResponse.Position>
+    return response.data as ResultsPaged<RestModels.Position>
   }
 
-  async getPositionsBySize(opts: GetPositionsLargestOpts): Promise<ResultsPaged<RestResponse.Position>> {
+  async getPositionsBySize(opts: GetPositionsLargestOpts): Promise<ResultsPaged<RestModels.Position>> {
     const queryParams = {
       market: opts.market,
     }
     const routeParams = {}
     const request = this.apiManager.path('markets/get_positions_sorted_by_size', routeParams, queryParams)
     const response = await request.get()
-    return response.data as ResultsPaged<RestResponse.Position>
+    return response.data as ResultsPaged<RestModels.Position>
   }
 
   // 404, also not in switcheo-chain
@@ -600,14 +635,14 @@ class APIClient {
     return response.data as GetStakedPoolTokenResponse
   }
 
-  async getInflationStartTime(): Promise<RestResponse.BlockHeight> {
+  async getInflationStartTime(): Promise<RestModels.BlockHeight> {
     const request = this.apiManager.path('staking/get_inflation_start_time')
     const response = await request.get()
-    return response.data as RestResponse.BlockHeight
+    return response.data as RestModels.BlockHeight
   }
 
   async getWeeklyRewards(): Promise<BigNumber> {
-    const startTime: RestResponse.BlockHeight = await this.getInflationStartTime()
+    const startTime: RestModels.BlockHeight = await this.getInflationStartTime()
     const WEEKLY_DECAY = new BigNumber(0.9835)
     const MIN_RATE = new BigNumber(0.0003)
     const INITIAL_SUPPLY = new BigNumber(1000000000)
@@ -625,19 +660,19 @@ class APIClient {
 
   // Validators
 
-  async getAllValidators(): Promise<RestResponse.Validator[]> {
+  async getAllValidators(): Promise<RestModels.Validator[]> {
     const request = this.apiManager.path('validators/get_all')
     const response = await request.get()
-    return response.data as RestResponse.Validator[]
+    return response.data as RestModels.Validator[]
   }
-  
+
   async getValidatorDelegations(opts: ListValidatorDelegationsOpts): Promise<ListValidatorDelegationsResponse> {
     const routeParams = { validator: opts.validator }
     const request = this.apiManager.path('validators/delegations', routeParams)
     const response = await request.get()
     return response.data as ListValidatorDelegationsResponse
   }
-  
+
   async getStakingValidators(): Promise<GetStakingValidatorsResponse> {
     const request = this.apiManager.path('validators/get_staking_validators')
     const response = await request.get()

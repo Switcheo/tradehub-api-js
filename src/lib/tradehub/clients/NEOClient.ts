@@ -9,7 +9,7 @@ import { logger } from "@lib/utils";
 import BigNumber from "bignumber.js";
 import { chunk } from 'lodash';
 import { APIClient } from "../api";
-import { RestResponse } from "../models";
+import { RestModels } from "../models";
 import { Blockchain, NeoNetworkConfig, NetworkConfigProvider } from "../utils";
 
 export interface NEOClientOpts {
@@ -65,7 +65,7 @@ export class NEOClient {
     // NOTE: fetching of tokens is chunked in sets of 15 as we may hit
     // the gas limit on the RPC node and error out otherwise
     const promises: Promise<{}>[] = // tslint:disable-line
-      chunk(tokens, 75).map(async (partition: ReadonlyArray<RestResponse.TokenObject>) => {
+      chunk(tokens, 75).map(async (partition: ReadonlyArray<RestModels.TokenObject>) => {
 
         let acc = {}
         for (const token of partition) {

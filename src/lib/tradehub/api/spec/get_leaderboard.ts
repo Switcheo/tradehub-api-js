@@ -1,6 +1,6 @@
-import { RestResponse } from "@lib/tradehub/models";
+import { RestModels } from "@lib/tradehub/models";
 
-export interface GetLeaderboardResponse extends RestResponse.Leaderboard {}
+export interface GetLeaderboardResponse extends RestModels.Leaderboard {}
 
 export interface GetLeaderboardOpts {
     market?: string

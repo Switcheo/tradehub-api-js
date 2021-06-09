@@ -12,5 +12,5 @@ export interface GetAccountTradesOpts {
   before_id?: string
   after_id?: string
   order_by?: string
-  limit?: string
+  limit?: number
 }
