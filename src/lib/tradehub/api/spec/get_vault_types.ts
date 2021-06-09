@@ -1,1 +1,0 @@
-export interface GetVaultTypesResponse extends Array<unknown> {}

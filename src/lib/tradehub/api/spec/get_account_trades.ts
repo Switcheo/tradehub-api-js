@@ -1,7 +1,3 @@
-import { RestResponse } from "@lib/tradehub/models";
-
-export interface GetAccountTradesResponse extends Array<RestResponse.AccountTrade> { }
-
 /**
  * @param market The market (eg: swth_eth)
  * @param before_id Only returns trades before this id

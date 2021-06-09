@@ -38,9 +38,9 @@ export const TradehubEndpoints = {
   'markets/get_insurence_fund_balance': '/get_insurance_balance',
   'markets/get_liquidity_pools': '/get_liquidity_pools',
   'markets/get_leaderboard': '/get_leaderboard',
-  'markets/get_highest_pnl_positions': '/get_positions_sorted_by_pnl',
-  'markets/get_positions_close_to_liquidation': '/get_positions_sorted_by_risk',
-  'markets/get_positions_largest': '/get_positions_sorted_by_size',
+  'markets/get_positions_sorted_by_pnl': '/get_positions_sorted_by_pnl',
+  'markets/get_positions_sorted_by_risk': '/get_positions_sorted_by_risk',
+  'markets/get_positions_sorted_by_size': '/get_positions_sorted_by_size',
   'markets/get_amm_reward_percentage': '/get_amm_reward_percentage',
   'markets/candlesticks': '/candlesticks',
 

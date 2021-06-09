@@ -1,6 +1,6 @@
 export interface Leaderboard {
     count: string
-    data: Array<LeaderboardData>
+    data: LeaderboardData[]
     from_block: string
     from_time: string
     limit: string

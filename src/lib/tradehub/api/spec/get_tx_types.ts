@@ -1,1 +1,0 @@
-export interface GetTxTypesResponse extends Array<string> {}
