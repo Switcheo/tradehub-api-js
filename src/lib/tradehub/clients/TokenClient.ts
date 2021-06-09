@@ -7,6 +7,7 @@ import { bnOrZero, CoinGeckoTokenNames, CommonAssetName, SimpleMap } from "../ut
 const SYMBOL_OVERRIDE: {
   [symbol: string]: string
 } = {
+  SWTHB: "SWTH",
   NNEO: "nNEO",
 }
 

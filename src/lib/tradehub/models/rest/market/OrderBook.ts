@@ -1,10 +1,9 @@
+
 export interface OrderBook {
-  [key: string]: Side,
+  [key: string]: OrderBookRow[],
 }
 
-interface Side extends Array<OrderBookRow> {}
-
-interface OrderBookRow {
+export interface OrderBookRow {
   price: string
   quantity: string
 }

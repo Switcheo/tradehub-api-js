@@ -156,9 +156,11 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
 
   public async initialize(wallet?: TradeHubWallet) {
     this.log("initialize…");
-    await this.reloadTxnFees();
-    await this.ws.connect();
-    await this.token.initialize();
+    if (!this.initialized) {
+      await this.reloadTxnFees();
+      await this.ws.connect();
+      await this.token.initialize();
+    }
 
     if (wallet) {
       this.log("reloading wallet account");
