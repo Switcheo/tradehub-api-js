@@ -66,4 +66,14 @@ export const TradehubEndpoints = {
   'validators/delegations': '/staking/validators/:validator/delegations',
   'validators/get_all': '/get_all_validators',
   'validators/get_staking_validators': '/staking/validators',
+
+  'gov/parameters/deposit': '/gov/parameters/deposit',
+  'gov/parameters/tallying': '/gov/parameters/tallying',
+  'gov/proposals/list': '/gov/proposals',
+  'gov/proposals/proposer': '/gov/proposals/:proposalId/proposer',
+  'gov/proposals/tally': '/gov/proposals/:proposalId/tally',
+
+  'slashing/parameters': '/slashing/parameters',
+  'slashing/signing_infos': '/slashing/signing_infos',
+
 } as const

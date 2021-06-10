@@ -23,7 +23,7 @@ import {
   GetDelegatorRedelegationsResponse,
   GetDelegatorUnbondingDelegationsOpts,
   GetDelegatorUnbondingDelegationsResponse,
-  GetLeaderboardOpts,
+  GetGovProposalOpts, GetLeaderboardOpts,
   GetLeverageOpts, GetMarketOpts, GetMarketsOpts, GetMarketStatsOpts, GetOrderbookOpts, GetOrderOpts,
   GetOrdersOpts, GetPositionOpts,
   GetPositionsCloseToLiquidationOpts,
@@ -32,13 +32,14 @@ import {
   GetPositionsWithHightstPnlOpts,
   GetPricesOpts, GetProfileOpts,
   GetRichListOpts,
+  GetSlashingParamsResponse,
+  GetSlashingSigningInfoResponse,
   GetStakedPoolTokenOpts,
   GetStakedPoolTokenResponse,
   GetStakingPoolResponse,
   GetStakingValidatorsResponse,
   GetTokenOpts,
   GetTradesOpts,
-
   GetTransfersOpts,
   GetTxLogOpts,
   GetTxOpts,
@@ -46,7 +47,9 @@ import {
   GetUnbondedStakingValidatorsResponse,
   GetUnbondingStakingValidatorsResponse,
   GetWalletBalanceOpts,
-  ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
+  GovDepositParamsResponse, GovListProposalResponse, GovLiveTallyResponse,
+  GovProposerResponse, GovTallyParamsResponse, ListGovProposalOpts, ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
+  parseCosmosDate,
   ResultsMinMax,
   ResultsPaged,
   TradehubEndpoints
@@ -718,6 +721,85 @@ class APIClient {
     return response.data as GetUnbondedStakingValidatorsResponse
   }
 
+  async getSlashingParams(): Promise<GetSlashingParamsResponse> {
+    const request = this.apiManager.path('slashing/parameters')
+    const response = await request.get()
+    const data = response.data
+    data.result = {
+      signed_blocks_window: bnOrZero(data.result.signed_blocks_window).toNumber(),
+      min_signed_per_window: bnOrZero(data.result.min_signed_per_window).toNumber(),
+      downtime_jail_duration: bnOrZero(data.result.downtime_jail_duration).toNumber(),
+      slash_fraction_double_sign: bnOrZero(data.result.slash_fraction_double_sign).toNumber(),
+      slash_fraction_downtime: bnOrZero(data.result.slash_fraction_downtime).toNumber(),
+    }
+    return data as GetSlashingParamsResponse
+  }
+
+  async getSlashingSigningInfos(): Promise<GetSlashingSigningInfoResponse> {
+    const request = this.apiManager.path('slashing/signing_infos')
+    const response = await request.get()
+    const data = response.data
+    for (const info of data.result) {
+      info.start_height = parseInt(info.start_height)
+      info.index_offset = parseInt(info.index_offset)
+      info.missed_blocks_counter = parseInt(info.missed_blocks_counter)
+      info.jailed_until = parseCosmosDate(info.jailed_until)
+    }
+
+    return data as GetSlashingSigningInfoResponse
+  }
+
+  async getGovParamsDeposit(): Promise<GovDepositParamsResponse> {
+    const request = this.apiManager.path('gov/parameters/deposit')
+    const response = await request.get()
+    return response.data as GovDepositParamsResponse
+  }
+
+  async getGovParamsTally(): Promise<GovTallyParamsResponse> {
+    const request = this.apiManager.path('gov/parameters/tallying')
+    const response = await request.get()
+    return response.data as GovTallyParamsResponse
+  }
+
+  async listGovProposals(opts: ListGovProposalOpts = {}): Promise<GovListProposalResponse> {
+    const request = this.apiManager.path('gov/proposals/list', {}, opts)
+    const response = await request.get()
+    const data = response.data
+    for (const proposal of data.result) {
+      proposal.final_tally_result = {
+        yes: bnOrZero(proposal.final_tally_result.yes),
+        abstain: bnOrZero(proposal.final_tally_result.abstain),
+        no: bnOrZero(proposal.final_tally_result.no),
+        no_with_veto: bnOrZero(proposal.final_tally_result.no_with_veto),
+      }
+      proposal.deposit_end_time = parseCosmosDate(proposal.deposit_end_time)
+      proposal.voting_start_time = parseCosmosDate(proposal.voting_start_time)
+      proposal.voting_end_time = parseCosmosDate(proposal.voting_end_time)
+    }
+
+    return data as GovListProposalResponse
+  }
+
+  async getGovProposer(opts: GetGovProposalOpts): Promise<GovProposerResponse> {
+    const request = this.apiManager.path('gov/proposals/proposer', {}, opts)
+    const response = await request.get()
+    return response.data as GovProposerResponse
+  }
+
+  async getGovLiveTally(opts: GetGovProposalOpts): Promise<GovLiveTallyResponse> {
+    const request = this.apiManager.path('gov/proposals/tally', {}, opts)
+    const response = await request.get()
+    const data = response.data
+
+    data.result = {
+      yes: bnOrZero(data.result.yes),
+      abstain: bnOrZero(data.result.abstain),
+      no: bnOrZero(data.result.no),
+      no_with_veto: bnOrZero(data.result.no_with_veto),
+    }
+
+    return data as GovLiveTallyResponse
+  }
 }
 
 export default APIClient
