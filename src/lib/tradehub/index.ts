@@ -1,2 +1,2 @@
 export * from "./sdk";
-export { ZILClient } from './clients/index'
+export { ZILClient,ZILClientOpts } from './clients/index'
