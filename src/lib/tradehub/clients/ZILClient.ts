@@ -24,7 +24,7 @@ interface ZILTxParams {
     signer: Signer
 }
 
-export interface LockParams extends ZILTxParams {
+export interface ZILLockParams extends ZILTxParams {
     address: Uint8Array
     amount: BigNumber
     token: RestModels.Token
@@ -148,7 +148,7 @@ export class ZILClient {
 
     }
 
-    public async lockDeposit(params: LockParams) {
+    public async lockDeposit(params: ZILLockParams) {
         const { address, amount, token, gasPrice, gasLimit, zilAddress, signer } = params
         const networkConfig = this.getNetworkConfig()
 

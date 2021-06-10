@@ -4,6 +4,7 @@ import * as _RestTypes from "../api/spec";
 import { ETHClient, NEOClient } from "../clients";
 import TokenClient from "../clients/TokenClient";
 import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
+import { ZILClient } from "../clients/ZILClient";
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector } from "../websocket";
@@ -46,6 +47,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   neo: NEOClient
   eth: ETHClient
   bsc: ETHClient
+  zil: ZILClient
 
   token: TokenClient
 
@@ -103,6 +105,11 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       configProvider: this,
       blockchain: Blockchain.BinanceSmartChain,
     });
+
+    this.zil = ZILClient.instance({
+      configProvider: this,
+      blockchain: Blockchain.Zilliqa,
+    })
 
     this.token = TokenClient.instance(this.api);
 
