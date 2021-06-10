@@ -141,6 +141,25 @@ class APIClient {
     return response.data as RestModels.Txn[]
   }
 
+  async getTxsPaged(opts: GetTxsOpts): Promise<ResultsMinMax<RestModels.Txn[]>> {
+    const queryParams = {
+      address: opts.address,
+      msg_type: opts.msg_type,
+      height: opts.height,
+      start_block: opts.start_block,
+      end_block: opts.end_block,
+      before_id: opts.before_id,
+      after_id: opts.after_id,
+      order_by: opts.order_by,
+      limit: opts.limit,
+      pagination: true,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_txs', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as ResultsMinMax<RestModels.Txn[]>
+  }
+
   async getTxnFees(): Promise<SimpleMap<BigNumber>> {
     const request = this.apiManager.path('tradehub/get_txns_fees')
     const response = await request.get()
