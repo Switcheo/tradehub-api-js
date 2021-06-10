@@ -20,6 +20,7 @@ export const TradehubEndpoints = {
   // account api
   'account/detail': '/get_account',
   'account/username_check': '/username_check',
+  'account/get_address': '/get_address',
   'account/get_profile': '/get_profile',
   'account/get_balance': '/get_balance',
   'account/get_total_balances': '/get_total_balances',
@@ -52,6 +53,9 @@ export const TradehubEndpoints = {
   'history/get_account_trades': '/get_trades_by_account',
   'history/get_trades': '/get_trades',
   'history/get_liquidation_trades': '/get_liquidations',
+
+  // oracle api
+  'oracle/get_results': '/get_oracle_results',
   
   // staking api
   'staking/get_staking_pool': '/staking/pool',

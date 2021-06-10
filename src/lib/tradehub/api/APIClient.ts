@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { RestModels } from '../models';
+import { Oracle } from '../models/rest';
 import { bnOrZero, BroadcastTx, SimpleMap } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
@@ -278,6 +279,18 @@ class APIClient {
     return response.data as Boolean
   }
 
+  async getAddressForUsername(opts: CheckUserNameOpts): Promise<string | null> {
+    const queryParams = { username: opts.username }
+    const routeParams = {}
+    const request = this.apiManager.path('account/get_address', routeParams, queryParams)
+    try {
+      const response = await request.get()
+      return response.data
+    } catch (error) {
+      return null
+    }
+  }
+
   async getProfile(opts: GetProfileOpts): Promise<RestModels.Profile> {
     const queryParams = { account: opts.account }
     const routeParams = {}
@@ -502,6 +515,20 @@ class APIClient {
     const request = this.apiManager.path('markets/get_orderbook', routeParams, queryParams)
     const response = await request.get()
     return response.data as RestModels.OrderBook
+  }
+
+  async getOracleResults(): Promise<SimpleMap<RestModels.Oracle>> {
+    const request = this.apiManager.path('oracle/get_results')
+    const response = await request.get()
+
+    Object.values(response.data).forEach((item: any) => {
+      response.data[item.oracle_id] = {
+        ...item,
+        block_height: parseInt(item.block_height),
+        data: bnOrZero(item.data),
+      } as Oracle
+    })
+    return response.data as SimpleMap<RestModels.Oracle>
   }
 
   async getPrices(opts: GetPricesOpts): Promise<RestModels.Price> {
