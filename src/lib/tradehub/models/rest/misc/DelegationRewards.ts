@@ -1,11 +1,11 @@
 import { TokenAmount } from "@lib/models";
 
 export interface DelegationRewards {
-    rewards: Array<ValidatorReward>
-    total: Array<TokenAmount>
+    rewards: ValidatorReward[] | null
+    total: TokenAmount[]
 }
 
-interface ValidatorReward {
+export interface ValidatorReward {
     validator_address: string
-    reward: Array<TokenAmount>
+    reward: TokenAmount[]
 }
