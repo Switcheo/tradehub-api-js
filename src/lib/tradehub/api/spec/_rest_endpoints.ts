@@ -76,4 +76,7 @@ export const TradehubEndpoints = {
   'slashing/parameters': '/slashing/parameters',
   'slashing/signing_infos': '/slashing/signing_infos',
 
+  // tendermint
+  'tendermint/block_results': '/block_results',
+
 } as const

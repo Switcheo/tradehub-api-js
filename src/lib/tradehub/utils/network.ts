@@ -30,6 +30,7 @@ export interface NetworkConfig {
   Bech32Prefix: string
 
   RestURL: string
+  TendermintURL: string
   WsURL: string
 
   FeeURL: string
@@ -59,6 +60,7 @@ export const NetworkConfigs: {
     Bech32Prefix: 'tswth',
 
     RestURL: `http://${localhost}:${restPort}`,
+    TendermintURL: `http://${localhost}:26657`,
     WsURL: `ws://${localhost}:5000/ws`,
 
     FeeURL: `http://${localhost}:9001`,
@@ -101,6 +103,7 @@ export const NetworkConfigs: {
     Bech32Prefix: 'swth',
 
     RestURL: 'https://dev-tradescan.switcheo.org',
+    TendermintURL: `https://dev-tradescan-tm.switcheo.org`,
     WsURL: 'wss://dev-ws.dem.exchange/ws',
 
     FeeURL: `http://13.251.218.38:9001`,
@@ -143,6 +146,7 @@ export const NetworkConfigs: {
     Bech32Prefix: 'tswth',
 
     RestURL: 'https://test-tradescan.switcheo.org',
+    TendermintURL: `https://test-tradescan-tm.switcheo.org`,
     WsURL: 'wss://test-ws.dem.exchange/ws',
 
     FeeURL: `http://54.255.42.175:9001`,
@@ -185,6 +189,7 @@ export const NetworkConfigs: {
     Bech32Prefix: 'swth',
 
     RestURL: `https://tradescan.switcheo.org`,
+    TendermintURL: `https://tradescan-tm.switcheo.org`,
     WsURL: `wss://ws.dem.exchange/ws`,
 
     FeeURL: `https://fees.switcheo.org`,

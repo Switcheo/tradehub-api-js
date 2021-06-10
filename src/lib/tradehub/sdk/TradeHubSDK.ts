@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { APIClient } from "../api";
+import { APIClient, TMClient } from "../api";
 import * as _RestTypes from "../api/spec";
 import { ETHClient, NEOClient } from "../clients";
 import TokenClient from "../clients/TokenClient";
@@ -36,6 +36,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
 
   network: Network
   api: APIClient
+  tm: TMClient
   debugMode: boolean
   configOverride: Partial<NetworkConfig>
   initialized: boolean
@@ -77,6 +78,9 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     };
 
     this.api = new APIClient(this.networkConfig.RestURL, {
+      debugMode: this.debugMode,
+    });
+    this.tm = new TMClient(this.networkConfig.TendermintURL, {
       debugMode: this.debugMode,
     });
 
