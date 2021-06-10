@@ -2,11 +2,11 @@ import { Zilliqa } from "@zilliqa-js/zilliqa";
 import { Wallet } from "@zilliqa-js/account"
 import { APIClient } from "../src/lib/tradehub/api";
 import { ApproveZRC2Params, ZILLockParams, ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
-import { RestResponse } from "../src/lib/tradehub/models";
 import { Blockchain, SWTHAddress } from "../src/lib/tradehub/utils";
 import { Network, NetworkConfigProvider, NetworkConfigs } from "../src/lib/tradehub/utils/network";
 import { getAddressFromPrivateKey } from "@zilliqa-js/crypto";
 import BigNumber from "bignumber.js";
+import { Token } from "../src/lib/tradehub/models/rest";
 
 async function run() {
     console.log("testing zilliqa client")
@@ -26,7 +26,7 @@ async function run() {
     //const tokens = await client.getExternalBalances(switcheo, "2141bf8b6d2213d4d7204e2ddab92653dc245c5f")
     //console.log(tokens)
 
-    const token: RestResponse.Token = {
+    const token: Token = {
       name: 'Zilliqa',
       symbol: 'ZIL',
       denom: 'zil',
