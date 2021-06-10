@@ -525,7 +525,7 @@ class APIClient {
     return response.data as RestModels.LiquidityPool[]
   }
 
-  async getLeaderboard(opts: GetLeaderboardOpts): Promise<RestModels.Leaderboard> {
+  async getLeaderboard(opts: GetLeaderboardOpts): Promise<RestModels.LeaderboardResult> {
     const queryParams = {
       market: opts.market,
       limit: opts.limit,
@@ -537,7 +537,7 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('markets/get_leaderboard', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestModels.Leaderboard
+    return response.data as RestModels.LeaderboardResult
   }
 
   async getPositionsByPNL(opts: GetPositionsWithHightstPnlOpts): Promise<ResultsPaged<RestModels.Position>> {

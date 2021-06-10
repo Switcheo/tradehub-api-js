@@ -1,6 +1,6 @@
-export interface Leaderboard {
+export interface LeaderboardResult {
     count: string
-    data: LeaderboardData[]
+    data: Leaderboard[]
     from_block: string
     from_time: string
     limit: string
@@ -11,7 +11,7 @@ export interface Leaderboard {
     to_time: string
 }
 
-interface LeaderboardData {
+export interface Leaderboard {
     address: string
     realized_pnl: string
     username: string
