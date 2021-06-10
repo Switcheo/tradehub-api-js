@@ -16,6 +16,7 @@ export const TradehubEndpoints = {
   'tradehub/get_rich_list': '/get_rich_list',
   'tradehub/get_vault_types': '/get_vault_types',
   'tradehub/get_vaults': '/get_vaults',
+  'tradehub/search': '/search',
 
   // account api
   'account/detail': '/get_account',

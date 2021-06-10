@@ -261,6 +261,13 @@ class APIClient {
     return response.data as RestModels.UserToken[]
   }
 
+  async search(keyword: string): Promise<RestModels.SearchResult> {
+    const queryParams = { keyword }
+    const request = this.apiManager.path('tradehub/search', {}, queryParams)
+    const response = await request.get()
+    return response.data as RestModels.SearchResult
+  }
+
   // Account
 
   async getAccount(opts: GetAccountOpts): Promise<GetAccountResponse> {
