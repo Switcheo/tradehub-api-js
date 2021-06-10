@@ -197,12 +197,23 @@ class APIClient {
 
   async getBlocks(opts: GetBlocksOpts): Promise<RestModels.Block[]> {
     const queryParams = {
-      page: opts.page
+      ...opts,
     }
     const routeParams = {}
     const request = this.apiManager.path('tradehub/get_blocks', routeParams, queryParams)
     const response = await request.get()
     return response.data as RestModels.Block[]
+  }
+
+  async getBlocksPaged(opts: GetBlocksOpts): Promise<ResultsMinMax<RestModels.Block>> {
+    const queryParams = {
+      ...opts,
+      pagination: true,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('tradehub/get_blocks', routeParams, queryParams)
+    const response = await request.get()
+    return response.data as ResultsMinMax<RestModels.Block>
   }
 
   // response data, evidence null | unknown
