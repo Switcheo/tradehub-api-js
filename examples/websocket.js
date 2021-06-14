@@ -1,5 +1,5 @@
-import { WSConnector } from "."
-import { WSChannel } from "./build/main/lib/websocket/types";
+const { WSConnector } = require("..")
+const { WSChannel } = require("../build/main/lib/websocket/types");
 
 (async () => {
   const wsConnector = new WSConnector({
