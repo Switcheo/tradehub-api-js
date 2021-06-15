@@ -817,6 +817,7 @@ class APIClient {
         no: bnOrZero(proposal.final_tally_result.no),
         no_with_veto: bnOrZero(proposal.final_tally_result.no_with_veto),
       }
+      proposal.submit_time = parseCosmosDate(proposal.submit_time)
       proposal.deposit_end_time = parseCosmosDate(proposal.deposit_end_time)
       proposal.voting_start_time = parseCosmosDate(proposal.voting_start_time)
       proposal.voting_end_time = parseCosmosDate(proposal.voting_end_time)
