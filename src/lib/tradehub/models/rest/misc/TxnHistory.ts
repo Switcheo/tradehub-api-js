@@ -12,7 +12,7 @@ export interface TxnHistory {
     block_time: string
 }
 
-interface TxnMessage {
+export interface TxnMessage {
     msg_type: string
     msg: string
 }
