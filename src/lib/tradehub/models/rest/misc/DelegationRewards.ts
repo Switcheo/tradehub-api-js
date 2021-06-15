@@ -7,5 +7,5 @@ export interface DelegationRewards {
 
 export interface ValidatorReward {
     validator_address: string
-    reward: TokenAmount[]
+    reward: TokenAmount[] | null
 }
