@@ -807,7 +807,12 @@ class APIClient {
   }
 
   async listGovProposals(opts: ListGovProposalOpts = {}): Promise<GovListProposalResponse> {
-    const request = this.apiManager.path('gov/proposals/list', {}, opts)
+    const queryParams = {
+      limit: opts.limit,
+      page: opts.page,
+    }
+    const routeParams = {}
+    const request = this.apiManager.path('gov/proposals/list', routeParams, queryParams)
     const response = await request.get()
     const data = response.data
     for (const proposal of data.result) {
@@ -827,13 +832,15 @@ class APIClient {
   }
 
   async getGovProposer(opts: GetGovProposalOpts): Promise<GovProposerResponse> {
-    const request = this.apiManager.path('gov/proposals/proposer', {}, opts)
+    const routeParams = { proposalId: opts.proposalId }
+    const request = this.apiManager.path('gov/proposals/proposer', routeParams)
     const response = await request.get()
     return response.data as GovProposerResponse
   }
 
   async getGovLiveTally(opts: GetGovProposalOpts): Promise<GovLiveTallyResponse> {
-    const request = this.apiManager.path('gov/proposals/tally', {}, opts)
+    const routeParams = { proposalId: opts.proposalId }
+    const request = this.apiManager.path('gov/proposals/tally', routeParams)
     const response = await request.get()
     const data = response.data
 
