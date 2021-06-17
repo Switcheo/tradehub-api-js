@@ -827,13 +827,13 @@ class APIClient {
   }
 
   async getGovProposer(opts: GetGovProposalOpts): Promise<GovProposerResponse> {
-    const request = this.apiManager.path('gov/proposals/proposer', {}, opts)
+    const request = this.apiManager.path('gov/proposals/proposer', opts)
     const response = await request.get()
     return response.data as GovProposerResponse
   }
 
   async getGovLiveTally(opts: GetGovProposalOpts): Promise<GovLiveTallyResponse> {
-    const request = this.apiManager.path('gov/proposals/tally', {}, opts)
+    const request = this.apiManager.path('gov/proposals/tally', opts)
     const response = await request.get()
     const data = response.data
 
