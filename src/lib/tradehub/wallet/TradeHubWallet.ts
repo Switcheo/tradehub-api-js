@@ -1,5 +1,6 @@
 import { Network } from "@lib/types";
 import { stringOrBufferToBuffer, SWTHAddress } from "@lib/utils";
+import { ethers } from "ethers";
 import secp256k1 from 'secp256k1';
 import { sha256 } from 'sha.js';
 import { APIClient } from "../api";
@@ -198,6 +199,20 @@ export class TradeHubWallet {
 
   public async sendTx(msg: TxMsg, memo?: string): Promise<TxResponse> {
     return this.sendTxs([msg], memo);
+  }
+
+  public static verifySignature(signatureBase64: string, plaintext: string, pubKeyBase64: string) {
+    // obtain actual signed message
+    const hex = ethers.utils.sha256(Buffer.from(plaintext)).substring(2); // remove 0x prefix
+    const message = Buffer.from(hex, "hex");
+
+    // get public key buffer
+    const publicKey = Buffer.from(pubKeyBase64, "base64");
+
+    const signatureBuffer = Buffer.from(signatureBase64, "base64");
+
+    // verify signature
+    return secp256k1.ecdsaVerify(signatureBuffer, message, publicKey);
   }
 
   private genSignDoc(msgs: TxMsg[], memo?: string): PreSignDoc {
