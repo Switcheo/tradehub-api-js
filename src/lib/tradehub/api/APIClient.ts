@@ -219,8 +219,7 @@ class APIClient {
 
   // response data, evidence null | unknown
   async getCosmosBlockInfo(opts: GetCosmosBlockInfoOpts): Promise<RestModels.CosmosBlock> {
-    const routeParams = { blockheight: opts.blockheight }
-    const request = this.apiManager.path('tradehub/get_cosmos_block', routeParams)
+    const request = this.apiManager.path('tradehub/get_cosmos_block', opts)
     const response = await request.get()
     return response.data as RestModels.CosmosBlock
   }

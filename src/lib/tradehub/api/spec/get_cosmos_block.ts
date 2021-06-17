@@ -1,3 +1,3 @@
 export interface GetCosmosBlockInfoOpts {
-    blockheight: string
+    height: number | string
 }
