@@ -1,3 +1,4 @@
+import { TokenAmount } from "@lib/tradehub/models/rest";
 import { TxMsgValue } from "@lib/tradehub/utils";
 
 export interface Proposal {
@@ -10,6 +11,6 @@ export interface SubmitProposalMsg<T = Proposal> extends TxMsgValue {
     type: string;
     value: T;
   };
-  initial_deposit: [];
+  initial_deposit: TokenAmount[];
   proposer: string;
 };
