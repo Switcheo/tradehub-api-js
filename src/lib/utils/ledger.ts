@@ -1,6 +1,5 @@
 import Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
-import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 
 export function isBrowserSupported(): boolean {
   if (!navigator)
@@ -41,17 +40,6 @@ async function getWebHIDTransport(): Promise<Transport> {
   }
 }
 
-async function getWebUSBTransport(): Promise<Transport> {
-  return await TransportWebUSB.create()
-}
-
 export async function getLedgerTransport(): Promise<Transport> {
-  if (!navigator)
-    throw new Error('this function is only supported for use on browsers')
-
-  const isWindows = navigator.platform.toLowerCase().indexOf('win') >= 0
-
-  const transport = await (isWindows ? getWebHIDTransport() : getWebUSBTransport())
-
-  return transport
+  return getWebHIDTransport();
 }
