@@ -35,7 +35,7 @@ export type TradeHubWalletInitOpts = {
 class TradeHubMnemonicSigner implements TradeHubSigner {
   type = TradeHubSignerTypes.PrivateKey
 
-  sign(message: string): Buffer {
+  async sign(message: string): Promise<Buffer> {
     const msg = Buffer.from(message)
     const result = secp256k1.ecdsaSign(
       Buffer.from(new sha256().update(msg).digest()),
@@ -158,12 +158,16 @@ export class TradeHubWallet {
     return this;
   }
 
+  public async teardown() {
+    // no action required yet.
+  }
+
   public async sendTxs(msgs: TxMsg[], memo?: string): Promise<TxResponse> {
     const { account, sequence } = this.checkAccountInit();
     this.log("sendTx", account, sequence);
 
     const doc = this.genSignDoc(msgs, memo).prepare(account, sequence);
-    const signature = this.sign(doc);
+    const signature = await this.sign(doc);
 
     const tx: TradeHubTx = {
       fee: doc.fee,
@@ -202,8 +206,8 @@ export class TradeHubWallet {
     return preSignDoc.appendMsg(...msgs);
   }
 
-  private sign(doc: StdSignDoc): TradeHubSignature {
-    const signatureBuffer = this.signer.sign(doc.sortedJson());
+  private async sign(doc: StdSignDoc): Promise<TradeHubSignature> {
+    const signatureBuffer = await this.signer.sign(doc.sortedJson());
     return {
       pub_key: {
         type: 'tendermint/PubKeySecp256k1',

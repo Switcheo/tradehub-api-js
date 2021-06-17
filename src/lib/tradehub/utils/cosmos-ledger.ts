@@ -4,7 +4,7 @@
 // this file was inserted to fix Chrome 91 killing web u2f
 // original implementation: https://github.com/luniehq/cosmos-ledger
 
-import { CosmosLedgerJS } from 'ledger-cosmos-js'
+import { default as CosmosLedgerApp } from 'ledger-cosmos-js'
 
 import { signatureImport } from 'secp256k1'
 const semver = require('semver')
@@ -141,7 +141,7 @@ export class CosmosLedger {
       }
     }
 
-    const cosmosLedgerApp = new CosmosLedgerJS(transport)
+    const cosmosLedgerApp = new CosmosLedgerApp(transport)
     this.cosmosApp = cosmosLedgerApp
 
     // checks if the Ledger is connected and the app is open

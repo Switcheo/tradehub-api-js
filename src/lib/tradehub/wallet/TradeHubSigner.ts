@@ -7,5 +7,5 @@ export interface TradeHubSigner {
   type: TradeHubSignerTypes
 
   // signs the cosmos StdSignDoc.toJSON, returns signature buffer
-  sign: (doc: string) => Buffer
+  sign: (doc: string) => Promise<Buffer>
 }

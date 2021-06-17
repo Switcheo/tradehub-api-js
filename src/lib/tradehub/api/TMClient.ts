@@ -81,8 +81,8 @@ class TmClient {
     }
 
     const events = {
-      begin_block_events: parseEvents(data.result.begin_block_events || []),
-      end_block_events: parseEvents(data.result.end_block_events || []),
+      begin_block_events: parseEvents(data.result?.begin_block_events ?? []),
+      end_block_events: parseEvents(data.result?.end_block_events ?? []),
     }
 
     return events as BlockEvents

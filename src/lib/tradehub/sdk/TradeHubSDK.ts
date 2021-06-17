@@ -3,8 +3,8 @@ import { APIClient, TMClient } from "../api";
 import * as _RestTypes from "../api/spec";
 import { ETHClient, NEOClient } from "../clients";
 import TokenClient from "../clients/TokenClient";
-import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
 import { ZILClient } from "../clients/ZILClient";
+import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector } from "../websocket";
@@ -14,7 +14,6 @@ import { SDKProvider } from "./modules/module";
 
 export * as RestTypes from "../api/spec";
 export * from "../models";
-
 /** @deprecated use RestModels */
 export { RestModels as RestResponse } from "../models";
 
@@ -197,6 +196,16 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   public async connect(wallet: TradeHubWallet) {
     await this.initialize(wallet);
     return new ConnectedTradeHubSDK(wallet, this.generateOpts())
+  }
+
+  public async disconnect() {
+    await this.wallet?.teardown();
+    this.wallet = undefined;
+  }
+
+  public async teardown() {
+    await this.disconnect();
+    this.ws.disconnect();
   }
 
   public async connectWithPrivateKey(privateKey: string | Buffer) {
