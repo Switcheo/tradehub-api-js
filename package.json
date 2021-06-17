@@ -76,6 +76,7 @@
     "gatsby-cli": "^2.15.1",
     "hdkey": "^1.1.2",
     "isomorphic-ws": "^4.0.1",
+    "ledger-cosmos-js": "^2.1.8",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.0",
     "query-string": "^6.13.8",

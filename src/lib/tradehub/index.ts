@@ -1,2 +1,3 @@
+export { ZILClient, ZILClientOpts } from "./clients/index";
 export * from "./sdk";
-export { ZILClient,ZILClientOpts } from './clients/index'
+export { CosmosLedger } from "./utils";
