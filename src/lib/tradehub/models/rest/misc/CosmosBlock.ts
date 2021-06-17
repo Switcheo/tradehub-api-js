@@ -15,9 +15,13 @@ interface CosmosBlockPart {
 
 interface CosmosBlockData {
     header: CosmosBlockHeader
-    data: CosmosBlockData
+    data: CosmosBlockDataContent
     evidence: CosmosBlockEvidence
     last_commit: CosmosBlockCommit
+}
+
+interface CosmosBlockDataContent {
+    txs: string[]
 }
 
 interface CosmosBlockHeader {
