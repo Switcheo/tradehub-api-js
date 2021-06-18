@@ -6,7 +6,7 @@ import { sha256 } from 'sha.js';
 import { APIClient } from "../api";
 import { RestModels } from "../models";
 import { BroadcastTx, NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest, TxResponse } from "../utils";
-import { TradeHubSigner, TradeHubSignerTypes } from "./TradeHubSigner";
+import { TradeHubSigner } from "./TradeHubSigner";
 
 export type TradeHubWalletInitOpts = {
   debugMode?: boolean
@@ -34,7 +34,7 @@ export type TradeHubWalletInitOpts = {
 })
 
 class TradeHubMnemonicSigner implements TradeHubSigner {
-  type = TradeHubSignerTypes.PrivateKey
+  type = TradeHubSigner.Types.PrivateKey
 
   async sign(message: string): Promise<Buffer> {
     const msg = Buffer.from(message)
