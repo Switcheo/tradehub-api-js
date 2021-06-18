@@ -14,7 +14,7 @@ const PARAMS: CreateTokenMsg = {
   chain_id: '110',
   asset_id: 'ced1f00d5088ef3d246fc622e9b0e5173f2216bf',
   is_collateral: false,
-  lock_proxy_hash: '90cc3b304addf373cd6e78dbf64c36139fa55aab',
+  lock_proxy_hash: 'a5484b227f35f5e192e444146a3d9e09f4cdad80',
   delegated_supply: '0',
 };
 
