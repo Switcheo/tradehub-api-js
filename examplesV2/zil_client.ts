@@ -27,9 +27,9 @@ async function run() {
     // console.log(tokens)
 
     const token: Token = {
-      name: 'Zilliqa USD',
-      symbol: 'zUSD',
-      denom: 'zusd',
+      name: 'Zilliqa USDT',
+      symbol: 'zUSDT',
+      denom: 'zusdt',
       decimals: 12,
       blockchain: 'zil',
       chain_id: 110,
