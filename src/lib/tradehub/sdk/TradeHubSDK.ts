@@ -7,7 +7,8 @@ import { ZILClient } from "../clients/ZILClient";
 import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
-import { WSConnector } from "../websocket";
+import { WSConnector, WSSubscriber } from "../websocket";
+import { WSChannel } from "../websocket/types";
 import { ModAdmin, ModCoin, ModGovernance, ModMarket, ModOrder } from "./modules";
 import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
@@ -20,6 +21,7 @@ export { RestModels as RestResponse } from "../models";
 export interface TradeHubSDKInitOpts {
   network?: Network
   debugMode?: boolean
+  ws?: WSConnector
   txFees?: SimpleMap<BigNumber>
 
   config?: Partial<NetworkConfig>
@@ -42,7 +44,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
 
   networkConfig: NetworkConfig
 
-  ws: WSConnector
+  ws?: WSConnector
 
   neo: NEOClient
   eth: ETHClient
@@ -83,11 +85,6 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       debugMode: this.debugMode,
     });
 
-    this.ws = new WSConnector({
-      endpoint: this.networkConfig.WsURL,
-      debugMode: this.debugMode,
-    });
-
     this.log("constructor result opts", this.generateOpts())
 
     if (this.debugMode) {
@@ -123,6 +120,16 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.admin = new ModAdmin(this);
     this.coin = new ModCoin(this);
     this.account = new ModAccount(this);
+  }
+
+  protected async startWS() {
+    if (!this.ws?.connected) {
+      this.ws = new WSConnector({
+        endpoint: this.networkConfig.WsURL,
+        debugMode: this.debugMode,
+      });
+      await this.ws.connect();
+    }
   }
 
   public getConfig(): NetworkConfig {
@@ -174,7 +181,6 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.log("initialize…");
     if (!this.initialized) {
       await this.reloadTxnFees();
-      await this.ws.connect();
       await this.token.initialize();
     }
 
@@ -205,7 +211,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
 
   public async teardown() {
     await this.disconnect();
-    this.ws.disconnect();
+    this.ws?.disconnect();
   }
 
   public async connectWithPrivateKey(privateKey: string | Buffer) {
@@ -260,6 +266,19 @@ class ConnectedTradeHubSDK extends TradeHubSDK {
 
     this.wallet = wallet
   }
+
+  public async subscribeWallet(handler: WSSubscriber) {
+    if (!this.wallet)
+      throw new Error("SDK not connected");
+    if (!this.ws?.connected)
+      await this.startWS();
+
+    await this.ws.subscribe({
+      address: this.wallet.bech32Address,
+      channel: WSChannel.balances,
+    }, handler);
+  }
+
 }
 
 namespace TradeHubSDK {

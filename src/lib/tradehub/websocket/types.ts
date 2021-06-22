@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 export enum WSChannel {
   candlesticks = 'candlesticks',
   books = 'books',

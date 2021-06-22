@@ -1,6 +1,5 @@
 import * as BIP39 from "bip39";
 import { TradeHubSDK } from '..';
-import { WSChannel } from "../build/main/lib/tradehub/websocket/types";
 import "./_setup";
 
 (async () => {
@@ -17,11 +16,7 @@ import "./_setup";
 
   await connectedSDK.initialize();
 
-  connectedSDK.ws.subscribe({
-    address: connectedSDK.getConnectedWallet().bech32Address,
-    channel: WSChannel.balances
-  }, (message) => {
-    const balances = (message.data as any).result;
-    console.log("balance update", balances);
+  await connectedSDK.subscribeWallet((result) => {
+    console.log("ws", (result.data as any).result);
   });
 })().catch(console.error);

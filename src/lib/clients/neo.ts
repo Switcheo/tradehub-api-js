@@ -11,7 +11,10 @@ export interface NEOClientOpts {
   network: Network,
   blockchain?: Blockchain,
 }
-
+/**
+ * @deprecated 
+ * use TradeHubSDK.neo
+ */
 export class NEOClient {
   static SUPPORTED_BLOCKCHAINS = [Blockchain.Neo]
 
