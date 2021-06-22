@@ -31,6 +31,10 @@ export interface ApproveERC20Params extends ETHTxParams {
   signCompleteCallback?: () => void
 }
 
+export interface EthersTransactionResponse extends ethers.Transaction {
+  wait: () => Promise<ethers.Transaction>
+}
+
 export const FEE_MULTIPLIER = ethers.BigNumber.from(2)
 
 export class ETHClient {
@@ -76,7 +80,7 @@ export class ETHClient {
     return tokens
   }
 
-  public async approveERC20(params: ApproveERC20Params) {
+  public async approveERC20(params: ApproveERC20Params): Promise<EthersTransactionResponse> {
     const { token, gasPriceGwei, gasLimit, ethAddress, signer } = params
     const contractAddress = token.asset_id
 
@@ -105,7 +109,7 @@ export class ETHClient {
     return new BigNumber(allowance.toString())
   }
 
-  public async lockDeposit(params: LockParams) {
+  public async lockDeposit(params: LockParams): Promise<EthersTransactionResponse> {
     const { address, token, amount, gasPriceGwei, gasLimit, ethAddress, signer } = params
 
     if (gasLimit.lt(150000)) {

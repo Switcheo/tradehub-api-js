@@ -198,7 +198,7 @@ export const NetworkConfigs: {
     ChainId: 'switcheo-tradehub-1',
 
     Eth: {
-      RpcURL: 'https://eth-2.switcheo.network/',
+      RpcURL: 'https://eth-mainnet.alchemyapi.io/v2/59kbsEncz6n4QuzCymsfb8p6ZVqsaAvR',
       WsURL: 'wss://mainnet.dagger.matic.network',
       PayerURL: `https://eth-payer.switcheo.org`,
       LockProxyAddr: '0x9a016ce184a22dbf6c17daa59eb7d3140dbd1c54',
