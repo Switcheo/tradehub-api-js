@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { RestModels } from '../models';
 import { Oracle } from '../models/rest';
+import { RestTypes } from '../sdk';
 import { bnOrZero, BN_ZERO, BroadcastTx, SimpleMap } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
@@ -369,26 +370,31 @@ class APIClient {
 
   // History
 
-  async getPosition(opts: GetPositionOpts): Promise<RestModels.Position> {
-    const queryParams = { account: opts.account, market: opts.market }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_position', routeParams, queryParams)
+  async getPosition(opts: GetPositionOpts = {}): Promise<RestModels.Position> {
+    const request = this.apiManager.path('history/get_position', {}, opts)
     const response = await request.get()
     return response.data as RestModels.Position
   }
 
-  async getPositions(opts: GetPositionsOpts): Promise<RestModels.Position[]> {
-    const queryParams = { account: opts.account }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_positions', routeParams, queryParams)
+  async getPositions(opts: GetPositionsOpts = {}): Promise<RestModels.Position[]> {
+    const request = this.apiManager.path('history/get_positions', {}, opts)
     const response = await request.get()
     return response.data as RestModels.Position[]
   }
 
+  async getPositionsPaged(opts: GetPositionsOpts = {}): Promise<RestTypes.ResultsMinMax<RestModels.Position>> {
+    const queryParams = {
+      ...opts,
+      pagination: true,
+    }
+    const request = this.apiManager.path('history/get_positions', {}, queryParams)
+    const response = await request.get()
+    return response.data as RestTypes.ResultsMinMax<RestModels.Position>
+  }
+
   async getOrder(opts: GetOrderOpts): Promise<RestModels.Order> {
     const queryParams = { order_id: opts.order_id }
-    const routeParams = {}
-    const request = this.apiManager.path('history/get_order', routeParams, queryParams)
+    const request = this.apiManager.path('history/get_order', {}, queryParams)
     const response = await request.get()
     return response.data as RestModels.Order
   }
