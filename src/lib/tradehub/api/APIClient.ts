@@ -2,10 +2,10 @@ import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { RestModels } from '../models';
 import { Oracle } from '../models/rest';
-import { bnOrZero, BroadcastTx, SimpleMap } from '../utils';
+import { bnOrZero, BN_ZERO, BroadcastTx, SimpleMap } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
-  CheckUserNameOpts, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountResponse,
+  CheckUserNameOpts, CosmosResponse, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountResponse,
   GetAccountTradesOpts,
   GetActiveWalletsOpts,
   GetAllDelegatorDelegationsOpts,
@@ -24,6 +24,7 @@ import {
   GetDelegatorRedelegationsResponse,
   GetDelegatorUnbondingDelegationsOpts,
   GetDelegatorUnbondingDelegationsResponse,
+  GetDistributionParamsResponse,
   GetGovProposalOpts, GetLeaderboardOpts,
   GetLeverageOpts, GetMarketOpts, GetMarketsOpts, GetMarketStatsOpts, GetOrderbookOpts, GetOrderOpts,
   GetOrdersOpts, GetPositionOpts,
@@ -40,6 +41,7 @@ import {
   GetStakingPoolResponse,
   GetStakingValidatorsResponse,
   GetTokenOpts,
+  GetTotalSupplyOpts,
   GetTradesOpts,
   GetTransfersOpts,
   GetTxLogOpts,
@@ -765,6 +767,20 @@ class APIClient {
     return response.data as GetUnbondedStakingValidatorsResponse
   }
 
+  async getDistributionParams(): Promise<GetDistributionParamsResponse> {
+    const request = this.apiManager.path('distribution/parameters')
+    const response = await request.get()
+    const data = response.data
+    data.result = {
+      ...data.result,
+      community_tax: bnOrZero(data.result.community_tax),
+      base_proposer_reward: bnOrZero(data.result.base_proposer_reward),
+      bonus_proposer_reward: bnOrZero(data.result.bonus_proposer_reward),
+      liquidity_provider_reward: bnOrZero(data.result.liquidity_provider_reward),
+    }
+    return data as GetDistributionParamsResponse
+  }
+
   async getSlashingParams(): Promise<GetSlashingParamsResponse> {
     const request = this.apiManager.path('slashing/parameters')
     const response = await request.get()
@@ -844,6 +860,39 @@ class APIClient {
     }
 
     return data as GovLiveTallyResponse
+  }
+
+  async getLatestBlock(): Promise<RestModels.CosmosBlock> {
+    const request = this.apiManager.path("tradehub/blocks/latest")
+    const response = await request.get();
+
+    return response.data as RestModels.CosmosBlock;
+  }
+
+  async getTotalSupply(opts: GetTotalSupplyOpts): Promise<CosmosResponse<string>> {
+    const { denom } = opts;
+    const request = this.apiManager.path("tradehub/supply", { denom })
+    const response = await request.get();
+
+    return response.data as CosmosResponse<string>;
+  }
+
+  async getSWTHSupply(): Promise<BigNumber> {
+    const tradehubSupplyRaw = await this.getTotalSupply({ denom: "swth" });
+    const bscSupply = await this.fetchSupply(`https://api.bscscan.com/api?module=stats&action=tokensupply&contractaddress=0x250b211ee44459dad5cd3bca803dd6a7ecb5d46c&apikey=CBYSNW36IW65MPVJWD1B92P5TED52DM1PR`);
+    const ethSupply = await this.fetchSupply('https://api.etherscan.com/api?module=stats&action=tokensupply&contractaddress=0xb4371da53140417cbb3362055374b10d97e420bb&apikey=M56BUJAR279SGEEZIGYE94C4R1EB3RBYMY');
+    return bnOrZero(tradehubSupplyRaw.result).plus(bscSupply).plus(ethSupply);
+  }
+
+  private async fetchSupply(url: string): Promise<BigNumber> {
+    try {
+      const response = await fetch(url);
+      const supply = await response.json();
+      return bnOrZero(supply.result);
+    } catch (error) {
+      console.error(error);
+      return BN_ZERO;
+    }
   }
 }
 
