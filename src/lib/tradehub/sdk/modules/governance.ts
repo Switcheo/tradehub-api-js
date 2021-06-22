@@ -4,7 +4,7 @@ import { TxTypes } from "@lib/tradehub/utils";
 import BaseModule from "./module";
 
 class ModGovernance extends BaseModule {
-  public async submitProposal<T = RPCParams.Proposal>(type: string, params: T, deposit: TokenAmount[] = []) {
+  public async submitProposal<T = RPCParams.Proposal>(type: RPCParams.Proposal.Type | string, params: T, deposit: TokenAmount[] = []) {
     const value: RPCParams.SubmitProposalMsg<T> = {
       content: {
         type,
