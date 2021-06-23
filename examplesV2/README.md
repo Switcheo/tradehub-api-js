@@ -15,3 +15,9 @@ or
 yarn global add typescript ts-node
 ts-node ./examplesV2/get_account.ts
 ```
+
+If you would like to connect to specific wallet, create a `.env` file containing that wallet's mnemonics.
+
+```
+MNEMONICS=<wallet mnemonics here>
+```
