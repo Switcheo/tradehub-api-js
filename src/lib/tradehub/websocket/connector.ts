@@ -64,7 +64,7 @@ interface WSMessage<T> {
   result?: WSResult<T>
 }
 
-interface WSSubscriber {
+export interface WSSubscriber {
   (result: WSResult<unknown>): void
 }
 

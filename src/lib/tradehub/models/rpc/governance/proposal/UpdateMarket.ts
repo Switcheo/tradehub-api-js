@@ -17,6 +17,7 @@ interface UpdateMarketParams {
   mark_price_band: string
   last_price_protected_band: string
   is_active: boolean
+  originator: string
 }
 
 export interface UpdateMarketProposal extends Proposal {

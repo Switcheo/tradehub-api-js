@@ -1,1 +1,0 @@
-export const ETH_WALLET_BYTECODE = '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3'

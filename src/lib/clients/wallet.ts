@@ -12,7 +12,7 @@ import { HDWallet } from '../utils/hdwallet'
 import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
 import LOCK_PROXY_ABI from '../eth/abis/lockProxy.json'
 import ERC20_ABI from '../eth/abis/erc20.json'
-import { Blockchain, ETH_WALLET_BYTECODE } from '../constants'
+import { Blockchain } from '../constants'
 import Neon, { api, u } from '@cityofzion/neon-js'
 import stripHexPrefix from 'strip-hex-prefix'
 import CosmosLedger from '@lunie/cosmos-ledger'
@@ -93,6 +93,10 @@ interface ScriptResult {
   stack: ReadonlyArray<{ type: string, value: string }>
 }
 
+/**
+ * @deprecated 
+ * use TradeHubSDK.wallet
+ */
 export class WalletClient {
   public static async connectMnemonic(mnemonic: string, net?: string) {
     const network = getNetwork(net)
@@ -630,7 +634,7 @@ export class WalletClient {
     const provider = this.getEthProvider()
     const contractAddress = this.network.ETH_LOCKPROXY
     const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, provider)
-    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, ETH_WALLET_BYTECODE)
+    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, this.network.ETH_WALLET_BYTECODE_HASH)
 
     return walletAddress
   }
@@ -648,7 +652,7 @@ export class WalletClient {
     const provider = this.getBscProvider()
     const contractAddress = this.network.BSC_LOCKPROXY
     const contract = new ethers.Contract(contractAddress, LOCK_PROXY_ABI, provider)
-    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, ETH_WALLET_BYTECODE)
+    const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, this.network.BSC_WALLET_BYTECODE_HASH)
 
     return walletAddress
   }

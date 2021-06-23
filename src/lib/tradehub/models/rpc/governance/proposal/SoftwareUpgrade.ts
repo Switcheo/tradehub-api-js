@@ -2,8 +2,8 @@ import { Proposal } from "./Proposal";
 
 interface SoftwareUpgradePlan {
   name: string
-  time: string | undefined
-  height: string | undefined
+  time?: string
+  height?: string
   info: string
 }
 

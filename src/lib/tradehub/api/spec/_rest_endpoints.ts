@@ -17,8 +17,8 @@ export const TradehubEndpoints = {
   'tradehub/get_vault_types': '/get_vault_types',
   'tradehub/get_vaults': '/get_vaults',
   'tradehub/search': '/search',
-  'tradehub/blocks/latest': 'blocks/latest',
-  'tradehub/supply': 'supply/total/:denom',
+  'tradehub/blocks/latest': '/blocks/latest',
+  'tradehub/supply': '/supply/total/:denom',
 
   // account api
   'account/detail': '/get_account',
@@ -83,7 +83,7 @@ export const TradehubEndpoints = {
   'slashing/parameters': '/slashing/parameters',
   'slashing/signing_infos': '/slashing/signing_infos',
 
-  'distribution/parameters': 'distribution/parameters',
+  'distribution/parameters': '/distribution/parameters',
 
   // tendermint
   'tendermint/block_results': '/block_results',

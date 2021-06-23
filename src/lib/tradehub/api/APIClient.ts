@@ -890,7 +890,7 @@ class APIClient {
   async getSWTHSupply(): Promise<BigNumber> {
     const tradehubSupplyRaw = await this.getTotalSupply({ denom: "swth" });
     const bscSupply = await this.fetchSupply(`https://api.bscscan.com/api?module=stats&action=tokensupply&contractaddress=0x250b211ee44459dad5cd3bca803dd6a7ecb5d46c&apikey=CBYSNW36IW65MPVJWD1B92P5TED52DM1PR`);
-    const ethSupply = await this.fetchSupply('https://api.etherscan.com/api?module=stats&action=tokensupply&contractaddress=0xb4371da53140417cbb3362055374b10d97e420bb&apikey=M56BUJAR279SGEEZIGYE94C4R1EB3RBYMY');
+    const ethSupply = await this.fetchSupply('https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress=0xb4371da53140417cbb3362055374b10d97e420bb&apikey=M56BUJAR279SGEEZIGYE94C4R1EB3RBYMY');
     return bnOrZero(tradehubSupplyRaw.result).plus(bscSupply).plus(ethSupply);
   }
 

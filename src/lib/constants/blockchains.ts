@@ -11,6 +11,7 @@ export const ChainNames = {
   56: 'BSC MainNet',
   97: 'BSC TestNet',
   110: 'ZIL DevNet',
+  111: 'ZIL TestNet',
 } as const
 
 export const blockchainForChainId = (chainId?: number) => {
@@ -22,6 +23,7 @@ export const blockchainForChainId = (chainId?: number) => {
     case 97:
       return Blockchain.BinanceSmartChain
     case 110:
+    case 111:
       return Blockchain.Zilliqa
   }
   return undefined

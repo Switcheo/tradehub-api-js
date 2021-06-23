@@ -1,13 +1,15 @@
 import * as BIP39 from "bip39";
-import { TradeHubSDK } from '..';
+import { RPCParams, TradeHubSDK } from '../build/main';
 import "./_setup";
+
+TradeHubSDK.APIClient.DEBUG_HEADERS = true;
 
 (async () => {
   const mnemonic = process.env.MNEMONICS ?? BIP39.generateMnemonic();
   console.log("mnemonic:", mnemonic);
 
   const sdk = new TradeHubSDK({
-    network: TradeHubSDK.Network.TestNet,
+    network: TradeHubSDK.Network.LocalHost,
     debugMode: true,
   });
 
@@ -16,7 +18,10 @@ import "./_setup";
 
   await connectedSDK.initialize();
 
-  await connectedSDK.subscribeWallet((result) => {
-    console.log("ws", (result.data as any).result);
-  });
-})().catch(console.error);
+  const result = await connectedSDK.governance.submitProposal<RPCParams.Proposal>(
+    RPCParams.Proposal.Type.Text, 
+    { title: "test", description: "test" },
+  );
+
+  console.log(result);
+})().catch(console.error).finally(() => process.exit(0));
