@@ -474,6 +474,8 @@ class APIClient {
       limit: opts.limit,
       before_id: opts.before_id,
       after_id: opts.after_id,
+      before_block: opts.before_block,
+      after_block: opts.after_block,
     }
     const routeParams = {}
     const request = this.apiManager.path('history/get_trades', routeParams, queryParams)
@@ -488,6 +490,8 @@ class APIClient {
       limit: opts.limit,
       before_id: opts.before_id,
       after_id: opts.after_id,
+      before_block: opts.before_block,
+      after_block: opts.after_block,
       pagination: true,
     }
     const routeParams = {}
