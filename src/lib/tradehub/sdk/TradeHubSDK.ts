@@ -182,9 +182,12 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     if (!this.initialized) {
       await this.reloadTxnFees();
       await this.token.initialize();
+      this.initialized = true;
     }
 
     if (wallet) {
+      this.wallet = wallet;
+
       this.log("reloading wallet account");
       await wallet.init();
 
@@ -195,13 +198,12 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       }
     }
 
-    this.initialized = true;
     this.log("initialize complete");
   }
 
-  public async connect(wallet: TradeHubWallet) {
+  public async connect(wallet: TradeHubWallet): Promise<ConnectedTradeHubSDK> {
     await this.initialize(wallet);
-    return new ConnectedTradeHubSDK(wallet, this.generateOpts())
+    return this as ConnectedTradeHubSDK;
   }
 
   public async disconnect() {
@@ -245,28 +247,6 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     return this.checkWallet();
   }
 
-  private checkWallet(): TradeHubWallet {
-    if (!this.wallet) {
-      throw new Error("wallet not connected");
-    }
-
-    return this.wallet;
-  }
-}
-
-class ConnectedTradeHubSDK extends TradeHubSDK {
-  wallet: TradeHubWallet
-
-  constructor(wallet: TradeHubWallet, opts: TradeHubSDKInitOpts = DEFAULT_OPTS) {
-    super(opts)
-
-    if (!opts.txFees) {
-      console.warn("ConnectedTradeHubSDK initialized without gas fees map.")
-    }
-
-    this.wallet = wallet
-  }
-
   public async subscribeWallet(handler: WSSubscriber) {
     if (!this.wallet)
       throw new Error("SDK not connected");
@@ -279,6 +259,17 @@ class ConnectedTradeHubSDK extends TradeHubSDK {
     }, handler);
   }
 
+  private checkWallet(): TradeHubWallet {
+    if (!this.wallet) {
+      throw new Error("wallet not connected");
+    }
+
+    return this.wallet;
+  }
+}
+
+export interface ConnectedTradeHubSDK extends TradeHubSDK {
+  wallet: TradeHubWallet
 }
 
 namespace TradeHubSDK {
