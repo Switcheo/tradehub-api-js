@@ -311,8 +311,7 @@ class APIClient {
     return response.data as RestModels.Profile
   }
 
-  // response check
-  async getLeverage(opts: GetLeverageOpts): Promise<RestModels.Leverage[]> {
+  async getLeverage(opts: GetLeverageOpts): Promise<RestModels.Leverage> {
     const queryParams = {
       account: opts.account,
       market: opts.market,
@@ -320,7 +319,7 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('account/get_leverage', routeParams, queryParams)
     const response = await request.get()
-    return response.data as RestModels.Leverage[]
+    return response.data as RestModels.Leverage
   }
 
   async getWalletBalance(opts: GetWalletBalanceOpts): Promise<RestModels.Balances> {
