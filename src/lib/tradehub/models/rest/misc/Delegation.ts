@@ -5,6 +5,12 @@ export interface Delegation {
     entries: Array<DelegationEntry>
 }
 
+export interface UnbondingDelegation {
+    delegator_address: string
+    validator_address: string
+    entries: Array<DelegationEntry>
+}
+
 interface DelegationEntry {
     creation_height: number
     completion_time: string
