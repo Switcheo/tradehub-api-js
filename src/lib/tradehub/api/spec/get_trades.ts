@@ -5,4 +5,6 @@ export interface GetTradesOpts {
     before_id?: number
     after_id?: number
     order_id?: string
+    after_block?: number
+    before_block?: number
 }

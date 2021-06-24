@@ -8,6 +8,7 @@ export interface Position {
   market: string
   realized_pnl: string
   username: string
+  position_id: string
 
   unrealized_pnl?: string
   total_pnl?: string
