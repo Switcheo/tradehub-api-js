@@ -12,6 +12,7 @@ import { WSChannel } from "../websocket/types";
 import { ModAdmin, ModCoin, ModGovernance, ModMarket, ModOrder } from "./modules";
 import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
+import ModStaking from "./modules/staking";
 
 export * as RestTypes from "../api/spec";
 export * from "../models";
@@ -60,6 +61,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   coin: ModCoin
   market: ModMarket
   governance: ModGovernance
+  staking: ModStaking
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -120,6 +122,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.admin = new ModAdmin(this);
     this.coin = new ModCoin(this);
     this.account = new ModAccount(this);
+    this.staking = new ModStaking(this);
   }
 
   protected async startWS() {
