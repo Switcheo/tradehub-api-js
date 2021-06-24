@@ -175,6 +175,8 @@ export interface GetTradesGetterParams {
   beforeId?: number
   afterId?: number
   orderId?: string
+  afterBlock?: number
+  beforeBlock?: number
 }
 
 export interface GetTransactionsGetterParams {

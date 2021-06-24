@@ -1,0 +1,33 @@
+export interface Market {
+  type: string
+  name: string
+  display_name: string
+  description: string
+  market_type: string
+  base: string
+  base_name: string
+  base_precision: number
+  quote: string
+  quote_name: string
+  quote_precision: number
+  lot_size: string
+  tick_size: string
+  min_quantity: string
+  maker_fee: string
+  taker_fee: string
+  risk_step_size: string
+  initial_margin_base: string
+  initial_margin_step: string
+  maintenance_margin_ratio: string
+  max_liquidation_order_ticket: string
+  max_liquidation_order_duration: number
+  impact_size: string
+  mark_price_band: number
+  last_price_protected_band: number
+  index_oracle_id: string
+  expiry_time: string
+  is_active: boolean
+  is_settled: boolean
+  closed_block_height: number
+  created_block_height: number
+}

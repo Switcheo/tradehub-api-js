@@ -53,6 +53,10 @@ const getAddressBytes = (bech32Address: string, networkConfig: NetworkConfig) =>
   return address.toBytes()
 }
 
+/**
+ * @deprecated 
+ * use TradeHubSDK.eth
+ */
 export class ETHClient {
   static SUPPORTED_BLOCKCHAINS = [Blockchain.BinanceSmartChain, Blockchain.Ethereum]
 

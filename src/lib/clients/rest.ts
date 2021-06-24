@@ -35,6 +35,10 @@ function getTotalWeight(pools) {
 // TODO: response typings
 // TODO: support all POST methods
 
+/**
+ * @deprecated 
+ * use TradeHubSDK.api
+ */
 export interface REST {
   // public
   checkUsername(params: types.UsernameGetterParams): Promise<boolean>
