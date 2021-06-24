@@ -123,6 +123,19 @@ export class ZILClient {
             },
             zilliqa.provider,
         )
+
+        if (typeof window !== "undefined" && typeof (window as any).zilPay !== 'undefined') {
+            // sign and txn via zilpay
+            try {
+                const txn = await (window as any).zilPay.blockchain.createTransaction(tx)
+                tx.id = txn.ID
+                return tx
+            } catch (err) {
+                throw new Error(err)
+            }
+        }
+
+        // fallback to zilliqa sdk sign
         await signer.sign(tx)
         const response = await zilliqa.provider.send(RPCMethod.CreateTransaction, { ...tx.txParams })
         if (response.error !== undefined) {
@@ -227,7 +240,6 @@ export class ZILClient {
               ],
         }
 
-
         const tx = new Transaction(
             {
                 ...callParams,
@@ -236,14 +248,27 @@ export class ZILClient {
             },
             zilliqa.provider,
         )
-        await signer.sign(tx)
+
+        if (typeof window !== "undefined" && typeof (window as any).zilPay !== 'undefined') {
+            // sign and txn via zilpay
+            try {
+                const txn = await (window as any).zilPay.blockchain.createTransaction(tx)
+                tx.id = txn.ID
+                return tx
+            } catch (err) {
+                throw new Error(err)
+            }
+        }
+
+        // fallback to zilliqa sdk sign
+        await signer.sign(tx);
+
         const response = await zilliqa.provider.send(RPCMethod.CreateTransaction, { ...tx.txParams })
         if (response.error !== undefined) {
             throw new Error(response.error.message)
         }
         tx.id = response.result.TranID
         return tx
-
     }
 
     /**
@@ -276,5 +301,3 @@ export class ZILClient {
         return this.getConfig().LockProxyAddr;
     }
 }
-
-
