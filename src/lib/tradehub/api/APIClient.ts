@@ -16,6 +16,7 @@ import {
   GetBlocksOpts,
   GetCandlesticksOpts,
   GetCandlesticksResponse,
+  GetCommitmentCurveResponse,
   GetCosmosBlockInfoOpts,
   GetDelegatorDelegationRewardsOpts,
   GetDelegatorDelegationRewardsResponse,
@@ -34,6 +35,8 @@ import {
   GetPositionsOpts,
   GetPositionsWithHightstPnlOpts,
   GetPricesOpts, GetProfileOpts,
+  GetRewardCurveResponse,
+  GetRewardsDistributedOpts,
   GetRichListOpts,
   GetSlashingParamsResponse,
   GetSlashingSigningInfoResponse,
@@ -566,7 +569,7 @@ class APIClient {
   }
 
   async getInsuranceFundBalance(): Promise<RestModels.InsuranceFundBalance[]> {
-    const request = this.apiManager.path('markets/get_insurence_fund_balance')
+    const request = this.apiManager.path('markets/get_insurance_fund_balance')
     const response = await request.get()
     return response.data as RestModels.InsuranceFundBalance[]
   }
@@ -575,6 +578,38 @@ class APIClient {
     const request = this.apiManager.path('markets/get_liquidity_pools')
     const response = await request.get()
     return response.data as RestModels.LiquidityPool[]
+  }
+
+  async getRewardCurve(): Promise<GetRewardCurveResponse> {
+    const request = this.apiManager.path('markets/get_reward_curve')
+    const response = await request.get()
+    return response.data as GetRewardCurveResponse
+  }
+
+  async getCommitmentCurve(): Promise<GetCommitmentCurveResponse> {
+    const request = this.apiManager.path('markets/get_commitment_curve')
+    const response = await request.get()
+    return response.data as GetCommitmentCurveResponse
+  }
+
+  async getRewardsDistributed(opts: GetRewardsDistributedOpts): Promise<RestModels.TokenAmount[]> {
+    const request = this.apiManager.path('markets/get_rewards_distributed', {}, opts)
+    const response = await request.get()
+    return response.data as RestModels.TokenAmount[]
+  }
+
+  async getWeeklyLPRewardAlloc(): Promise<BigNumber> {
+    const rewardCurve = await this.getRewardCurve()
+    const reductions = new BigNumber(rewardCurve.result.reduction).times(new BigNumber(rewardCurve.result.reductions_made))
+    const currentBP = new BigNumber(rewardCurve.result.initial_reward).minus(reductions)
+    const poolAllocation = BigNumber.max(new BigNumber(rewardCurve.result.final_reward), currentBP).shiftedBy(-4)
+    return poolAllocation
+  }
+
+  async getWeeklyPoolRewards(): Promise<BigNumber> {
+    const total = await this.getWeeklyRewards()
+    const poolAllocation = await this.getWeeklyLPRewardAlloc()
+    return new BigNumber(total).times(poolAllocation).dp(8)
   }
 
   async getLeaderboard(opts: GetLeaderboardOpts): Promise<RestModels.LeaderboardResult> {
