@@ -10,6 +10,14 @@ class ModStaking extends BaseModule {
       value: msg
     })
   }
+
+  public async unbondTokens(msg: types.BeginUnbondingTokensMsg) {
+    const wallet = this.getWallet();
+    return wallet.sendTx({
+      type: TxTypes.Staking.BEGIN_UNBONDING_TOKENS,
+      value: msg
+    })
+  }
 }
 
 export default ModStaking;
