@@ -1,4 +1,6 @@
 import BigNumber from 'bignumber.js'
+import { Coin } from './containers/StdSignDoc'
+import { DEFAULT_GAS_PRICE } from './tradehub/utils'
 
 // Orders
 export const CREATE_ORDER_MSG_TYPE = 'order/MsgCreateOrder'
@@ -91,14 +93,26 @@ export interface SignMessageOptions {
   sequence?: string
 }
 
-
 export class Fee {
-  public readonly amount: string
+  public readonly amount: Coin[]
   public readonly gas: string
 
   constructor(amount, gas) {
     this.amount = amount
     this.gas = gas
+  }
+
+  static from(amount: BigNumber, price: BigNumber = DEFAULT_GAS_PRICE): Fee {
+    if (!amount.isZero() && amount.lt(price))
+      throw new Error('invalid fee amount, cannot be less than price');
+    const gas = amount.isZero() ? new BigNumber(1000000) : amount.div(price)
+    if (amount.isZero()) {
+      amount = DEFAULT_GAS_PRICE.times(gas)
+    }
+    return new Fee(
+      [{ denom: 'swth', amount: amount.toString(10) }],
+      gas.toString(10),
+    );
   }
 }
 
@@ -654,13 +668,13 @@ export interface ProposalSetPoolRewardWeightsValue {
 }
 
 export interface ProposalSetCommitmentCurveValue {
-    title: string,
-    description: string,
-    msg: {
-      max_duration: string,
-      max_reward_multiplier: number,
-      originator: string,
-    }
+  title: string,
+  description: string,
+  msg: {
+    max_duration: string,
+    max_reward_multiplier: number,
+    originator: string,
+  }
 }
 
 export interface ProposalCreateMarketValue {
@@ -697,22 +711,22 @@ export interface ProposalUpdateMarketValue {
   title: string;
   description: string;
   market: {
-      name: string;
-      display_name: string;
-      description: string;
-      min_quantity: string;
-      maker_fee: string;
-      taker_fee: string;
-      risk_step_size: string;
-      initial_margin_base: string;
-      initial_margin_step: string;
-      maintenance_margin_ratio: string;
-      max_liquidation_order_ticket: string;
-      max_liquidation_order_duration: string;
-      impact_size: string;
-      mark_price_band: string;
-      last_price_protected_band: string;
-      is_active: boolean;
+    name: string;
+    display_name: string;
+    description: string;
+    min_quantity: string;
+    maker_fee: string;
+    taker_fee: string;
+    risk_step_size: string;
+    initial_margin_base: string;
+    initial_margin_step: string;
+    maintenance_margin_ratio: string;
+    max_liquidation_order_ticket: string;
+    max_liquidation_order_duration: string;
+    impact_size: string;
+    mark_price_band: string;
+    last_price_protected_band: string;
+    is_active: boolean;
   };
 }
 

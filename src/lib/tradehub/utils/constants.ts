@@ -7,6 +7,10 @@ export const BN_ZERO = new BigNumber(0);
 export const SWTH_DECIMALS = 8;
 export const ONE_SWTH = BN_ONE.shiftedBy(SWTH_DECIMALS);
 
+
+// 0.0001 SWTH
+// 1000 SWTH sats
+export const DEFAULT_GAS_PRICE = new BigNumber(1).shiftedBy(2)
 export const DEFAULT_GAS = new BigNumber(1000000);
 
 export const TxTypes = {

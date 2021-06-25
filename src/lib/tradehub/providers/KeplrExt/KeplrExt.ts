@@ -1,5 +1,5 @@
 import { AppCurrency, ChainInfo } from "@keplr-wallet/types";
-import { BN_ONE, Network, NetworkConfigProvider } from "@lib/tradehub/utils";
+import { DEFAULT_GAS_PRICE, Network, NetworkConfigProvider } from "@lib/tradehub/utils";
 import { SWTHAddress } from "@lib/utils";
 
 const SWTH = {
@@ -9,8 +9,6 @@ const SWTH = {
   coinGeckoId: "switcheo",
 }
 
-const ONE_SWTH_UNITLESS = BN_ONE.shiftedBy(SWTH.coinDecimals)
-
 export class KeplrAccount {
   static SWTH_CURRENCY: AppCurrency = SWTH
   static BASE_CHAIN_INFO = {
@@ -18,9 +16,9 @@ export class KeplrAccount {
     currencies: [],
     feeCurrencies: [SWTH],
     gasPriceStep: {
-      low: ONE_SWTH_UNITLESS.toNumber(),
-      average: ONE_SWTH_UNITLESS.toNumber(),
-      high: ONE_SWTH_UNITLESS.toNumber(),
+      low: DEFAULT_GAS_PRICE.toNumber(),
+      average: DEFAULT_GAS_PRICE.toNumber(),
+      high: DEFAULT_GAS_PRICE.toNumber(),
     },
   } as const
 

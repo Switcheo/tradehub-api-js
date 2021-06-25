@@ -1,14 +1,12 @@
+import { u as neonUtils, wallet as neonWallet } from "@cityofzion/neon-js"
 import { BigNumber } from 'bignumber.js'
-import { ethers } from 'ethers'
-import fetch from '../utils/fetch'
-import { wallet as neonWallet, u as neonUtils } from "@cityofzion/neon-js"
 import dayjs from 'dayjs'
-
+import { ethers } from 'ethers'
 import { getNetwork, NETWORK as NET } from '../config'
-import { GasFees, WalletClient } from './wallet'
 import { Blockchain } from '../constants'
-
 import * as types from '../types'
+import fetch from '../utils/fetch'
+import { GasFees, WalletClient } from './wallet'
 
 export enum Direction {
   long = 'long',
@@ -16,17 +14,17 @@ export enum Direction {
 }
 
 function getPool(pools, id) {
-  for (let i=0; i <pools.length; i++) {
-      if (pools[i].pool_id === id) {
-          return pools[i]
-      }
+  for (let i = 0; i < pools.length; i++) {
+    if (pools[i].pool_id === id) {
+      return pools[i]
+    }
   }
   return null
 }
 function getTotalWeight(pools) {
   let total = 0
-  for (let i=0; i <pools.length; i++) {
-      total = total + parseInt(pools[i].rewards_weight)
+  for (let i = 0; i < pools.length; i++) {
+    total = total + parseInt(pools[i].rewards_weight)
   }
   return total
 }
@@ -50,7 +48,7 @@ export interface REST {
   getAverageBlocktime(): Promise<string>
   getBlocks(params?: types.PageOnlyGetterParams): Promise<Array<object>>
   getCandlesticks(params?: types.CandlesticksParams): Promise<Array<types.CandleStickResponse>>
-  getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any>
+  getCosmosBlockInfo(params: types.blockHeightGetter): Promise<any>
   getInsuranceFundBalance(): Promise<Array<object>>
   getLeaderboard(params?: types.GetLeaderboardParams): Promise<types.GetLeaderboardResponse>
   getBlockHeightfromUnix(params: types.GetBlockHeightParams): Promise<types.GetBlockHeightResponse>
@@ -93,11 +91,11 @@ export interface REST {
   getRewardCurve(): Promise<any>
   getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
-  getGasFees() : Promise<GasFees>
+  getGasFees(): Promise<GasFees>
   getRewardsDistributed(): Promise<types.RewardsDistributedResponse>
   getLastClaimedPoolReward(params: types.PoolIDAndAddressGetter): Promise<any>
   getRewardHistory(params: types.PoolIDAndBlockHeightGetter): Promise<any>
-  getGasFees() : Promise<GasFees>
+  getGasFees(): Promise<GasFees>
   getAccountRealizedPnl(params: types.GetIndividualPnlParams): Promise<types.GetIndivPnlResponse>
 
   // cosmos
@@ -671,7 +669,7 @@ export class RestClient implements REST {
     return this.fetchJson(url)
   }
 
-  public async getCosmosBlockInfo(params: types.blockHeightGetter) : Promise<any> {
+  public async getCosmosBlockInfo(params: types.blockHeightGetter): Promise<any> {
     return this.fetchCosmosJson(`/blocks/${params.blockheight}`)
   }
 
@@ -881,19 +879,19 @@ export class RestClient implements REST {
 
     // calculate accrued rewards based on history
     if (!commitmentPower.isZero() && allocation && allocation.result) {
-        allocation.result.forEach(period => {
-            lastHeight = period.BlockHeight
-            const totalCommit = new BigNumber(period.TotalCommitment)
-            const ratio = commitmentPower.div(totalCommit)
-            period.Rewards?.forEach(reward => {
-                const rewardCut = new BigNumber(reward.amount).times(ratio).integerValue(BigNumber.ROUND_DOWN)
-                if (reward.denom in accruedRewards) {
-                  accruedRewards[reward.denom] = accruedRewards[reward.denom].plus(rewardCut)
-                } else {
-                  accruedRewards[reward.denom] = rewardCut
-                }
-            })
+      allocation.result.forEach(period => {
+        lastHeight = period.BlockHeight
+        const totalCommit = new BigNumber(period.TotalCommitment)
+        const ratio = commitmentPower.div(totalCommit)
+        period.Rewards?.forEach(reward => {
+          const rewardCut = new BigNumber(reward.amount).times(ratio).integerValue(BigNumber.ROUND_DOWN)
+          if (reward.denom in accruedRewards) {
+            accruedRewards[reward.denom] = accruedRewards[reward.denom].plus(rewardCut)
+          } else {
+            accruedRewards[reward.denom] = rewardCut
+          }
         })
+      })
     }
     // Estimate rewards from last allocated rewards
     // the current logic will under estimate the rewards as the current weekly reward rate is used across the full period
@@ -906,7 +904,7 @@ export class RestClient implements REST {
       const currentTotalCommitmentPower = new BigNumber(pool.total_commitment)
       const total = getTotalWeight(pools)
       const poolWeight = parseInt(pool.rewards_weight)
-      const poolWeekRewards = poolWeight/total * weeklyRewards
+      const poolWeekRewards = poolWeight / total * weeklyRewards
 
       // get time from last height
       const blockInfo = await this.getCosmosBlockInfo({ blockheight: (parseInt(lastHeight) + 1).toString() })
@@ -965,8 +963,8 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.CREATE_ORDER_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_ORDER_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_ORDER_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_ORDER_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_ORDER_MSG_TYPE), options)
   }
@@ -982,8 +980,8 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.CANCEL_ORDER_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CANCEL_ORDER_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CANCEL_ORDER_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CANCEL_ORDER_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CANCEL_ORDER_MSG_TYPE), options)
   }
@@ -999,8 +997,8 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.EDIT_ORDER_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_ORDER_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.EDIT_ORDER_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_ORDER_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_ORDER_MSG_TYPE), options)
   }
@@ -1008,8 +1006,8 @@ export class RestClient implements REST {
   public async cancelAll(msg: types.CancelAllMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.EDIT_ORDER_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CANCEL_ALL_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.EDIT_ORDER_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CANCEL_ALL_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CANCEL_ALL_MSG_TYPE], options)
   }
@@ -1019,8 +1017,8 @@ export class RestClient implements REST {
       msg.from_address = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.SEND_TOKENS_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SEND_TOKENS_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SEND_TOKENS_TYPE], options)
   }
@@ -1028,8 +1026,8 @@ export class RestClient implements REST {
   public async updateProfile(msg: types.UpdateProfileMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.UPDATE_PROFILE_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.UPDATE_PROFILE_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.UPDATE_PROFILE_MSG_TYPE], options)
   }
@@ -1045,8 +1043,8 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.SET_LEVERAGE_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.SET_LEVERAGE_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SET_LEVERAGE_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.SET_LEVERAGE_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.SET_LEVERAGE_MSG_TYPE), options)
   }
@@ -1063,8 +1061,8 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.CREATE_MARKET_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_MARKET_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_MARKET_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_MARKET_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_MARKET_MSG_TYPE), options)
   }
@@ -1072,8 +1070,8 @@ export class RestClient implements REST {
   public updateMarket(msg: types.UpdateMarketMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.UPDATE_MARKET_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.UPDATE_MARKET_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.UPDATE_MARKET_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.UPDATE_MARKET_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.UPDATE_MARKET_MSG_TYPE], options)
   }
@@ -1089,8 +1087,8 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.INITIATE_SETTLEMENT_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.INITIATE_SETTLEMENT_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.INITIATE_SETTLEMENT_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.INITIATE_SETTLEMENT_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.INITIATE_SETTLEMENT_MSG_TYPE), options)
   }
@@ -1105,8 +1103,8 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.EDIT_MARGIN_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_MARGIN_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.EDIT_MARGIN_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_MARGIN_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.EDIT_MARGIN_MSG_TYPE), options)
   }
@@ -1119,8 +1117,8 @@ export class RestClient implements REST {
     const address = this.wallet.pubKeyBech32
     if (!msg.originator) msg.originator = address
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.SYNC_TOKEN_MSG_TYPE)).toString()
-      return this.wallet.signAndBroadcast([msg], [types.SYNC_TOKEN_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SYNC_TOKEN_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SYNC_TOKEN_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SYNC_TOKEN_MSG_TYPE], options)
   }
@@ -1132,21 +1130,21 @@ export class RestClient implements REST {
       return msg
     })
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.CREATE_TOKEN_MSG_TYPE)).times(msgs.length).toString()
-      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_TOKEN_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_TOKEN_MSG_TYPE)).times(msgs.length)
+      return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_TOKEN_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(msgs, Array(msgs.length).fill(types.CREATE_TOKEN_MSG_TYPE), options)
   }
 
   public async mintMultipleTestnetTokens(params: types.MintParams) {
     const { toAddress, mint } = params
-    const amount = new BigNumber(this.getFee(types.MINT_TOKEN_MSG_TYPE)).times(mint.length).toString()
+    const amount = new BigNumber(this.getFee(types.MINT_TOKEN_MSG_TYPE)).times(mint.length)
     const promises = mint.map((v: { denom: string, amount: string }) => {
       return this.mintTestnetTokens({
         to_address: toAddress,
         amount: new BigNumber(v.amount).toFixed(18),
         denom: v.denom,
-      }, { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      }, { fee: types.Fee.from(amount) })
     })
     return Promise.all(promises)
   }
@@ -1161,8 +1159,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_VAULT_TYPE_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_VAULT_TYPE_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_VAULT_TYPE_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_VAULT_TYPE_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_VAULT_TYPE_MSG_TYPE], options)
   }
@@ -1172,8 +1170,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.ADD_COLLATERAL_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.ADD_COLLATERAL_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.ADD_COLLATERAL_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.ADD_COLLATERAL_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_COLLATERAL_MSG_TYPE], options)
   }
@@ -1183,8 +1181,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.REMOVE_COLLATERAL_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.REMOVE_COLLATERAL_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.REMOVE_COLLATERAL_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.REMOVE_COLLATERAL_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.REMOVE_COLLATERAL_MSG_TYPE], options)
   }
@@ -1194,8 +1192,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.ADD_DEBT_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.ADD_DEBT_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.ADD_DEBT_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.ADD_DEBT_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_DEBT_MSG_TYPE], options)
   }
@@ -1205,8 +1203,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.REMOVE_DEBT_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.REMOVE_DEBT_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.REMOVE_DEBT_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.REMOVE_DEBT_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.REMOVE_DEBT_MSG_TYPE], options)
   }
@@ -1216,8 +1214,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.SET_TRADING_FLAG_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.SET_TRADING_FLAG_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SET_TRADING_FLAG_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SET_TRADING_FLAG_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SET_TRADING_FLAG_MSG_TYPE], options)
   }
@@ -1230,8 +1228,8 @@ export class RestClient implements REST {
       msg.min_shares = '0'
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.ADD_LIQUIDITY_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.ADD_LIQUIDITY_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.ADD_LIQUIDITY_MSG_TYPE], options)
   }
@@ -1241,8 +1239,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.REMOVE_LIQUIDITY_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.REMOVE_LIQUIDITY_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.REMOVE_LIQUIDITY_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.REMOVE_LIQUIDITY_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.REMOVE_LIQUIDITY_MSG_TYPE], options)
   }
@@ -1252,8 +1250,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_POOL_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_POOL_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_MSG_TYPE], options)
   }
@@ -1263,11 +1261,12 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if (!options) {
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount: (new BigNumber(1000)).shiftedBy(8).toString()}], '100000000000')})
+      const amount = new BigNumber(1000).shiftedBy(8)
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_POOL_WITH_LIQUIDITY_MSG_TYPE], options)
   }
@@ -1277,8 +1276,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.LINK_POOL_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.LINK_POOL_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.LINK_POOL_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.LINK_POOL_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.LINK_POOL_MSG_TYPE], options)
   }
@@ -1288,8 +1287,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.UNLINK_POOL_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.UNLINK_POOL_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.UNLINK_POOL_MSG_TYPE], options)
   }
@@ -1299,8 +1298,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CHANGE_SWAP_FEE_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CHANGE_SWAP_FEE_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CHANGE_SWAP_FEE_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CHANGE_SWAP_FEE_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CHANGE_SWAP_FEE_MSG_TYPE], options)
   }
@@ -1310,8 +1309,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.SET_REWARDS_WEIGHTS_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.SET_REWARDS_WEIGHTS_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SET_REWARDS_WEIGHTS_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SET_REWARDS_WEIGHTS_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SET_REWARDS_WEIGHTS_MSG_TYPE], options)
   }
@@ -1321,8 +1320,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.SET_REWARD_CURVE_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.SET_REWARD_CURVE_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SET_REWARD_CURVE_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SET_REWARD_CURVE_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SET_REWARD_CURVE_MSG_TYPE], options)
   }
@@ -1332,8 +1331,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.SET_COMMITMENT_CURVE_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.SET_COMMITMENT_CURVE_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SET_COMMITMENT_CURVE_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SET_COMMITMENT_CURVE_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SET_COMMITMENT_CURVE_MSG_TYPE], options)
   }
@@ -1343,8 +1342,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.STAKE_POOL_TOKEN_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.STAKE_POOL_TOKEN_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.STAKE_POOL_TOKEN_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.STAKE_POOL_TOKEN_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.STAKE_POOL_TOKEN_MSG_TYPE], options)
   }
@@ -1354,8 +1353,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.UNSTAKE_POOL_TOKEN_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.UNSTAKE_POOL_TOKEN_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.UNSTAKE_POOL_TOKEN_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.UNSTAKE_POOL_TOKEN_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.UNSTAKE_POOL_TOKEN_MSG_TYPE], options)
   }
@@ -1365,8 +1364,8 @@ export class RestClient implements REST {
       msg.originator = this.wallet.pubKeyBech32
     }
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CLAIM_POOL_REWARDS_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CLAIM_POOL_REWARDS_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CLAIM_POOL_REWARDS_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CLAIM_POOL_REWARDS_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CLAIM_POOL_REWARDS_MSG_TYPE], options)
   }
@@ -1374,8 +1373,8 @@ export class RestClient implements REST {
   public async submitProposal<T>(msg: types.SubmitProposalMsg<T>, options?: types.Options) {
     if (!msg.proposer) msg.proposer = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.SUBMIT_PROPOSAL_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.SUBMIT_PROPOSAL_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SUBMIT_PROPOSAL_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SUBMIT_PROPOSAL_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SUBMIT_PROPOSAL_TYPE], options)
   }
@@ -1383,8 +1382,8 @@ export class RestClient implements REST {
   public async depositProposal(msg: types.DepositProposalMsg, options?: types.Options) {
     if (!msg.depositor) msg.depositor = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.DEPOSIT_PROPOSAL_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.DEPOSIT_PROPOSAL_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.DEPOSIT_PROPOSAL_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.DEPOSIT_PROPOSAL_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.DEPOSIT_PROPOSAL_TYPE], options)
   }
@@ -1392,8 +1391,8 @@ export class RestClient implements REST {
   public async voteProposal(msg: types.VoteProposalMsg, options?: types.Options) {
     if (!msg.voter) msg.voter = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.VOTE_PROPOSAL_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.VOTE_PROPOSAL_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.VOTE_PROPOSAL_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.VOTE_PROPOSAL_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.VOTE_PROPOSAL_TYPE], options)
   }
@@ -1401,8 +1400,8 @@ export class RestClient implements REST {
   public async createOracle(msg: types.CreateOracleMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_ORACLE_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_ORACLE_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_ORACLE_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_ORACLE_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_ORACLE_TYPE], options)
   }
@@ -1410,40 +1409,40 @@ export class RestClient implements REST {
   public async createVote(msg: types.CreateVoteMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_VOTE_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_VOTE_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_VOTE_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_VOTE_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_VOTE_TYPE], options)
   }
 
   public async createValidator(msg: types.CreateValidatorMsg, options?: types.Options) {
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_VALIDATOR_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_VALIDATOR_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_VALIDATOR_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_VALIDATOR_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_VALIDATOR_MSG_TYPE], options)
   }
 
   public async delegateTokens(msg: types.DelegateTokensMsg, options?: types.Options) {
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.DELEGATE_TOKENS_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.DELEGATE_TOKENS_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.DELEGATE_TOKENS_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.DELEGATE_TOKENS_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.DELEGATE_TOKENS_MSG_TYPE], options)
   }
 
   public async unbondTokens(msg: types.BeginUnbondingTokensMsg, options?: types.Options) {
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.BEGIN_UNBONDING_TOKENS_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.BEGIN_UNBONDING_TOKENS_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.BEGIN_UNBONDING_TOKENS_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.BEGIN_UNBONDING_TOKENS_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.BEGIN_UNBONDING_TOKENS_MSG_TYPE], options)
   }
 
   public async redelegateTokens(msg: types.BeginRedelegatingTokensMsg, options?: types.Options) {
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg],
       [types.BEGIN_REDELEGATING_TOKENS_MSG_TYPE], options)
@@ -1451,8 +1450,8 @@ export class RestClient implements REST {
 
   public async withdrawDelegatorRewards(msg: types.WithdrawDelegatorRewardsMsg, options?: types.Options) {
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg],
       [types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE], options)
@@ -1465,8 +1464,8 @@ export class RestClient implements REST {
         { validator_address: address, delegator_address: delegatorAddress }
       ))
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = new BigNumber(this.getFee(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE)).times(validatorAddresses.length).toString()
-      return this.wallet.signAndBroadcast(messages, Array(validatorAddresses.length).fill(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE), { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE)).times(validatorAddresses.length)
+      return this.wallet.signAndBroadcast(messages, Array(validatorAddresses.length).fill(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE), { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast(messages,
       Array(validatorAddresses.length).fill(types.WITHDRAW_DELEGATOR_REWARDS_MSG_TYPE), options)
@@ -1475,8 +1474,8 @@ export class RestClient implements REST {
   public async createSubAccount(msg: types.CreateSubAccountMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_SUB_ACCOUNT_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_SUB_ACCOUNT_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_SUB_ACCOUNT_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_SUB_ACCOUNT_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_SUB_ACCOUNT_MSG_TYPE], options)
   }
@@ -1484,8 +1483,8 @@ export class RestClient implements REST {
   public async activateSubAccount(msg: types.ActivateSubAccountMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.ACTIVATE_SUB_ACCOUNT_MSG_TYPE], options)
   }
@@ -1532,8 +1531,8 @@ export class RestClient implements REST {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     msg.to_address = await this.formatWithdrawalAddress(msg.to_address, blockchain)
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.CREATE_WITHDRAWAL_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.CREATE_WITHDRAWAL_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.CREATE_WITHDRAWAL_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.CREATE_WITHDRAWAL_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.CREATE_WITHDRAWAL_TYPE], options)
   }
@@ -1541,8 +1540,8 @@ export class RestClient implements REST {
   public async mintTokensDirect(msg: types.MintTokenDirectMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.MINT_TOKEN_MSG_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.MINT_TOKEN_MSG_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.MINT_TOKEN_MSG_TYPE], options)
   }
@@ -1554,8 +1553,8 @@ export class RestClient implements REST {
   public async setMsgFee(msg: types.SetMsgFeeMsg, options?: types.Options) {
     if (!msg.originator) msg.originator = this.wallet.pubKeyBech32
     if ((!options || !options.fee) && this.wallet.fees) {
-      const amount = this.getFee(types.SET_MESSAGE_FEE_TYPE)
-      return this.wallet.signAndBroadcast([msg], [types.SET_MESSAGE_FEE_TYPE], { fee: new types.Fee([{denom: "swth", amount }], '100000000000')})
+      const amount = new BigNumber(this.getFee(types.SET_MESSAGE_FEE_TYPE))
+      return this.wallet.signAndBroadcast([msg], [types.SET_MESSAGE_FEE_TYPE], { fee: types.Fee.from(amount) })
     }
     return this.wallet.signAndBroadcast([msg], [types.SET_MESSAGE_FEE_TYPE], options)
   }
