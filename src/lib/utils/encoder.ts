@@ -1,4 +1,4 @@
-function sortObject(obj) {
+export function sortObject(obj) {
   if (obj === null) {
     return null
   }

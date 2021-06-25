@@ -1,38 +1,42 @@
-import * as bip32 from 'bip32'
-import * as bip39 from 'bip39'
-import { BigNumber } from 'bignumber.js'
-import Dagger from '@maticnetwork/eth-dagger'
-import { ethers } from 'ethers'
-import { CONFIG, getBech32Prefix, getNetwork, Network } from '../config'
-import { StdSignDoc, Transaction } from '../containers'
-import { marshalJSON, sortAndStringifyJSON } from '../utils/encoder'
-import { Address, getPath, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
-import { ConcreteMsg } from '../containers/Transaction'
-import { HDWallet } from '../utils/hdwallet'
-import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
-import LOCK_PROXY_ABI from '../eth/abis/lockProxy.json'
-import ERC20_ABI from '../eth/abis/erc20.json'
-import { Blockchain } from '../constants'
-import Neon, { api, u } from '@cityofzion/neon-js'
-import stripHexPrefix from 'strip-hex-prefix'
-import CosmosLedger from '@lunie/cosmos-ledger'
 import {
-  wallet as neonWallet,
   rpc as neonRPC,
   sc as neonScript,
-  u as neonUtils
+  u as neonUtils, wallet as neonWallet
 } from '@cityofzion/neon-core'
+import Neon, { api, u } from '@cityofzion/neon-js'
+import { StdSignature } from '@lib/containers/StdSignDoc'
+import { CosmosLedger, TradeHubSDK } from '@lib/tradehub'
+import Dagger from '@maticnetwork/eth-dagger'
+import { BigNumber } from 'bignumber.js'
+import * as bip32 from 'bip32'
+import * as bip39 from 'bip39'
+import { ethers } from 'ethers'
 import { chunk } from 'lodash'
+import stripHexPrefix from 'strip-hex-prefix'
+import { CONFIG, getBech32Prefix, getNetwork, Network } from '../config'
+import { Blockchain } from '../constants'
+import { StdSignDoc, Transaction } from '../containers'
+import { ConcreteMsg } from '../containers/Transaction'
+import BALANCE_READER_ABI from '../eth/abis/balanceReader.json'
+import ERC20_ABI from '../eth/abis/erc20.json'
+import LOCK_PROXY_ABI from '../eth/abis/lockProxy.json'
 import { FeeResult } from '../models'
 import { TokenList, TokenObject } from '../models/balances/NeoBalances'
 import { Fee, Network as NETWORK } from '../types'
-import { logger } from '../utils'
+import { logger, SWTHAddress } from '../utils'
+import { marshalJSON, sortAndStringifyJSON, sortObject } from '../utils/encoder'
 import fetch from '../utils/fetch'
+import { HDWallet } from '../utils/hdwallet'
+import { Address, getPath, PrivKeySecp256k1, PubKeySecp256k1 } from '../utils/wallet'
 import { NEOClient } from './neo'
 
-export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign'
+export type SignerType = 'ledger' | 'mnemonic' | 'privateKey' | 'nosign' | 'signer'
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
 export type OnSignCompleteCallback = (signature: string) => void
+export interface TradeHubLegacySigner {
+  sign: (message: string, doc: StdSignDoc) => Promise<StdSignature>
+  pubKey64: Uint8Array
+}
 
 const SEQ_NUM_ERROR = 'unauthorized: signature verification failed; verify correct account sequence and chain-id'
 
@@ -52,6 +56,7 @@ export interface WalletConstructorParams {
   gas?: string // default CONFIG.default_gas
   signerType?: SignerType // default privateKey
   ledger?: CosmosLedger
+  signer?: TradeHubLegacySigner
   fees?: GasFees
   onRequestSign?: OnRequestSignCallback
   onSignComplete?: OnSignCompleteCallback
@@ -134,6 +139,26 @@ export class WalletClient {
     })
   }
 
+  public static async connectSigner(signer: TradeHubLegacySigner, net = 'TESTNET',
+    onRequestSign: OnRequestSignCallback,
+    onSignComplete: OnSignCompleteCallback) {
+    const network = getNetwork(net)
+    const pubKey = Array.from(signer.pubKey64)
+    const pubKeyBech32 = SWTHAddress.publicKeyToAddress(Buffer.from(pubKey), {
+      network: TradeHubSDK.parseNetwork(net),
+    })
+
+    return new WalletClient({
+      signer,
+      network,
+      pubKey,
+      pubKeyBech32,
+      signerType: 'signer',
+      onRequestSign,
+      onSignComplete,
+    })
+  }
+
   // for debug view
   public static async connectPublicKey(pubKeyBech32: string, net?: string) {
     const network = getNetwork(net)
@@ -158,6 +183,7 @@ export class WalletClient {
   public readonly gas: string
   public readonly signerType: SignerType
   public readonly ledger?: CosmosLedger
+  public readonly signer?: TradeHubLegacySigner
   public readonly network: Network
   public readonly feeMultiplier: ethers.BigNumber // feeAmount * feeMultiplier = min deposit / withdrawal amount
   public fees: GasFees
@@ -188,6 +214,7 @@ export class WalletClient {
       privateKey,
       signerType,
       ledger,
+      signer,
       gas = CONFIG.DEFAULT_GAS,
       onRequestSign,
       onSignComplete,
@@ -198,6 +225,9 @@ export class WalletClient {
     }
     if (!privateKey && signerType === 'privateKey') {
       throw new Error('Signer Type is privateKey but privateKey is not passed in')
+    }
+    if (!signer && signerType === 'signer') {
+      throw new Error('Signer Type is signer but signer is not passed in')
     }
     let address
     if (mnemonic) {
@@ -216,7 +246,7 @@ export class WalletClient {
       this.pubKeySecp256k1 = this.privKey.toPubKey()
       address = this.pubKeySecp256k1.toAddress()
       this.pubKeyBase64 = this.pubKeySecp256k1.pubKey.toString('base64')
-    } else if (signerType === 'nosign') {
+    } else if (['nosign', 'signer'].includes(signerType)) {
       address = Address.fromBech32(getBech32Prefix(network, 'main'), pubKeyBech32)
     } else {
       this.pubKeySecp256k1 = new PubKeySecp256k1(Buffer.from(pubKey as number[]))
@@ -231,6 +261,7 @@ export class WalletClient {
     this.consensusBech32 = address.toBech32(getBech32Prefix(network, 'consensus'))
 
     this.signerType = signerType
+    this.signer = signer,
     this.gas = gas
     this.accountNumber = accountNumber
     this.network = network
@@ -957,7 +988,7 @@ export class WalletClient {
       fee: new Fee([{
         denom: 'swth',
         amount: feeAmount,
-      }], this.gas),
+      }], options?.fee?.gas ?? this.gas),
       memo,
       msgs,
       sequence: sequence.toString(),
@@ -967,11 +998,11 @@ export class WalletClient {
       if (!this.ledger) {
         throw new Error('Ledger connection not found, please refresh the page and try again')
       }
-      this.onRequestSign && this.onRequestSign(stdSignMsg)
+      this.onRequestSign?.(stdSignMsg)
       let signatureBase64
       try {
         const sigData = await this.ledger.sign(sortAndStringifyJSON(stdSignMsg))
-        signatureBase64 = Buffer.from(sigData as number[]).toString('base64')
+        signatureBase64 = Buffer.from(sigData).toString('base64')
         return {
           pub_key: {
             type: 'tendermint/PubKeySecp256k1',
@@ -982,7 +1013,22 @@ export class WalletClient {
       } finally {
         this.onSignComplete && this.onSignComplete(signatureBase64 && signatureBase64.toString())
       }
+    } else if (this.signerType === 'signer') {
+      if (!this.signer) {
+        throw new Error('Signer not provided, please connect wallet again')
+      }
+
+      this.onRequestSign?.(stdSignMsg)
+      let signatureBase64
+      try {
+        const sigData = await this.signer.sign(sortAndStringifyJSON(stdSignMsg), sortObject(stdSignMsg))
+        signatureBase64 = sigData.signature
+        return sigData
+      } finally {
+        this.onSignComplete && this.onSignComplete(signatureBase64?.toString())
+      }
     }
+
     return this.sign(marshalJSON(stdSignMsg))
   }
 
