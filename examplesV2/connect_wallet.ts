@@ -14,8 +14,6 @@ import "./_setup";
   const connectedSDK = await sdk.connectWithMnemonic(mnemonic);
   console.log("connected wallet:", connectedSDK.wallet.bech32Address);
 
-  await connectedSDK.initialize();
-
-  const account = await connectedSDK.wallet.init();
+  const account = connectedSDK.wallet.account;
   console.log("loaded account", account);
 })().catch(console.error).finally(() => process.exit(0));
