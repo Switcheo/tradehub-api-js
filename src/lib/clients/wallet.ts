@@ -292,7 +292,7 @@ export class WalletClient {
   }
 
   public getAccount() {
-    return fetch(`${this.network.REST_URL}/auth/accounts/${this.pubKeyBech32}`)
+    return fetch(`${this.network.REST_URL}/get_account?account=${this.pubKeyBech32}`)
       .then(res => res.json()) // expecting a json response
   }
 

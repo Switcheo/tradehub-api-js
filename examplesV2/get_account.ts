@@ -8,7 +8,7 @@ import "./_setup";
   })
 
   const address = 'swth1xkahzn8ymps6xdu6feulutawu42fkyqz5fgvhx'
-  const accountResult = await sdk.api.getAccountInfo({ address })
+  const accountResult = await sdk.api.getAccount({ address })
 
   console.log(accountResult.result.value)
 })().catch(console.error).finally(() => process.exit(0))
