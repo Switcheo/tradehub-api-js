@@ -32,6 +32,8 @@ export const TradehubEndpoints = {
   'account/get_realized_pnl': '/get_account_realized_pnl',
   'account/get_transfers': '/get_external_transfers',
 
+  'account/info': '/auth/accounts/:address',
+
   // market api
   'markets/list': '/get_markets',
   'markets/get_market': '/get_market',

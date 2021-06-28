@@ -283,6 +283,13 @@ class APIClient {
     return response.data as GetAccountResponse
   }
 
+  async getAccountInfo(opts: GetAccountOpts): Promise<GetAccountResponse> {
+    const routeParams = { address: opts.address };
+    const request = this.apiManager.path('account/info', routeParams)
+    const response = await request.get()
+    return response.data as GetAccountResponse
+  }
+
   async checkUsername(opts: CheckUserNameOpts): Promise<Boolean> {
     const queryParams = { username: opts.username }
     const routeParams = {}
