@@ -17,6 +17,7 @@ export * as RestTypes from "../api/spec";
 export * from "../models";
 /** @deprecated use RestModels */
 export { RestModels as RestResponse } from "../models";
+export * as TradeHubTx from "../utils/tx";
 
 export interface TradeHubSDKInitOpts {
   network?: Network
