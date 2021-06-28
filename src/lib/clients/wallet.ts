@@ -250,6 +250,14 @@ export class WalletClient {
     }, this.broadcastQueueIntervalTime)
   }
 
+  public setBroadcastQueueIntervalTime(newInterval: number) {
+    clearInterval(this.broadcastQueueIntervalId)
+    this.broadcastQueueIntervalTime = newInterval
+    this.broadcastQueueIntervalId = <any>setInterval(() => {
+      this.processBroadcastQueue()
+    }, this.broadcastQueueIntervalTime)
+  }
+
   public disconnect() {
     clearInterval(this.broadcastQueueIntervalId)
     clearInterval(this.neoDepositsIntervalId)
