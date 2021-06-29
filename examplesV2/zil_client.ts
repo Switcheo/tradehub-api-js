@@ -52,7 +52,7 @@ async function run() {
         gasPrice: new BigNumber("2000000000"),
         gasLimit: new BigNumber(25000),
         zilAddress: address,
-        signer: privateKey,  // for zilpay: wallet.provider
+        signer: privateKey,  // for zilpay: window.zilPay
     }
     console.log("approve zrc2 token parameters: ", approveZRC2Params)
     console.log("sending approve transactions")
