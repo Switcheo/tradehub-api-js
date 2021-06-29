@@ -22,11 +22,13 @@ export interface ZILClientOpts {
     blockchain: Blockchain,
 }
 
+type ZilSigner = WalletProvider | string
+
 interface ZILTxParams {
     gasPrice: BigNumber
     gasLimit: BigNumber
     zilAddress: string
-    signer: WalletProvider | string
+    signer: ZilSigner
 }
 
 export interface ZILLockParams extends ZILTxParams {
