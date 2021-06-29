@@ -121,44 +121,59 @@ export class ZILClient {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
 
-        const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
+        // const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
 
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
             throw new Error(balanceAndNonceResp.error.message)
         }
 
-        const nonce = balanceAndNonceResp.result.nonce + 1
+        // const nonce = balanceAndNonceResp.result.nonce + 1
         const version = bytes.pack(this.getConfig().ChainId,Number(1))
 
-        const callParams = {
-            version: version,
-            nonce: nonce,
-            amount: new BN(0),
-            gasPrice: new BN(gasPrice.toString()),
-            gasLimit: Long.fromString(gasLimit.toString()),
+        // const callParams = {
+        //     version: version,
+        //     nonce: nonce,
+        //     amount: new BN(0),
+        //     gasPrice: new BN(gasPrice.toString()),
+        //     gasLimit: Long.fromString(gasLimit.toString()),
+        // }
+
+        const data = {
+            _tag: "IncreaseAllowance",
+            params: [
+                {
+                  vname: 'spender',
+                  type: 'ByStr20',
+                  value: appendHexPrefix(token.lock_proxy_hash),
+                },
+                {
+                    vname: 'amount',
+                    type: 'Uint128',
+                    value: uint128Max,
+                },
+              ],
         }
 
-        return await this.callContract(
-            deployedContract,
-            'IncreaseAllowance',
-            [
-                {
-                    vname: 'spender',
-                    type: 'ByStr20',
-                    value: appendHexPrefix(token.lock_proxy_hash),
-                  },
-                  {
-                      vname: 'amount',
-                      type: 'Uint128',
-                      value: uint128Max,
-                  },
-            ],
-            {
-                ...callParams
-            },
-            true
-        )
+        try {
+            const tx = await zilliqa.blockchain.createTransactionWithoutConfirm(
+                zilliqa.transactions.new(
+                    {
+                        data: JSON.stringify(data),
+                        version: version,
+                        toAddr: toChecksumAddress(contractAddress),
+                        amount: new BN(0),
+                        gasPrice: new BN(gasPrice.toString()),
+                        gasLimit: Long.fromString(gasLimit.toString()),
+                    },
+                    true,
+                ),
+            )
+            return tx
+            
+        } catch (err) {
+            throw new Error(err)
+        }
     }
 
     public async checkAllowanceZRC2(token: RestModels.Token, owner: string, spender: string) {
