@@ -1,4 +1,4 @@
-import { TxTypes } from "@lib/tradehub/utils";
+import { TxMsg, TxTypes } from "@lib/tradehub/utils";
 import { types } from "index";
 import BaseModule from "./module";
 
@@ -17,6 +17,28 @@ class ModStaking extends BaseModule {
       type: TxTypes.Staking.BEGIN_UNBONDING_TOKENS,
       value: msg
     })
+  }
+
+  public async redelegateTokens(msg: types.BeginRedelegatingTokensMsg) {
+    const wallet = this.getWallet();
+    return wallet.sendTx({
+      type: TxTypes.Staking.BEGIN_REDELEGATING_TOKENS,
+      value: msg
+    })
+  }
+
+  public async withdrawAllDelegatorRewards(msg: types.WithdrawAllDelegatorRewardsParams) {
+    const { validatorAddresses, delegatorAddress } = msg
+    const wallet = this.getWallet();
+    const messages: TxMsg[] =
+      validatorAddresses.map((address: string) => (
+        {
+          type: TxTypes.Staking.WITHDRAW_DELEGATOR_REWARDS,
+          value: { validator_address: address, delegator_address: delegatorAddress }
+        }
+      ))
+
+    return wallet.sendTxs(messages)
   }
 }
 
