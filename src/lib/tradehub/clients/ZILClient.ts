@@ -156,7 +156,7 @@ export class ZILClient {
         }
 
         try {
-            const tx = await zilliqa.blockchain.createTransactionWithoutConfirm(
+            const tx = await (this.walletProvider || zilliqa).blockchain.createTransactionWithoutConfirm(
                 zilliqa.transactions.new(
                     {
                         data: JSON.stringify(data),
@@ -170,7 +170,7 @@ export class ZILClient {
                 ),
             )
             return tx
-            
+
         } catch (err) {
             throw new Error(err)
         }
