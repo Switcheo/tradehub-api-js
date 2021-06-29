@@ -70,10 +70,10 @@ class TmClient {
         type: e.type as string,
         attributes: e.attributes.reduce((result, attr: BlockEventAttr) => {
           if (typeof window?.atob === "function") {
-            result[window.atob(attr.key)] = window.atob(attr.value)
+            result[window.atob(attr.key)] = attr.value === null || typeof attr.value === 'undefined' ? null : window.atob(attr.value)        
           } else {
             const key = Buffer.from(attr.key, "base64").toString("utf8")
-            result[key] = Buffer.from(attr.value, "base64").toString("utf8")
+            result[key] = attr.value === null || typeof attr.value === 'undefined' ? null : Buffer.from(attr.value, "base64").toString("utf8")
           }
           return result;
         }, {} as SimpleMap),
