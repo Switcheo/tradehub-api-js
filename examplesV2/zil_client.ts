@@ -1,5 +1,3 @@
-import { Zilliqa } from "@zilliqa-js/zilliqa";
-import { Wallet } from "@zilliqa-js/account"
 import { APIClient } from "../src/lib/tradehub/api";
 import { ApproveZRC2Params, ZILLockParams, ZILClient, ZILClientOpts} from "../src/lib/tradehub/clients/ZILClient";
 import { Blockchain, SWTHAddress } from "../src/lib/tradehub/utils";
@@ -48,18 +46,13 @@ async function run() {
     const privateKey = '8c96c599fdb70e6ebdebe9b10473fd7b12b5e8924a724e2b9570436c44eb0ecd'
     const address = getAddressFromPrivateKey(privateKey)
 
-
-    const zilliqa = new Zilliqa(client.getProviderUrl())
-    const wallet  = new Wallet(zilliqa.network.provider)
-    wallet.addByPrivateKey(privateKey)
-
     // approve zrc2 (increase allowance)
     const approveZRC2Params: ApproveZRC2Params = {
         token: token,
         gasPrice: new BigNumber("2000000000"),
         gasLimit: new BigNumber(25000),
         zilAddress: address,
-        signer: wallet,
+        signer: privateKey,
     }
     console.log("approve zrc2 token parameters: ", approveZRC2Params)
     console.log("sending approve transactions")
@@ -76,7 +69,7 @@ async function run() {
         gasPrice: new BigNumber("2000000000"),
         zilAddress: address,
         gasLimit: new BigNumber(25000),
-        signer: wallet,
+        signer: privateKey,
     }
     console.log("lock deposit parameters: ", lockDepositParams)
     console.log("sending lock deposit transactions")
