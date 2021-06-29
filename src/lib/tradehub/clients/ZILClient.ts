@@ -12,23 +12,27 @@ import { RestModels } from "../models";
 const uint128Max = "340282366920938463463374607431768211356"
 const zeroAddress = "0000000000000000000000000000000000000000"
 
-export type WalletProvider = Omit<
-    Zilliqa & { wallet: Wallet & { net: string; defaultAccount: { base16: string; bech32: string } } },
-    'subscriptionBuilder'
->
+export declare type WalletProvider = Omit<Zilliqa & {
+    wallet: Wallet & {
+        net: string;
+        defaultAccount: {
+            base16: string;
+            bech32: string;
+        };
+    };
+}, // ugly hack for zilpay non-standard API
+'subscriptionBuilder'>;
 
 export interface ZILClientOpts {
     configProvider: NetworkConfigProvider,
     blockchain: Blockchain,
 }
 
-type ZilSigner = WalletProvider | string
-
 interface ZILTxParams {
     gasPrice: BigNumber
     gasLimit: BigNumber
     zilAddress: string
-    signer: ZilSigner
+    signer: WalletProvider|string
 }
 
 export interface ZILLockParams extends ZILTxParams {
