@@ -121,7 +121,7 @@ export class ZILClient {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
 
-        const deployedContract = zilliqa.contracts.at(toChecksumAddress(contractAddress));
+        const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
 
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
@@ -199,7 +199,7 @@ export class ZILClient {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
 
-        const deployedContract = zilliqa.contracts.at(toChecksumAddress(contractAddress));
+        const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
 
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
