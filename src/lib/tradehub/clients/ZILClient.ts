@@ -232,11 +232,6 @@ export class ZILClient {
                     type: 'Uint256',
                     value: "0",
                 },
-                {
-                    vname: 'callAmount',
-                    type: 'Uint256',
-                    value: "0",
-                },
               ],
         }
 
