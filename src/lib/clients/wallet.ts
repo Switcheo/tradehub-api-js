@@ -971,14 +971,18 @@ export class WalletClient {
       sequence: sequence.toString(),
     })
 
+    return await this.signDoc(stdSignMsg);
+  }
+
+  public async signDoc(stdSignDoc: StdSignDoc) {
     if (this.signerType === 'ledger') {
       if (!this.ledger) {
         throw new Error('Ledger connection not found, please refresh the page and try again')
       }
-      this.onRequestSign && this.onRequestSign(stdSignMsg)
+      this.onRequestSign && this.onRequestSign(stdSignDoc)
       let signatureBase64
       try {
-        const sigData = await this.ledger.sign(sortAndStringifyJSON(stdSignMsg))
+        const sigData = await this.ledger.sign(sortAndStringifyJSON(stdSignDoc))
         signatureBase64 = Buffer.from(sigData as number[]).toString('base64')
         return {
           pub_key: {
@@ -991,7 +995,7 @@ export class WalletClient {
         this.onSignComplete && this.onSignComplete(signatureBase64 && signatureBase64.toString())
       }
     }
-    return this.sign(marshalJSON(stdSignMsg))
+    return this.sign(marshalJSON(stdSignDoc))
   }
 
   public async signAndBroadcast(msgs: object[], types: string[], options) {
