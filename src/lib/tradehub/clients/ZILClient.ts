@@ -1,3 +1,4 @@
+import { Transaction } from "@zilliqa-js/account";
 import { Wallet } from "@zilliqa-js/account";
 import { Zilliqa } from "@zilliqa-js/zilliqa";
 import { BN, bytes, Long } from "@zilliqa-js/util";
@@ -60,7 +61,7 @@ export class ZILClient {
         public readonly blockchain: Blockchain,
     ) { }
 
-    private async callContract(contract: Contract, transition: string, args: Value[], params: CallParams, toDs?: boolean) {
+    private async callContract(contract: Contract, transition: string, args: Value[], params: CallParams, toDs?: boolean): Promise<Transaction> {
         if (this.walletProvider) {
             // zilpay
             const txn = await (contract as any).call(transition, args, params, toDs)
@@ -121,59 +122,54 @@ export class ZILClient {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
 
-        // const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
+        const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
 
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
             throw new Error(balanceAndNonceResp.error.message)
         }
 
-        // const nonce = balanceAndNonceResp.result.nonce + 1
+        const nonce = balanceAndNonceResp.result.nonce + 1
         const version = bytes.pack(this.getConfig().ChainId,Number(1))
 
-        // const callParams = {
-        //     version: version,
-        //     nonce: nonce,
-        //     amount: new BN(0),
-        //     gasPrice: new BN(gasPrice.toString()),
-        //     gasLimit: Long.fromString(gasLimit.toString()),
-        // }
+        const callParams = {
+            version: version,
+            nonce: nonce,
+            amount: new BN(0),
+            gasPrice: new BN(gasPrice.toString()),
+            gasLimit: Long.fromString(gasLimit.toString()),
+        }
+
+        const transitionParams = [
+            {
+                vname: 'spender',
+                type: 'ByStr20',
+                value: appendHexPrefix(token.lock_proxy_hash),
+              },
+              {
+                  vname: 'amount',
+                  type: 'Uint128',
+                  value: uint128Max,
+              },
+        ]
 
         const data = {
             _tag: "IncreaseAllowance",
-            params: [
-                {
-                  vname: 'spender',
-                  type: 'ByStr20',
-                  value: appendHexPrefix(token.lock_proxy_hash),
-                },
-                {
-                    vname: 'amount',
-                    type: 'Uint128',
-                    value: uint128Max,
-                },
-              ],
+            params: [...transitionParams]
         }
 
-        try {
-            const tx = await (this.walletProvider || zilliqa).blockchain.createTransactionWithoutConfirm(
-                zilliqa.transactions.new(
-                    {
-                        data: JSON.stringify(data),
-                        version: version,
-                        toAddr: toChecksumAddress(contractAddress),
-                        amount: new BN(0),
-                        gasPrice: new BN(gasPrice.toString()),
-                        gasLimit: Long.fromString(gasLimit.toString()),
-                    },
-                    true,
-                ),
-            )
-            return tx
+        const tx = new Transaction(
+            {
+                ...callParams,
+                toAddr: toChecksumAddress(contractAddress),
+                data: JSON.stringify(data),
+            },
+            zilliqa.provider,
+        )
 
-        } catch (err) {
-            throw new Error(err)
-        }
+        const sendTx = await this.callContract(deployedContract, 'IncreaseAllowance', transitionParams, { ...callParams }, true )
+        tx.id = sendTx.id
+        return tx
     }
 
     public async checkAllowanceZRC2(token: RestModels.Token, owner: string, spender: string) {
@@ -237,56 +233,66 @@ export class ZILClient {
             gasLimit: Long.fromString(gasLimit.toString()),
         }
 
-        return await this.callContract(
-            deployedContract,
-            'lock',
-            [
-                {
-                    vname: 'tokenAddr',
-                    type: 'ByStr20',
-                    value: assetId,
-                  },
-                  {
-                      vname: 'targetProxyHash',
-                      type: 'ByStr',
-                      value: targetProxyHash,
-                  },
-                  {
-                      vname: 'toAddress',
-                      type: 'ByStr',
-                      value: swthAddress,
-                  },
-                  {
-                      vname: 'toAssetHash',
-                      type: 'ByStr',
-                      value: toAssetHash,
-                  },
-                  {
-                      vname: 'feeAddr',
-                      type: 'ByStr',
-                      value: feeAddress,
-                  },
-                  {
-                      vname: 'amount',
-                      type: 'Uint256',
-                      value: amount.toString(),
-                  },
-                  {
-                      vname: 'feeAmount',
-                      type: 'Uint256',
-                      value: "0",
-                  },
-                  {
-                      vname: 'callAmount',
-                      type: 'Uint256',
-                      value: "0",
-                  },
-            ],
+        const transitionParams = [
             {
-                ...callParams
+                vname: 'tokenAddr',
+                type: 'ByStr20',
+                value: assetId,
+              },
+              {
+                  vname: 'targetProxyHash',
+                  type: 'ByStr',
+                  value: targetProxyHash,
+              },
+              {
+                  vname: 'toAddress',
+                  type: 'ByStr',
+                  value: swthAddress,
+              },
+              {
+                  vname: 'toAssetHash',
+                  type: 'ByStr',
+                  value: toAssetHash,
+              },
+              {
+                  vname: 'feeAddr',
+                  type: 'ByStr',
+                  value: feeAddress,
+              },
+              {
+                  vname: 'amount',
+                  type: 'Uint256',
+                  value: amount.toString(),
+              },
+              {
+                  vname: 'feeAmount',
+                  type: 'Uint256',
+                  value: "0",
+              },
+              {
+                  vname: 'callAmount',
+                  type: 'Uint256',
+                  value: "0",
+              },
+        ]
+
+        const data = {
+            _tag: "lock",
+            params: [...transitionParams],
+        }
+
+        const tx = new Transaction(
+            {
+                ...callParams,
+                toAddr: toChecksumAddress(contractAddress),
+                data: JSON.stringify(data),
             },
-            true
+            zilliqa.provider,
         )
+
+        const sendTx = await this.callContract(deployedContract, 'lock', transitionParams, { ...callParams }, true )
+        tx.id = sendTx.id
+        return tx
     }
 
     /**
