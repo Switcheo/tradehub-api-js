@@ -3,7 +3,7 @@ import { Wallet } from "@zilliqa-js/account";
 import { Zilliqa } from "@zilliqa-js/zilliqa";
 import { BN, bytes, Long } from "@zilliqa-js/util";
 import { toChecksumAddress } from "@zilliqa-js/crypto"
-import { Contract, Value, CallParams } from '@zilliqa-js/contract'
+import { RPCMethod } from "@zilliqa-js/core"
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { ethers } from "ethers";
@@ -61,20 +61,6 @@ export class ZILClient {
         public readonly blockchain: Blockchain,
     ) { }
 
-    private async callContract(contract: Contract, transition: string, args: Value[], params: CallParams, toDs?: boolean): Promise<Transaction> {
-        if (this.walletProvider) {
-            // zilpay
-            const txn = await (contract as any).call(transition, args, params, toDs)
-            txn.id = txn.ID
-            txn.isRejected = function (this: { errors: any[]; exceptions: any[] }) {
-                throw new Error(this.errors.toString())
-            }
-            return txn
-        } else {
-            return await contract.callWithoutConfirm(transition, args, params, toDs)
-        }
-    }
-
     public static instance(opts: ZILClientOpts) {
         const { configProvider, blockchain } = opts
         if (!ZILClient.SUPPORTED_BLOCKCHAINS.includes(blockchain)) {
@@ -107,6 +93,28 @@ export class ZILClient {
         return tokens
     }
 
+    private async callContract(tx: Transaction, zilliqa: Zilliqa) {
+        // need a tx obj such that await tx.confirm(tx.id) can be used to confirm the transactions
+        if (this.walletProvider) {
+            // zilpay
+            try {
+                const txn: any = await this.walletProvider.blockchain.createTransaction(tx)
+                tx.id = txn.ID
+                return tx
+            } catch (err) {
+                throw new Error(err)
+            }
+        }
+        // others; privatekey
+        await zilliqa.wallet.sign(tx)
+        const response = await zilliqa.provider.send(RPCMethod.CreateTransaction, { ...tx.txParams })
+        if (response.error !== undefined) {
+            throw new Error(response.error.message)
+        }
+        tx.id = response.result.TranID
+        return tx
+    }
+
     public async approveZRC2(params: ApproveZRC2Params) {
         const { token, gasPrice, gasLimit, zilAddress, signer } = params
         const contractAddress = token.asset_id
@@ -121,8 +129,6 @@ export class ZILClient {
         } else {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
-
-        const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
 
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
@@ -167,9 +173,7 @@ export class ZILClient {
             zilliqa.provider,
         )
 
-        const sendTx = await this.callContract(deployedContract, 'IncreaseAllowance', transitionParams, { ...callParams }, true )
-        tx.id = sendTx.id
-        return tx
+        return await this.callContract(tx, zilliqa)
     }
 
     public async checkAllowanceZRC2(token: RestModels.Token, owner: string, spender: string) {
@@ -209,8 +213,6 @@ export class ZILClient {
         } else {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
-
-        const deployedContract = (this.walletProvider || zilliqa).contracts.at(toChecksumAddress(contractAddress));
 
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
@@ -290,9 +292,7 @@ export class ZILClient {
             zilliqa.provider,
         )
 
-        const sendTx = await this.callContract(deployedContract, 'lock', transitionParams, { ...callParams }, true )
-        tx.id = sendTx.id
-        return tx
+        return await this.callContract(tx, zilliqa)
     }
 
     /**
