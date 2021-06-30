@@ -99,7 +99,7 @@ export class ZILClient {
             // zilpay
             try {
                 const txn: any = await this.walletProvider.blockchain.createTransaction(tx)
-                tx.id = txn.ID
+                tx.id = txn.id
                 return tx
             } catch (err) {
                 throw new Error(err)
