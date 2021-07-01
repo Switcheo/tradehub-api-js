@@ -109,6 +109,7 @@ export const CommonAssetName: SimpleMap = {
   swth: 'swth',
   'swth-n': 'swth',
   'swth-b': 'swth',
+  'swth.e': 'swth',
   dai: 'dai',
   flm1: 'flm',
   eth1: 'eth',
@@ -129,6 +130,14 @@ export const CommonAssetName: SimpleMap = {
   euni1: 'uni',
   euni2: 'uni',
   ncgas1: 'cgas',
+
+  // devnet tokens
+  'zil9': 'zil',
+  'zil9.e': 'zil',
+
+  'usdt.e': 'usdt',
+  'usdt1.z': 'usdt',
+  'usdt2.z': 'usdt',
 };
 
 export const CoinGeckoTokenNames: SimpleMap = {
@@ -141,6 +150,7 @@ export const CoinGeckoTokenNames: SimpleMap = {
   eth: 'ethereum',
   flm: 'flamingo-finance',
   usdc: 'usd-coin',
+  usdt: 'tether',
   cel: 'celsius-degree-token',
   nex: 'neon-exchange',
   wbtc: 'wrapped-bitcoin',
@@ -148,4 +158,5 @@ export const CoinGeckoTokenNames: SimpleMap = {
   busd: 'binance-usd',
   btcb: 'binance-bitcoin',
   tru: 'truebit-protocol',
+  zil: 'zilliqa',
 };
