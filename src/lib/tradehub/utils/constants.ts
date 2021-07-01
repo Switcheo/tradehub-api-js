@@ -132,8 +132,11 @@ export const CommonAssetName: SimpleMap = {
   ncgas1: 'cgas',
 
   // devnet tokens
+  'zil1': 'zil',
+  'zil.e': 'zil',
   'zil9': 'zil',
   'zil9.e': 'zil',
+  'zwap.e': 'zwap',
 
   'usdt.e': 'usdt',
   'usdt1.z': 'usdt',
@@ -159,4 +162,5 @@ export const CoinGeckoTokenNames: SimpleMap = {
   btcb: 'binance-bitcoin',
   tru: 'truebit-protocol',
   zil: 'zilliqa',
+  zwap: 'zilswap',
 };
