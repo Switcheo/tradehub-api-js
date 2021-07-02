@@ -20,6 +20,6 @@ const CREATE_PARAMS: RPCParams.CreateSubAccount = {
   const connectedSDK = await sdk.connectWithMnemonic(mnemonic);
   console.log("connected wallet:", connectedSDK.wallet.bech32Address);
 
-  const createSubaccount = await connectedSDK.subaccount.create(CREATE_PARAMS);
+  const createSubaccount = await connectedSDK.account.create(CREATE_PARAMS);
   console.log("create subaccount response", createSubaccount);
 })().catch(console.error).finally(() => process.exit(0))
