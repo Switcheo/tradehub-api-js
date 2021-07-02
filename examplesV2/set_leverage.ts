@@ -1,10 +1,10 @@
 import * as BIP39 from "bip39";
-import { SetLeverageMsg, TradeHubSDK } from '..';
+import { RPCParams, TradeHubSDK } from '..';
 import "./_setup";
 
 TradeHubSDK.APIClient.DEBUG_HEADERS = true;
 
-const PARAMS: SetLeverageMsg = {
+const PARAMS: RPCParams.SetLeverage = {
   market: "btc_z29",
   leverage: "10"
 };

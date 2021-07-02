@@ -1,9 +1,9 @@
+import { RPCParams } from "@lib/tradehub/models";
 import { TxTypes } from "@lib/tradehub/utils";
-import { SetLeverageMsg } from "@lib/types";
 import BaseModule from "./module";
 
 class ModLeverage extends BaseModule {
-  public async set(params: SetLeverageMsg) {
+  public async set(params: RPCParams.SetLeverage) {
     const wallet = this.getWallet();
 
     if (!params.originator)
@@ -15,7 +15,7 @@ class ModLeverage extends BaseModule {
     });
   }
 
-  public async setLeverages(params: SetLeverageMsg[]) {
+  public async setLeverages(params: RPCParams.SetLeverage[]) {
     const wallet = this.getWallet();
 
     const msgs = params.map(param => {
