@@ -3,3 +3,4 @@ export { default as ModGovernance } from "./governance";
 export { default as ModMarket } from "./market";
 export { default as ModCoin } from "./coin";
 export { default as ModOrder } from "./order";
+export { default as ModLeverage } from "./leverage";
