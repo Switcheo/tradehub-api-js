@@ -25,25 +25,40 @@ async function run() {
     // check allowance
     const allowace = await client.checkAllowanceZRC2(asset,"0x2141bf8b6d2213d4d7204e2ddab92653dc245c5f","0xa476fcedc061797fa2a6f80bd9e020a056904298")
     console.log(allowace)
-    
+
+    const depositAmtQa = new BigNumber("1000000000000") // for zil, deposit amt is convert to Qa
     const privateKey = '8c96c599fdb70e6ebdebe9b10473fd7b12b5e8924a724e2b9570436c44eb0ecd'
     const address = getAddressFromPrivateKey(privateKey)
     console.log(address)
 
-    // approve zrc2 (increase allowance)
-    const approveZRC2Params: ApproveZRC2Params = {
-        token: asset,
-        gasPrice: new BigNumber("2000000000"),
-        gasLimit: new BigNumber(25000),
-        zilAddress: address,
-        signer: privateKey,  // for zilpay: window.zilPay
+    if (allowace.lt(depositAmtQa)) {
+        // approve zrc2 (increase allowance)
+        const approveZRC2Params: ApproveZRC2Params = {
+            token: asset,
+            gasPrice: new BigNumber("2000000000"),
+            gasLimit: new BigNumber(25000),
+            zilAddress: address,
+            signer: privateKey,  // for zilpay: set to window.zilPay
+        }
+        console.log("approve zrc2 token parameters: ", approveZRC2Params)
+        console.log("sending approve transactions")
+        const tx = await client.approveZRC2(approveZRC2Params)
+        console.log("performing transaction confirmation, transaction id is: ", tx.id)
+        await tx.confirm(tx.id)
+        console.log("transaction confirmed! receipt is: ", tx.getReceipt())
+
+        /**
+         * 
+         * if using zilPay, tx.confirm(tx.id cannot be used)
+         * instead create a empty txn object with the toAddr
+         * 
+         * const toAddr = tx.toAddr // must be checksummed or bech32
+         * const emptyTx = new Transaction({ toAddr: toAddr }, new HTTPProvider("https://dev-api.zilliqa.com"))
+         * const confirmedTxn = await emptyTx.confirm(tx.id)
+         * console.log(confirmedTxn.receipt);
+         * 
+        **/
     }
-    console.log("approve zrc2 token parameters: ", approveZRC2Params)
-    console.log("sending approve transactions")
-    const tx = await client.approveZRC2(approveZRC2Params)
-    console.log("performing transaction confirmation, transaction id is: ", tx.id)
-    await tx.confirm(tx.id)
-    console.log("transaction confirmed! receipt is: ", tx.getReceipt())
 
     // lock deposit
     const lockDepositParams: ZILLockParams = {
@@ -53,14 +68,12 @@ async function run() {
         gasPrice: new BigNumber("2000000000"),
         zilAddress: address,
         gasLimit: new BigNumber(25000),
-        signer: privateKey,
+        signer: privateKey, // for zilpay: set to window.zilPay
     }
     console.log("lock deposit parameters: ", lockDepositParams)
     console.log("sending lock deposit transactions")
-    // const tx = await client.lockDeposit(lockDepositParams)
-    // console.log("performing transaction confirmation, transaction id is: ", tx.id)
-    // await tx.confirm(tx.id)
-    // console.log("transaction confirmed! receipt is: ", tx.getReceipt())
+    const tx = await client.lockDeposit(lockDepositParams)
+    console.log("performing transaction confirmation, transaction id is: ", tx.id)
 }
 
 run()

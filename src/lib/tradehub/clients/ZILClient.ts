@@ -1,8 +1,9 @@
-import { Transaction } from "@zilliqa-js/account";
-import { Wallet } from "@zilliqa-js/account";
+// @ts-nocheck
+import { Transaction, Wallet } from "@zilliqa-js/account";
 import { Zilliqa } from "@zilliqa-js/zilliqa";
 import { BN, bytes, Long } from "@zilliqa-js/util";
 import { toChecksumAddress } from "@zilliqa-js/crypto"
+import { Contract, Value, CallParams } from '@zilliqa-js/contract'
 import { RPCMethod } from "@zilliqa-js/core"
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
@@ -93,33 +94,35 @@ export class ZILClient {
         return tokens
     }
 
-    private async callContract(tx: Transaction, zilliqa: Zilliqa) {
-        // need a tx obj such that await tx.confirm(tx.id) can be used to confirm the transactions
+    // see examplesV2/zil_client.ts on how to confirm the transactions
+    // to confirm the zilpay method, use :
+    //  const lock_tx = await zilclient.lockDeposit()
+    //  const emptyTx = new Transaction({ toAddr: toAddr }, new HTTPProvider(sdk.zil.getProviderUrl())
+    //  const confirmedTxn = await emptyTx.confirm(lock_tx.id)
+    // 
+    // to confirm the privatekey method use :
+    //  const lock_tx = await zilclient.lockDeposit()
+    //  const txn = await lock_tx.confirm(lock_tx.id)
+    private async callContract(contract: Contract, transition: string, args: Value[], params: CallParams, toDs?: boolean): Promise<Transaction> {
         if (this.walletProvider) {
             // zilpay
-            try {
-                const txn: any = await this.walletProvider.blockchain.createTransaction(tx)
-                tx.id = txn.TranID
-                return tx
-            } catch (err) {
-                throw new Error(err)
+            const txn = await (contract as any).call(transition, args, params, toDs)
+            txn.id = txn.ID
+            txn.isRejected = function (this: { errors: any[]; exceptions: any[] }) {
+                return this.errors.length > 0 || this.exceptions.length > 0
             }
+            return txn
+        } else {
+            // default; e.g. privatekey
+            return await contract.callWithoutConfirm(transition, args, params, toDs)
         }
-        // others; privatekey
-        await zilliqa.wallet.sign(tx)
-        const response = await zilliqa.provider.send(RPCMethod.CreateTransaction, { ...tx.txParams })
-        if (response.error !== undefined) {
-            throw new Error(response.error.message)
-        }
-        tx.id = response.result.TranID
-        return tx
     }
 
     public async approveZRC2(params: ApproveZRC2Params) {
         const { token, gasPrice, gasLimit, zilAddress, signer } = params
         const contractAddress = token.asset_id
-        let zilliqa;
 
+        let zilliqa;
         if (typeof signer === 'string') {
             zilliqa = new Zilliqa(this.getProviderUrl())
             zilliqa.wallet.addByPrivateKey(signer)
@@ -130,6 +133,7 @@ export class ZILClient {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
 
+        const deployedContract = (this.walletProvider || zilliqa).contracts.at(contractAddress)
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
             throw new Error(balanceAndNonceResp.error.message)
@@ -164,16 +168,8 @@ export class ZILClient {
             params: [...transitionParams]
         }
 
-        const tx = new Transaction(
-            {
-                ...callParams,
-                toAddr: toChecksumAddress(contractAddress),
-                data: JSON.stringify(data),
-            },
-            zilliqa.provider,
-        )
-
-        return await this.callContract(tx, zilliqa)
+        const callTx = await this.callContract(deployedContract, data._tag, data.params, callParams, true)
+        return callTx;
     }
 
     public async checkAllowanceZRC2(token: RestModels.Token, owner: string, spender: string) {
@@ -203,7 +199,6 @@ export class ZILClient {
         const contractAddress = this.getLockProxyAddress()
 
         let zilliqa;
-
         if (typeof signer === 'string') {
             zilliqa = new Zilliqa(this.getProviderUrl())
             zilliqa.wallet.addByPrivateKey(signer)
@@ -214,6 +209,7 @@ export class ZILClient {
             zilliqa = new Zilliqa(this.getProviderUrl())
         }
 
+        const deployedContract = (this.walletProvider || zilliqa).contracts.at(contractAddress)
         const balanceAndNonceResp = await zilliqa.blockchain.getBalance(stripHexPrefix(zilAddress))
         if (balanceAndNonceResp.error !== undefined) {
             throw new Error(balanceAndNonceResp.error.message)
@@ -283,16 +279,8 @@ export class ZILClient {
             params: [...transitionParams],
         }
 
-        const tx = new Transaction(
-            {
-                ...callParams,
-                toAddr: toChecksumAddress(contractAddress),
-                data: JSON.stringify(data),
-            },
-            zilliqa.provider,
-        )
-
-        return await this.callContract(tx, zilliqa)
+        const callTx = await this.callContract(deployedContract, data._tag, data.params, callParams, true)
+        return callTx;
     }
 
     /**
