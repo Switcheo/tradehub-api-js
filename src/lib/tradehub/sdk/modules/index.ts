@@ -8,3 +8,5 @@ export { default as ModLeverage } from "./leverage";
 export { default as ModBroker } from "./broker";
 export { default as ModPosition } from "./position";
 export { default as ModLiquidityPool } from "./liquiditypool";
+export { default as ModCDP } from "./cdp";
+export { default as ModOracle } from "./oracle";
