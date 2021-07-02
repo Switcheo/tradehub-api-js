@@ -29,7 +29,8 @@ export const TxTypes = {
   },
 
   Broker: {
-    INITIATE_SETTLEMENT: 'broker/MsgInitiateSettlement',
+    INITIATE_SETTLEMENT: 'broker/MsgInitiateSettlement', // not in chain
+    INITIATE_LIQUIDATION: 'broker/MsgInitiateLiquidation'
   },
 
   Leverage: {

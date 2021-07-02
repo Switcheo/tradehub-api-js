@@ -9,7 +9,7 @@ import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigP
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
-import { ModAdmin, ModCoin, ModGovernance, ModLeverage, ModMarket, ModOrder } from "./modules";
+import { ModAdmin, ModBroker, ModCoin, ModGovernance, ModLeverage, ModMarket, ModOrder } from "./modules";
 import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
 
@@ -62,6 +62,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   market: ModMarket
   governance: ModGovernance
   leverage: ModLeverage
+  broker: ModBroker
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -123,6 +124,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.coin = new ModCoin(this);
     this.account = new ModAccount(this);
     this.leverage = new ModLeverage(this);
+    this.broker = new ModBroker(this);
   }
 
   protected async startWS() {
