@@ -1,10 +1,7 @@
-// @ts-nocheck
 import { Transaction, Wallet } from "@zilliqa-js/account";
 import { Zilliqa } from "@zilliqa-js/zilliqa";
 import { BN, bytes, Long } from "@zilliqa-js/util";
-import { toChecksumAddress } from "@zilliqa-js/crypto"
 import { Contract, Value, CallParams } from '@zilliqa-js/contract'
-import { RPCMethod } from "@zilliqa-js/core"
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { ethers } from "ethers";
