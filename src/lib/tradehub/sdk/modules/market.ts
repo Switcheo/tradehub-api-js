@@ -14,6 +14,18 @@ class ModMarket extends BaseModule {
       params,
     );
   }
+
+  public async update(params: RPCParams.UpdateMarket) {
+    const wallet = this.getWallet();
+
+    if (!params.originator)
+      params.originator = wallet.bech32Address;
+
+    return await this.sendTx(
+      TxTypes.Market.UPDATE,
+      params,
+    );
+  }
 }
 
 export default ModMarket;
