@@ -1,9 +1,9 @@
+import { RPCParams } from "@lib/tradehub/models";
 import { TxTypes } from "@lib/tradehub/utils";
-import { CreateOrderMsg, CancelOrderMsg, EditOrderMsg, CancelAllMsg } from "@lib/types";
 import BaseModule from "./module";
 
 class ModOrder extends BaseModule {
-  public async create(params: CreateOrderMsg) {
+  public async create(params: RPCParams.CreateOrder) {
     const wallet = this.getWallet();
 
     if (!params.originator)
@@ -19,7 +19,7 @@ class ModOrder extends BaseModule {
     });
   }
 
-  public async createOrders(params: CreateOrderMsg[]) {
+  public async createOrders(params: RPCParams.CreateOrder[]) {
     const wallet = this.getWallet();
 
     const msgs = params.map(param => {
@@ -39,7 +39,7 @@ class ModOrder extends BaseModule {
     return await wallet.sendTxs(msgs);
   }
 
-  public async cancel(params: CancelOrderMsg) {
+  public async cancel(params: RPCParams.CancelOrder) {
     const wallet = this.getWallet();
 
     if (!params.originator)
@@ -51,7 +51,7 @@ class ModOrder extends BaseModule {
     });
   }
 
-  public async cancelOrders(params: CancelOrderMsg[]) {
+  public async cancelOrders(params: RPCParams.CancelOrder[]) {
     const wallet = this.getWallet();
 
     const msgs = params.map(param => {
@@ -67,7 +67,7 @@ class ModOrder extends BaseModule {
     return await wallet.sendTxs(msgs);
   }
 
-  public async edit(params: EditOrderMsg) {
+  public async edit(params: RPCParams.EditOrder) {
     const wallet = this.getWallet();
 
     if (!params.originator)
@@ -79,7 +79,7 @@ class ModOrder extends BaseModule {
     });
   }
 
-  public async editOrders(params: EditOrderMsg[]) {
+  public async editOrders(params: RPCParams.EditOrder[]) {
     const wallet = this.getWallet();
 
     const msgs = params.map(param => {
@@ -95,7 +95,7 @@ class ModOrder extends BaseModule {
     return await wallet.sendTxs(msgs);
   }
 
-  public async cancelAll(params: CancelAllMsg) {
+  public async cancelAll(params: RPCParams.CancelAll) {
     const wallet = this.getWallet();
 
     if (!params.originator)

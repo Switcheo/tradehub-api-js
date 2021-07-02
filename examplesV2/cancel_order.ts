@@ -1,5 +1,5 @@
 import * as BIP39 from "bip39";
-import { CancelOrderMsg, CreateOrderMsg, TradeHubSDK } from '..';
+import { RPCParams, TradeHubSDK } from '..';
 import "./_setup";
 
 function sleep(ms: number) {
@@ -8,7 +8,7 @@ function sleep(ms: number) {
 
 TradeHubSDK.APIClient.DEBUG_HEADERS = true;
 
-const CREATE_PARAMS: CreateOrderMsg = {
+const CREATE_PARAMS: RPCParams.CreateOrder = {
   market: "swth_eth",
   quantity: "109360",
   type: "limit",
@@ -35,7 +35,7 @@ const CREATE_PARAMS: CreateOrderMsg = {
   await sleep(1000)
 
 
-  const CANCEL_PARAMS: CancelOrderMsg = {
+  const CANCEL_PARAMS: RPCParams.CancelOrder = {
     id: JSON.parse(order.logs[0].log).order.order_id
 
   }
