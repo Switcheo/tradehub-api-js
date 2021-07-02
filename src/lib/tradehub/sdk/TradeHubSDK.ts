@@ -12,6 +12,7 @@ import { WSChannel } from "../websocket/types";
 import { ModAdmin, ModBroker, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOrder, ModPosition } from "./modules";
 import ModAccount from "./modules/account";
 import { SDKProvider } from "./modules/module";
+import ModSubAccount from "./modules/subaccount";
 
 export * as RestTypes from "../api/spec";
 export * from "../models";
@@ -65,6 +66,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   broker: ModBroker
   position: ModPosition
   liquiditypool: ModLiquidityPool
+  subaccount: ModSubAccount
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -129,6 +131,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.broker = new ModBroker(this);
     this.position = new ModPosition(this);
     this.liquiditypool = new ModLiquidityPool(this);
+    this.subaccount = new ModSubAccount(this);
   }
 
   protected async startWS() {
