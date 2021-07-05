@@ -1,6 +1,5 @@
 export * from "./check_username"
 export * from "./distribution"
-export * from "./estimate_unclaimed_rewards"
 export * from "./get_account"
 export * from "./get_account_realized_pnl"
 export * from "./get_account_trades"
