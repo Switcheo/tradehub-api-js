@@ -46,6 +46,8 @@ export const TradehubEndpoints = {
   'markets/get_reward_curve': '/get_reward_curve',
   'markets/get_commitment_curve': '/get_commitment_curve',
   'markets/get_rewards_distributed': '/get_collections',
+  'markets/get_last_claimed_pool_reward': '/liquiditypool/get_last_claim/:poolId/:address',
+  'markets/get_reward_history': '/liquiditypool/get_reward_history/:poolId/:blockHeight',
   'markets/get_leaderboard': '/get_leaderboard',
   'markets/get_positions_sorted_by_pnl': '/get_positions_sorted_by_pnl',
   'markets/get_positions_sorted_by_risk': '/get_positions_sorted_by_risk',

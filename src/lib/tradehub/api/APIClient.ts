@@ -6,7 +6,7 @@ import { RestTypes } from '../sdk';
 import { bnOrZero, BN_ZERO, BroadcastTx, SimpleMap } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
-  CheckUserNameOpts, CosmosResponse, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountResponse,
+  CheckUserNameOpts, CosmosResponse, EstimateUnclaimedRewardsOpts, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountResponse,
   GetAccountTradesOpts,
   GetActiveWalletsOpts,
   GetAllDelegatorDelegationsOpts,
@@ -27,7 +27,7 @@ import {
   GetDelegatorUnbondingDelegationsOpts,
   GetDelegatorUnbondingDelegationsResponse,
   GetDistributionParamsResponse,
-  GetGovProposalOpts, GetLeaderboardOpts,
+  GetGovProposalOpts, GetLastClaimedPoolRewardOpts, GetLastClaimedPoolRewardResponse, GetLeaderboardOpts,
   GetLeverageOpts, GetMarketOpts, GetMarketsOpts, GetMarketStatsOpts, GetOrderbookOpts, GetOrderOpts,
   GetOrdersOpts, GetPositionOpts,
   GetPositionsCloseToLiquidationOpts,
@@ -36,6 +36,8 @@ import {
   GetPositionsWithHightstPnlOpts,
   GetPricesOpts, GetProfileOpts,
   GetRewardCurveResponse,
+  GetRewardHistoryOpts,
+  GetRewardHistoryResponse,
   GetRewardsDistributedOpts,
   GetRichListOpts,
   GetSlashingParamsResponse,
@@ -620,6 +622,89 @@ class APIClient {
     const total = await this.getWeeklyRewards()
     const poolAllocation = await this.getWeeklyLPRewardAlloc()
     return new BigNumber(total).times(poolAllocation).dp(8)
+  }
+
+  async getLastClaimedPoolReward(opts: GetLastClaimedPoolRewardOpts): Promise<GetLastClaimedPoolRewardResponse> {
+    const request = this.apiManager.path('markets/get_last_claimed_pool_reward', opts)
+    const response = await request.get()
+    return response.data as GetLastClaimedPoolRewardResponse
+  }
+
+  async getRewardHistory(opts: GetRewardHistoryOpts): Promise<GetRewardHistoryResponse> {
+    const request = this.apiManager.path('markets/get_reward_history', opts)
+    const response = await request.get()
+    return response.data as GetRewardHistoryResponse
+  }
+
+  async estimateUnclaimedRewards(opts: EstimateUnclaimedRewardsOpts): Promise<RestModels.UnclaimedRewards> {
+    const accruedRewards: RestModels.UnclaimedRewards = {}
+    const lastClaimed = await this.getLastClaimedPoolReward(opts)
+    let lastHeight = lastClaimed.result
+
+    const allocation = await this.getRewardHistory({
+      poolId: opts.poolId,
+      blockHeight: new BigNumber(lastClaimed.result || '0').plus(1).toString()
+    })
+
+    // get current share
+    const shares = await this.getStakedPoolTokenInfo({
+      pool_id: parseInt(opts.poolId),
+      account: opts.address,
+    })
+
+    const commitmentPower = new BigNumber(shares.result.commitment_power || '0')
+
+    // calculate accrued rewards based on history
+    if (!commitmentPower.isZero() && allocation && allocation.result) {
+      allocation.result.forEach((period) => {
+        lastHeight = period.BlockHeight
+        const totalCommit = new BigNumber(period.TotalCommitment)
+        const ratio = commitmentPower.div(totalCommit)
+        period.Rewards?.forEach((reward) => {
+          const rewardCut = new BigNumber(reward.amount).times(ratio).integerValue(BigNumber.ROUND_DOWN)
+          if (reward.denom in accruedRewards) {
+            accruedRewards[reward.denom] = accruedRewards[reward.denom].plus(rewardCut)
+          } else {
+            accruedRewards[reward.denom] = rewardCut
+          }
+        })
+      })
+    }
+    // Estimate rewards from last allocated rewards
+    // the current logic will under estimate the rewards as the current weekly reward rate is used across the full period
+    // instead of deriving the reward rate for each week since the last reward allocation
+
+    if (!commitmentPower.isZero()) {
+      const weeklyRewards = await this.getWeeklyPoolRewards()
+      const pools = await this.getLiquidityPools()
+      const pool = pools.find((pool) => pool.pool_id === parseInt(opts.poolId))
+      const currentTotalCommitmentPower = new BigNumber(pool.total_commitment || '0')
+      const poolWeight = new BigNumber(pool.rewards_weight || '0')
+      let totalWeight = new BigNumber(0)
+      pools.forEach((pool) => {
+        totalWeight = totalWeight.plus(pool.rewards_weight)
+      })
+      const poolWeekRewards = poolWeight.dividedBy(totalWeight).times(weeklyRewards)
+
+      // get time from last height
+      const blockInfo = await this.getCosmosBlockInfo({ height: parseInt(lastHeight) + 1 })
+
+      const estimatedStart = dayjs(blockInfo.block.header.time)
+
+      const now = dayjs()
+      const WEEKS_IN_SECONDS = 604800
+      const diff = now.diff(estimatedStart, 'second')
+
+      const estimatedRewards = new BigNumber(diff / WEEKS_IN_SECONDS).times(poolWeekRewards)
+        .times(commitmentPower).div(currentTotalCommitmentPower)
+        .shiftedBy(8).integerValue(BigNumber.ROUND_DOWN)
+      if ('swth' in accruedRewards) {
+        accruedRewards['swth'] = accruedRewards['swth'].plus(estimatedRewards)
+      } else {
+        accruedRewards['swth'] = estimatedRewards
+      }
+    }
+    return accruedRewards
   }
 
   async getLeaderboard(opts: GetLeaderboardOpts): Promise<RestModels.LeaderboardResult> {
