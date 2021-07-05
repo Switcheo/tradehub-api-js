@@ -73,7 +73,7 @@
     "dayjs": "^1.9.6",
     "dotenv": "^8.2.0",
     "eth-sig-util": "^3.0.0",
-    "ethers": "^5.0.17",
+    "ethers": "^5.3.1",
     "gatsby-cli": "^2.15.1",
     "hdkey": "^1.1.2",
     "isomorphic-ws": "^4.0.1",

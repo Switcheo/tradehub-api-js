@@ -281,6 +281,14 @@ export class WalletClient {
     }, this.broadcastQueueIntervalTime)
   }
 
+  public setBroadcastQueueIntervalTime(newInterval: number) {
+    clearInterval(this.broadcastQueueIntervalId)
+    this.broadcastQueueIntervalTime = newInterval
+    this.broadcastQueueIntervalId = <any>setInterval(() => {
+      this.processBroadcastQueue()
+    }, this.broadcastQueueIntervalTime)
+  }
+
   public disconnect() {
     clearInterval(this.broadcastQueueIntervalId)
     clearInterval(this.neoDepositsIntervalId)
@@ -994,14 +1002,18 @@ export class WalletClient {
       sequence: sequence.toString(),
     })
 
+    return await this.signDoc(stdSignMsg);
+  }
+
+  public async signDoc(stdSignDoc: StdSignDoc) {
     if (this.signerType === 'ledger') {
       if (!this.ledger) {
         throw new Error('Ledger connection not found, please refresh the page and try again')
       }
-      this.onRequestSign?.(stdSignMsg)
+      this.onRequestSign?.(stdSignDoc)
       let signatureBase64
       try {
-        const sigData = await this.ledger.sign(sortAndStringifyJSON(stdSignMsg))
+        const sigData = await this.ledger.sign(sortAndStringifyJSON(stdSignDoc))
         signatureBase64 = Buffer.from(sigData).toString('base64')
         return {
           pub_key: {
@@ -1018,10 +1030,10 @@ export class WalletClient {
         throw new Error('Signer not provided, please connect wallet again')
       }
 
-      this.onRequestSign?.(stdSignMsg)
+      this.onRequestSign?.(stdSignDoc)
       let signatureBase64
       try {
-        const sigData = await this.signer.sign(sortAndStringifyJSON(stdSignMsg), sortObject(stdSignMsg))
+        const sigData = await this.signer.sign(sortAndStringifyJSON(stdSignDoc), sortObject(stdSignDoc))
         signatureBase64 = sigData.signature
         return sigData
       } finally {
@@ -1029,7 +1041,7 @@ export class WalletClient {
       }
     }
 
-    return this.sign(marshalJSON(stdSignMsg))
+    return this.sign(marshalJSON(stdSignDoc))
   }
 
   public async signAndBroadcast(msgs: object[], types: string[], options) {
