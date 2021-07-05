@@ -1,9 +1,9 @@
+import { RPCParams } from "@lib/tradehub/models";
 import { TxTypes } from "@lib/tradehub/utils";
-import { CreateWithdrawalMsg } from "@lib/types";
 import BaseModule from "./module";
 
 class ModCoin extends BaseModule {
-  public async withdraw(params: CreateWithdrawalMsg) {
+  public async withdraw(params: RPCParams.CreateWithdrawal) {
     const wallet = this.getWallet();
 
     if (!params.originator)
