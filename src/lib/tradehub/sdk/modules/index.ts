@@ -10,3 +10,4 @@ export { default as ModMarket } from "./market";
 export { default as ModOracle } from "./oracle";
 export { default as ModOrder } from "./order";
 export { default as ModPosition } from "./position";
+export { default as ModStaking } from "./staking";

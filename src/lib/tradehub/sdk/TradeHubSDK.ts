@@ -11,6 +11,7 @@ import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
 import { ModAccount, ModAdmin, ModBroker, ModCDP, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOracle, ModOrder, ModPosition } from "./modules";
 import { SDKProvider } from "./modules/module";
+import ModStaking from "./modules/staking";
 
 export * as RestTypes from "../api/spec";
 export * from "../models";
@@ -66,6 +67,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   position: ModPosition
   cdp: ModCDP
   oracle: ModOracle
+  staking: ModStaking
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -132,6 +134,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.position = new ModPosition(this);
     this.cdp = new ModCDP(this);
     this.oracle = new ModOracle(this);
+    this.staking = new ModStaking(this);
   }
 
   protected async startWS() {
