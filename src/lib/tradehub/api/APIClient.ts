@@ -27,7 +27,7 @@ import {
   GetDelegatorUnbondingDelegationsOpts,
   GetDelegatorUnbondingDelegationsResponse,
   GetDistributionParamsResponse,
-  GetGovProposalOpts, GetLeaderboardOpts,
+  GetGovProposalOpts, GetLastClaimedPoolRewardOpts, GetLastClaimedPoolRewardResponse, GetLeaderboardOpts,
   GetLeverageOpts, GetMarketOpts, GetMarketsOpts, GetMarketStatsOpts, GetOrderbookOpts, GetOrderOpts,
   GetOrdersOpts, GetPositionOpts,
   GetPositionsCloseToLiquidationOpts,
@@ -36,6 +36,8 @@ import {
   GetPositionsWithHightstPnlOpts,
   GetPricesOpts, GetProfileOpts,
   GetRewardCurveResponse,
+  GetRewardHistoryOpts,
+  GetRewardHistoryResponse,
   GetRewardsDistributedOpts,
   GetRichListOpts,
   GetSlashingParamsResponse,
@@ -620,6 +622,18 @@ class APIClient {
     const total = await this.getWeeklyRewards()
     const poolAllocation = await this.getWeeklyLPRewardAlloc()
     return new BigNumber(total).times(poolAllocation).dp(8)
+  }
+
+  async getLastClaimedPoolReward(opts: GetLastClaimedPoolRewardOpts): Promise<GetLastClaimedPoolRewardResponse> {
+    const request = this.apiManager.path('markets/get_last_claimed_pool_reward', opts)
+    const response = await request.get()
+    return response.data as GetLastClaimedPoolRewardResponse
+  }
+
+  async getRewardHistory(opts: GetRewardHistoryOpts): Promise<GetRewardHistoryResponse> {
+    const request = this.apiManager.path('markets/get_reward_history', opts)
+    const response = await request.get()
+    return response.data as GetRewardHistoryResponse
   }
 
   async getLeaderboard(opts: GetLeaderboardOpts): Promise<RestModels.LeaderboardResult> {

@@ -1,5 +1,5 @@
 import * as BIP39 from "bip39";
-import { RPCParams, TradeHubSDK } from '../build/main';
+import { RPCParams, TradeHubSDK } from '..';
 import "./_setup";
 
 TradeHubSDK.APIClient.DEBUG_HEADERS = true;
