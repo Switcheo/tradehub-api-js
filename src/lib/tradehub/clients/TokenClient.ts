@@ -17,6 +17,8 @@ class TokenClient {
   public readonly symbols: SimpleMap<string> = {};
   public readonly usdValues: SimpleMap<BigNumber> = {};
 
+  private additionalGeckoDenoms: SimpleMap<string> = {};
+
   private constructor(
     public readonly api: APIClient,
   ) {
@@ -29,6 +31,13 @@ class TokenClient {
   public async initialize(): Promise<void> {
     await this.reloadTokens();
     await this.reloadUSDValues();
+  }
+
+  public registerGeckoIdMap(map: SimpleMap<string>) {
+    this.additionalGeckoDenoms = {
+      ...this.additionalGeckoDenoms,
+      ...map,
+    };
   }
 
   public getCommonDenom(denom: string): string {
