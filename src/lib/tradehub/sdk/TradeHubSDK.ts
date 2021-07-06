@@ -9,8 +9,7 @@ import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigP
 import { TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
-import { ModAdmin, ModCoin, ModGovernance, ModLiquidityPool, ModMarket, ModOrder } from "./modules";
-import ModAccount from "./modules/account";
+import { ModAccount, ModAdmin, ModBroker, ModCDP, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOracle, ModOrder, ModPosition } from "./modules";
 import { SDKProvider } from "./modules/module";
 
 export * as RestTypes from "../api/spec";
@@ -61,7 +60,12 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   coin: ModCoin
   market: ModMarket
   governance: ModGovernance
+  leverage: ModLeverage
   lp: ModLiquidityPool
+  broker: ModBroker
+  position: ModPosition
+  cdp: ModCDP
+  oracle: ModOracle
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -123,6 +127,11 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.admin = new ModAdmin(this);
     this.coin = new ModCoin(this);
     this.account = new ModAccount(this);
+    this.leverage = new ModLeverage(this);
+    this.broker = new ModBroker(this);
+    this.position = new ModPosition(this);
+    this.cdp = new ModCDP(this);
+    this.oracle = new ModOracle(this);
   }
 
   protected async startWS() {

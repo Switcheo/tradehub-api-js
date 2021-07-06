@@ -29,7 +29,8 @@ export const TxTypes = {
   },
 
   Broker: {
-    INITIATE_SETTLEMENT: 'broker/MsgInitiateSettlement',
+    INITIATE_SETTLEMENT: 'broker/MsgInitiateSettlement', // not in chain
+    INITIATE_LIQUIDATION: 'broker/MsgInitiateLiquidation'
   },
 
   Leverage: {
@@ -43,6 +44,7 @@ export const TxTypes = {
   Coin: {
     MINT_TOKEN: 'coin/MsgMintToken',
     CREATE_TOKEN: 'coin/MsgCreateToken',
+    SYNC_TOKEN: 'coin/MsgSyncToken',
     CREATE_WITHDRAWAL_TYPE: 'coin/MsgWithdraw',
     SEND_TOKENS_TYPE: 'cosmos-sdk/MsgSend',
   },
@@ -80,6 +82,7 @@ export const TxTypes = {
     CREATE_POOL_WITH_LIQUIDITY: 'liquiditypool/CreatePoolWithLiquidity',
     LINK_POOL: 'liquiditypool/LinkPool',
     UNLINK_POOL: 'liquiditypool/UnlinkPool',
+    CHANGE_SWAP_FEE: 'liquiditypool/ChangeSwapFee',
     SET_REWARDS_WEIGHTS: 'liquiditypool/SetRewardsWeights',
     SET_REWARD_CURVE: 'liquiditypool/SetRewardCurve',
     SET_COMMITMENT_CURVE: 'liquiditypool/SetCommitmentCurve',
