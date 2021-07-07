@@ -5,8 +5,12 @@ import secp256k1 from 'secp256k1';
 import { sha256 } from 'sha.js';
 import { APIClient } from "../api";
 import { RestModels } from "../models";
-import { BroadcastTx, NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest, TxResponse } from "../utils";
+import { BroadcastTx, CosmosLedger, NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest, TxResponse } from "../utils";
 import { TradeHubSigner } from "./TradeHubSigner";
+
+/*  TODO: put this somewher else */
+export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
+export type OnSignCompleteCallback = (signature: string) => void
 
 export type TradeHubWalletInitOpts = {
   debugMode?: boolean
@@ -31,6 +35,15 @@ export type TradeHubWalletInitOpts = {
   privateKey?: string | Buffer
   signer: TradeHubSigner
   publicKeyBase64: string
+} | {
+  // connect with ledger
+  mnemonic?: string
+  privateKey?: string | Buffer
+  cosmosLedger: CosmosLedger,
+  signer?: TradeHubSigner,
+  publicKeyBase64?: string
+  onRequestSign: OnRequestSignCallback,
+  onSignComplete: OnSignCompleteCallback,
 })
 
 class TradeHubMnemonicSigner implements TradeHubSigner {
@@ -60,6 +73,7 @@ export class TradeHubWallet {
 
   mnemonic?: string
   privateKey?: Buffer
+  ledger?: CosmosLedger
   signer: TradeHubSigner
   bech32Address: string
 
@@ -132,6 +146,20 @@ export class TradeHubWallet {
       ...opts,
       signer,
       publicKeyBase64,
+    })
+  }
+
+  public static withLedger(
+    cosmosLedger: CosmosLedger,
+    onRequestSign: OnRequestSignCallback,
+    onSignComplete: OnSignCompleteCallback,
+    opts: Omit<TradeHubWalletInitOpts, "ledger"> = {}
+  ) {
+    return new TradeHubWallet({
+      ...opts,
+      cosmosLedger,
+      onRequestSign,
+      onSignComplete
     })
   }
 

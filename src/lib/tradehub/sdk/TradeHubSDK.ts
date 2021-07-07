@@ -6,12 +6,13 @@ import TokenClient from "../clients/TokenClient";
 import { ZILClient } from "../clients/ZILClient";
 import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
-import { TradeHubSigner, TradeHubWallet } from "../wallet";
+import { OnRequestSignCallback, OnSignCompleteCallback, TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
 import { ModAccount, ModAdmin, ModBroker, ModCDP, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOracle, ModOrder, ModPosition } from "./modules";
 import { SDKProvider } from "./modules/module";
 import ModStaking from "./modules/staking";
+import CosmosLedger from '@lunie/cosmos-ledger'
 
 export * as RestTypes from "../api/spec";
 export * from "../models";
@@ -255,6 +256,23 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       network: this.network,
       config: this.configOverride,
     })
+    return this.connect(wallet)
+  }
+
+  public async connectWithLedger(
+    cosmosLedger: CosmosLedger,
+    onRequestSign: OnRequestSignCallback,
+    onSignComplete: OnSignCompleteCallback) {
+
+    const wallet = TradeHubWallet.withLedger(
+      cosmosLedger,
+      onRequestSign,
+      onSignComplete,
+      {
+        debugMode: this.debugMode,
+        network: this.network,
+        config: this.configOverride,
+      })
     return this.connect(wallet)
   }
 
