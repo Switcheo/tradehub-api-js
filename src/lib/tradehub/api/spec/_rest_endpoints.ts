@@ -9,7 +9,7 @@ export const TradehubEndpoints = {
   'tradehub/get_tx_types': '/get_transaction_types',
   'tradehub/get_blocks': '/get_blocks',
   'tradehub/get_cosmos_block': '/blocks/:height',
-  'tradehub/get_block_height_from_unix': 'get_blockheight_from_unix',
+  'tradehub/get_block_height_from_unix': '/get_blockheight_from_unix',
   'tradehub/get_average_block_time': '/get_block_time',
   'tradehub/get_token': '/get_token',
   'tradehub/get_tokens': '/get_tokens',
