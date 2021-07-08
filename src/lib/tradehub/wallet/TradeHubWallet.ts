@@ -12,6 +12,13 @@ import { TradeHubSigner } from "./TradeHubSigner";
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void
 export type OnSignCompleteCallback = (signature: string) => void
 
+export enum SignerType {
+  ledger = 'ledger',
+  mnemonic = 'mnemonic',
+  privateKey = 'privateKey',
+  signer = 'signer',
+}
+
 export type TradeHubWalletInitOpts = {
   debugMode?: boolean
   network?: Network
@@ -19,29 +26,31 @@ export type TradeHubWalletInitOpts = {
   config?: Partial<NetworkConfig>
 } & ({
   // connect with mnemonic
+  signerType: SignerType.mnemonic
   mnemonic: string
   privateKey?: string | Buffer
   signer?: TradeHubSigner
   publicKeyBase64?: string
 } | {
   // connect with private key
+  signerType: SignerType.privateKey
   mnemonic?: string
   privateKey: string | Buffer
   signer?: TradeHubSigner
   publicKeyBase64?: string
 } | {
   // connect with custom signer
+  signerType: SignerType.signer
   mnemonic?: string
   privateKey?: string | Buffer
   signer: TradeHubSigner
   publicKeyBase64: string
 } | {
   // connect with ledger
-  mnemonic?: string
-  privateKey?: string | Buffer
+  signerType: SignerType.ledger
   cosmosLedger: CosmosLedger,
-  signer?: TradeHubSigner,
-  publicKeyBase64?: string
+  publicKeyBase64: string
+  publicKeyBech32: string
   onRequestSign: OnRequestSignCallback,
   onSignComplete: OnSignCompleteCallback,
 })
@@ -73,9 +82,13 @@ export class TradeHubWallet {
 
   mnemonic?: string
   privateKey?: Buffer
-  ledger?: CosmosLedger
   signer: TradeHubSigner
   bech32Address: string
+  signerType: string
+
+  ledger?: CosmosLedger
+  onRequestSign?: OnRequestSignCallback
+  onSignComplete?: OnSignCompleteCallback
 
   // required for signature generation
   pubKeyBase64: string
@@ -91,26 +104,40 @@ export class TradeHubWallet {
     this.configOverride = opts.config ?? {};
     this.updateNetwork(opts.network ?? Network.MainNet);
 
-    this.mnemonic = opts.mnemonic
-    if (this.mnemonic) {
-      this.privateKey = SWTHAddress.mnemonicToPrivateKey(this.mnemonic)
-    } else if (opts.privateKey) {
-      this.privateKey = stringOrBufferToBuffer(opts.privateKey)
-    }
+    this.signerType = opts.signerType
 
-    if (opts.signer) {
-      this.signer = opts.signer
-      this.pubKeyBase64 = opts.publicKeyBase64
-    } else if (this.privateKey) {
-      this.signer = new TradeHubMnemonicSigner(this.privateKey);
-      this.pubKeyBase64 = SWTHAddress.privateToPublicKey(this.privateKey).toString("base64");
-    } else {
-      throw new Error("cannot instantiate wallet signer")
-    }
+    switch (opts.signerType) {
+      case SignerType.mnemonic:
+      case SignerType.privateKey:
+      case SignerType.signer:
+        this.mnemonic = opts.mnemonic
+        if (this.mnemonic) {
+          this.privateKey = SWTHAddress.mnemonicToPrivateKey(this.mnemonic)
+        } else if (opts.privateKey) {
+          this.privateKey = stringOrBufferToBuffer(opts.privateKey)
+        }
 
-    this.bech32Address = SWTHAddress.publicKeyToAddress(Buffer.from(this.pubKeyBase64, "base64"), {
-      network: this.network,
-    });
+        if (opts.signer) {
+          this.signer = opts.signer
+          this.pubKeyBase64 = opts.publicKeyBase64
+        } else if (this.privateKey) {
+          this.signer = new TradeHubMnemonicSigner(this.privateKey);
+          this.pubKeyBase64 = SWTHAddress.privateToPublicKey(this.privateKey).toString("base64");
+        } else {
+          throw new Error("cannot instantiate wallet signer")
+        }
+
+        this.bech32Address = SWTHAddress.publicKeyToAddress(Buffer.from(this.pubKeyBase64, "base64"), {
+          network: this.network,
+        });
+        break
+      case SignerType.ledger:
+        this.pubKeyBase64 = opts.publicKeyBase64
+        this.bech32Address = opts.publicKeyBech32
+        this.ledger = opts.cosmosLedger
+        break
+
+    }
   }
 
   public updateNetwork(network: Network): TradeHubWallet {
@@ -127,24 +154,27 @@ export class TradeHubWallet {
     return this
   }
 
-  public static withPrivateKey(privateKey: string | Buffer, opts: Omit<TradeHubWalletInitOpts, "privateKey"> = {}) {
+  public static withPrivateKey(privateKey: string | Buffer, opts: Omit<TradeHubWalletInitOpts, "privateKey"> = { signerType: SignerType.privateKey }) {
     return new TradeHubWallet({
       ...opts,
+      signerType: SignerType.privateKey,
       privateKey,
     })
   }
 
-  public static withMnemonic(mnemonic: string, opts: Omit<TradeHubWalletInitOpts, "mnemonic"> = {}) {
+  public static withMnemonic(mnemonic: string, opts: Omit<TradeHubWalletInitOpts, "mnemonic"> = { signerType: SignerType.mnemonic }) {
     return new TradeHubWallet({
       ...opts,
+      signerType: SignerType.mnemonic,
       mnemonic,
     })
   }
 
-  public static withSigner(signer: TradeHubSigner, publicKeyBase64: string, opts: Omit<TradeHubWalletInitOpts, "signer"> = {}) {
+  public static withSigner(signer: TradeHubSigner, publicKeyBase64: string, opts: Omit<TradeHubWalletInitOpts, "signer"> = { signerType: SignerType.signer }) {
     return new TradeHubWallet({
       ...opts,
       signer,
+      signerType: SignerType.signer,
       publicKeyBase64,
     })
   }
@@ -153,12 +183,17 @@ export class TradeHubWallet {
     cosmosLedger: CosmosLedger,
     onRequestSign: OnRequestSignCallback,
     onSignComplete: OnSignCompleteCallback,
-    opts: Omit<TradeHubWalletInitOpts, "ledger"> = {}
+    publicKeyBase64: string,
+    publicKeyBech32: string,
+    opts: Omit<TradeHubWalletInitOpts, "ledger"> = { signerType: SignerType.ledger }
   ) {
     return new TradeHubWallet({
       ...opts,
       cosmosLedger,
       onRequestSign,
+      publicKeyBase64,
+      publicKeyBech32,
+      signerType: SignerType.ledger,
       onSignComplete
     })
   }
@@ -250,6 +285,27 @@ export class TradeHubWallet {
   }
 
   private async sign(doc: StdSignDoc): Promise<TradeHubSignature> {
+    if (this.signerType === 'ledger') {
+      if (!this.ledger) {
+        throw new Error('Ledger connection not found, please refresh the page and try again')
+      }
+      this.onRequestSign?.(doc)
+      let signatureBase64
+      try {
+        const sigData = await this.ledger.sign(doc.sortedJson())
+        signatureBase64 = Buffer.from(sigData).toString('base64')
+        return {
+          pub_key: {
+            type: 'tendermint/PubKeySecp256k1',
+            value: this.pubKeyBase64,
+          },
+          signature: signatureBase64,
+        }
+      } finally {
+        this.onSignComplete && this.onSignComplete(signatureBase64 && signatureBase64.toString())
+      }
+    }
+
     const signatureBuffer = await this.signer.sign(doc.sortedJson());
     return {
       pub_key: {

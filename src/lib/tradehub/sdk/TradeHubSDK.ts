@@ -6,7 +6,7 @@ import TokenClient from "../clients/TokenClient";
 import { ZILClient } from "../clients/ZILClient";
 import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
-import { OnRequestSignCallback, OnSignCompleteCallback, TradeHubSigner, TradeHubWallet } from "../wallet";
+import { OnRequestSignCallback, OnSignCompleteCallback, SignerType, TradeHubSigner, TradeHubWallet } from "../wallet";
 import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
 import { ModAccount, ModAdmin, ModBroker, ModCDP, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOracle, ModOrder, ModPosition } from "./modules";
@@ -237,6 +237,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       debugMode: this.debugMode,
       network: this.network,
       config: this.configOverride,
+      signerType: SignerType.privateKey,
     })
     return this.connect(wallet)
   }
@@ -246,6 +247,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       debugMode: this.debugMode,
       network: this.network,
       config: this.configOverride,
+      signerType: SignerType.mnemonic,
     })
     return this.connect(wallet)
   }
@@ -255,6 +257,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       debugMode: this.debugMode,
       network: this.network,
       config: this.configOverride,
+      signerType: SignerType.signer,
     })
     return this.connect(wallet)
   }
@@ -264,14 +267,20 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     onRequestSign: OnRequestSignCallback,
     onSignComplete: OnSignCompleteCallback) {
 
+    const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
+    const pubKey = await cosmosLedger.getPubKey()
+
     const wallet = TradeHubWallet.withLedger(
       cosmosLedger,
       onRequestSign,
       onSignComplete,
+      pubKey,
+      pubKeyBech32,
       {
         debugMode: this.debugMode,
         network: this.network,
         config: this.configOverride,
+        signerType: SignerType.ledger,
       })
     return this.connect(wallet)
   }
