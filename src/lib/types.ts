@@ -967,6 +967,7 @@ export interface GetLeaderboardResponse {
   to_block: string
   from_time: string
   to_time: string
+  order: string
 }
 
 export interface LeaderboardDataResponse {
