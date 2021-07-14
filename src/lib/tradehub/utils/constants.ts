@@ -143,11 +143,18 @@ export const CommonAssetName: SimpleMap = {
   'zil.e': 'zil',
   'zil9': 'zil',
   'zil9.e': 'zil',
+  'zil5.e': 'zil',
+  'zil5.z': 'zil',
   'zwap1.e': 'zwap',
+  'zwap5.e': 'zwap',
+  'zwap5.z': 'zwap',
   'zwap1': 'zwap',
 
   'dai1': 'dai',
   'dai.z': 'dai',
+  'dai5.z': 'dai',
+
+  'eth5.z': 'dai',
 
   'usdt.e': 'usdt',
   'usdt1.z': 'usdt',
