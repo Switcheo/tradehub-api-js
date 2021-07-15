@@ -121,9 +121,12 @@ export class WalletClient {
     })
   }
 
-  public static async connectLedger(cosmosLedger: CosmosLedger, net = 'TESTNET',
+  public static async connectLedger(
+    cosmosLedger: CosmosLedger, 
+    net = 'TESTNET',
     onRequestSign: OnRequestSignCallback,
-    onSignComplete: OnSignCompleteCallback) {
+    onSignComplete: OnSignCompleteCallback
+    ) {
     const network = getNetwork(net)
     const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
     const pubKey = await cosmosLedger.getPubKey()
