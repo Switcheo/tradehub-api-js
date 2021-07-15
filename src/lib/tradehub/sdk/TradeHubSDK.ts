@@ -6,7 +6,7 @@ import TokenClient from "../clients/TokenClient";
 import { ZILClient } from "../clients/ZILClient";
 import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
 import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
-import { OnRequestSignCallback, OnSignCompleteCallback, SignerType, TradeHubSigner, TradeHubWallet } from "../wallet";
+import { TradeHubSigner, TradeHubWallet, TradeHubWalletGenericOpts } from "../wallet";
 import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
 import { ModAccount, ModAdmin, ModBroker, ModCDP, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOracle, ModOrder, ModPosition } from "./modules";
@@ -232,56 +232,58 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.ws?.disconnect();
   }
 
-  public async connectWithPrivateKey(privateKey: string | Buffer) {
+  public async connectWithPrivateKey(
+    privateKey: string | Buffer,
+    opts?: TradeHubWalletGenericOpts,
+  ) {
     const wallet = TradeHubWallet.withPrivateKey(privateKey, {
+      ...opts,
       debugMode: this.debugMode,
       network: this.network,
       config: this.configOverride,
-      signerType: SignerType.privateKey,
     })
     return this.connect(wallet)
   }
 
-  public async connectWithMnemonic(mnemonic: string) {
+  public async connectWithMnemonic(
+    mnemonic: string,
+    opts?: TradeHubWalletGenericOpts,
+  ) {
     const wallet = TradeHubWallet.withMnemonic(mnemonic, {
+      ...opts,
       debugMode: this.debugMode,
       network: this.network,
       config: this.configOverride,
-      signerType: SignerType.mnemonic,
     })
     return this.connect(wallet)
   }
 
-  public async connectWithSigner(signer: TradeHubSigner, bech32Address: string) {
-    const wallet = TradeHubWallet.withSigner(signer, bech32Address, {
+  public async connectWithSigner(
+    signer: TradeHubSigner,
+    publicKeyBase64: string,
+    opts?: TradeHubWalletGenericOpts,
+  ) {
+    const wallet = TradeHubWallet.withSigner(signer, publicKeyBase64, {
+      ...opts,
       debugMode: this.debugMode,
       network: this.network,
       config: this.configOverride,
-      signerType: SignerType.signer,
     })
     return this.connect(wallet)
   }
 
   public async connectWithLedger(
-    cosmosLedger: CosmosLedger,
-    onRequestSign: OnRequestSignCallback,
-    onSignComplete: OnSignCompleteCallback) {
+    ledger: CosmosLedger,
+    opts?: TradeHubWalletGenericOpts,
+  ) {
+    const publicKeyBase64 = await ledger.getPubKey()
 
-    const pubKeyBech32 = await cosmosLedger.getCosmosAddress()
-    const pubKey = await cosmosLedger.getPubKey()
-
-    const wallet = TradeHubWallet.withLedger(
-      cosmosLedger,
-      onRequestSign,
-      onSignComplete,
-      pubKey,
-      pubKeyBech32,
-      {
-        debugMode: this.debugMode,
-        network: this.network,
-        config: this.configOverride,
-        signerType: SignerType.ledger,
-      })
+    const wallet = TradeHubWallet.withLedger(ledger, publicKeyBase64, {
+      ...opts,
+      debugMode: this.debugMode,
+      network: this.network,
+      config: this.configOverride,
+    })
     return this.connect(wallet)
   }
 

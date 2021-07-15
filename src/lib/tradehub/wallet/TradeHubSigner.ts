@@ -1,12 +1,14 @@
+import { StdSignDoc } from "../utils";
+
 export interface TradeHubSigner {
-  type: TradeHubSigner.Types
+  type: TradeHubSigner.Type
 
   // signs the cosmos StdSignDoc.toJSON, returns signature buffer
-  sign: (doc: string) => Promise<Buffer>
+  sign: (doc: StdSignDoc) => Promise<Buffer>
 }
 
 export namespace TradeHubSigner {
-  export enum Types {
+  export enum Type {
     Ledger,
     PrivateKey,
     BrowserInjected,
