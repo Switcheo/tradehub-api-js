@@ -8,8 +8,8 @@ import { RestModels } from "../models";
 import { BroadcastTx, CosmosLedger, NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest, TxResponse } from "../utils";
 import { TradeHubSigner } from "./TradeHubSigner";
 
-export type OnRequestSignCallback = (signDoc: StdSignDoc) => Promise<void>
-export type OnSignCompleteCallback = (signatureBase64: string) => Promise<void>
+export type OnRequestSignCallback = (signDoc: StdSignDoc) => void | Promise<void>
+export type OnSignCompleteCallback = (signatureBase64: string) => void | Promise<void>
 
 export interface TradeHubWalletGenericOpts {
   debugMode?: boolean
