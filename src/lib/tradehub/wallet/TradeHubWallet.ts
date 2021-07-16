@@ -111,6 +111,9 @@ export class TradeHubWallet {
     this.configOverride = opts.config ?? {};
     this.updateNetwork(opts.network ?? Network.MainNet);
 
+    this.onRequestSign = opts.onRequestSign;
+    this.onSignComplete = opts.onSignComplete;
+
     this.mnemonic = opts.mnemonic
     if (this.mnemonic) {
       this.privateKey = SWTHAddress.mnemonicToPrivateKey(this.mnemonic)

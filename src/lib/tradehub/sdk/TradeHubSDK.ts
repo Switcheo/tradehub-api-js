@@ -276,7 +276,8 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     ledger: CosmosLedger,
     opts?: TradeHubWalletGenericOpts,
   ) {
-    const publicKeyBase64 = await ledger.getPubKey()
+    const publicKeyBuffer = await ledger.getPubKey();
+    const publicKeyBase64 = publicKeyBuffer.toString("base64");
 
     const wallet = TradeHubWallet.withLedger(ledger, publicKeyBase64, {
       ...opts,
