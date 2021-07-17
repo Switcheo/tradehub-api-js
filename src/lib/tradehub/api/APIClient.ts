@@ -715,11 +715,25 @@ class APIClient {
     return response.data as GetDelegatorDelegationsResponse
   }
 
-  // response unknown
   async getDelegatorUnbondingDelegations(opts: GetDelegatorUnbondingDelegationsOpts): Promise<GetDelegatorUnbondingDelegationsResponse> {
     const routeParams = { address: opts.address }
     const request = this.apiManager.path('staking/delegator_unbonding_delegations', routeParams)
     const response = await request.get()
+    const data = response.data;
+
+    if (data.result?.length) {
+      data.result = data.result.map((item) => ({
+        ...item,
+        entries: item.entries?.map((entry) => ({
+          ...entry,
+          creation_height: parseInt(entry.creation_height),
+          initial_balance: bnOrZero(entry.initial_balance),
+          balance: bnOrZero(entry.balance),
+          completion_time: parseCosmosDate(entry.balance),
+        }) as RestModels.UnbondingEntry)
+      }))
+    }
+
     return response.data as GetDelegatorUnbondingDelegationsResponse
   }
 
@@ -730,6 +744,22 @@ class APIClient {
     const routeParams = {}
     const request = this.apiManager.path('staking/redelegations', routeParams, queryParams)
     const response = await request.get()
+    const data = response.data;
+
+    if (data.result?.length) {
+      data.result = data.result.map((item) => ({
+        ...item,
+        entries: item.entries?.map((entry) => ({
+          ...entry,
+          creation_height: parseInt(entry.creation_height),
+          initial_balance: bnOrZero(entry.initial_balance),
+          balance: bnOrZero(entry.balance),
+          completion_time: parseCosmosDate(entry.balance),
+          shares_dst: bnOrZero(entry.shares_dst),
+        }) as RestModels.DelegationEntry)
+      }))
+    }
+
     return response.data as GetDelegatorRedelegationsResponse
   }
 
