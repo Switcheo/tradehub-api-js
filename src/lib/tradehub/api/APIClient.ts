@@ -9,8 +9,6 @@ import {
   CheckUserNameOpts, CosmosResponse, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountResponse,
   GetAccountTradesOpts,
   GetActiveWalletsOpts,
-  GetAllDelegatorDelegationsOpts,
-  GetAllDelegatorDelegationsResponse,
   GetAMMRewardPercentageResponse,
   GetBlockHeightfromUnixOpts,
   GetBlocksOpts,
@@ -733,21 +731,6 @@ class APIClient {
     const request = this.apiManager.path('staking/redelegations', routeParams, queryParams)
     const response = await request.get()
     return response.data as GetDelegatorRedelegationsResponse
-  }
-
-  async getAllDelegatorDelegations(opts: GetAllDelegatorDelegationsOpts): Promise<GetAllDelegatorDelegationsResponse> {
-    const promises = [
-      this.getDelegatorDelegations(opts),
-      this.getDelegatorUnbondingDelegations(opts),
-      this.getDelegatorRedelegations(opts),
-    ]
-    return Promise.all(promises).then((responses) => {
-      return {
-        delegations: responses[0],
-        unbonding: responses[1],
-        redelegations: responses[2],
-      } as GetAllDelegatorDelegationsResponse
-    })
   }
 
   async getDelegatorDelegationRewards(opts: GetDelegatorDelegationRewardsOpts): Promise<GetDelegatorDelegationRewardsResponse> {
