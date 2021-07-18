@@ -283,6 +283,10 @@ export class ETHClient {
     return { address, decimals, name, symbol }
   }
 
+  public getEthSigner(privateKey: string): ethers.Signer {
+    return new ethers.Wallet(privateKey, this.getProvider());
+  }
+
   /**
    * TargetProxyHash is a hash of token originator address that is used
    * for lockproxy asset registration and identification

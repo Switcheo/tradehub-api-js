@@ -157,7 +157,7 @@ type SWTHAddressType = AddressBuilder<SWTHAddressOptions> & {
   newMnemonic(): string
   getBech32Prefix(net?: Network, type?: Bech32Type): string
   addrPrefix: { [index: string]: string }
-  getAddressBytes(bech32Address: string, networkConfig: Network): Uint8Array
+  getAddressBytes(bech32Address: string, networkConfig?: Network): Uint8Array
 }
 
 export const SWTHAddress: SWTHAddressType = {
@@ -248,11 +248,13 @@ export const SWTHAddress: SWTHAddressType = {
     public: 'pub',
   },
 
-  getAddressBytes: (bech32Address: string, net: Network): Uint8Array => {
-    const prefix = SWTHAddress.getBech32Prefix(net, 'main')
+  getAddressBytes: (bech32Address: string, net?: Network): Uint8Array => {
     const { prefix: b32Prefix, words } = bech32.decode(bech32Address)
-    if (b32Prefix !== prefix) {
-      throw new Error("Prefix doesn't match")
+    if (net) {
+      const prefix = SWTHAddress.getBech32Prefix(net, 'main')
+      if (b32Prefix !== prefix) {
+        throw new Error("Prefix doesn't match")
+      }
     }
     return new Uint8Array(bech32.fromWords(words))
   }

@@ -729,7 +729,7 @@ class APIClient {
           creation_height: parseInt(entry.creation_height),
           initial_balance: bnOrZero(entry.initial_balance),
           balance: bnOrZero(entry.balance),
-          completion_time: parseCosmosDate(entry.balance),
+          completion_time: parseCosmosDate(entry.completion_time),
         }) as RestModels.UnbondingEntry)
       }))
     }
@@ -754,7 +754,7 @@ class APIClient {
           creation_height: parseInt(entry.creation_height),
           initial_balance: bnOrZero(entry.initial_balance),
           balance: bnOrZero(entry.balance),
-          completion_time: parseCosmosDate(entry.balance),
+          completion_time: parseCosmosDate(entry.completion_time),
           shares_dst: bnOrZero(entry.shares_dst),
         }) as RestModels.DelegationEntry)
       }))

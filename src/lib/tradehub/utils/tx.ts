@@ -137,5 +137,6 @@ export interface TxResponse {
 
   // only if tx fails
   code?: number;
+  error?: string;
   codespace?: string;
 }

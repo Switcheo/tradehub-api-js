@@ -105,6 +105,9 @@ export class TradeHubWallet {
 
   txBroadcastQueue: TxRequest[] = []
 
+  // for analytics
+  providerAgent?: string
+
   constructor(opts: TradeHubWalletInitOpts) {
     this.debugMode = opts.debugMode ?? false
 
@@ -240,10 +243,13 @@ export class TradeHubWallet {
     this.log("sendTx", JSON.stringify(broadcastTx));
 
     const response = (await this.api.tx(broadcastTx)) as TxResponse;
-    if (response.code) {
+    if (response.code || response.error) {
       // tx failed
       console.error(response);
-      throw new Error(`[${response.code}] ${response.raw_log}`);
+      if (response.error)
+        throw new Error(response.error);
+      else
+        throw new Error(`[${response.code}] ${response.raw_log}`);
     } else {
       // tx successful
       this.sequence++;
@@ -254,6 +260,18 @@ export class TradeHubWallet {
 
   public async sendTx(msg: TxMsg, memo?: string): Promise<TxResponse> {
     return this.sendTxs([msg], memo);
+  }
+
+  public isSigner(signerType: TradeHubSigner.Type) {
+    return this.signer.type === signerType;
+  }
+
+  public isLedgerSigner() {
+    return this.isSigner(TradeHubSigner.Type.Ledger);
+  }
+
+  public isPrivateKeySigner() {
+    return this.isSigner(TradeHubSigner.Type.PrivateKey);
   }
 
   public static verifySignature(signatureBase64: string, plaintext: string, pubKeyBase64: string) {
