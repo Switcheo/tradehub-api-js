@@ -14,6 +14,7 @@ export type OnSignCompleteCallback = (signatureBase64: string) => void | Promise
 export interface TradeHubWalletGenericOpts {
   debugMode?: boolean
   network?: Network
+  providerAgent?: string
 
   config?: Partial<NetworkConfig>
 
@@ -112,6 +113,7 @@ export class TradeHubWallet {
     this.debugMode = opts.debugMode ?? false
 
     this.configOverride = opts.config ?? {};
+    this.providerAgent = opts.providerAgent;
     this.updateNetwork(opts.network ?? Network.MainNet);
 
     this.onRequestSign = opts.onRequestSign;
@@ -190,7 +192,9 @@ export class TradeHubWallet {
     opts: Omit<TradeHubWalletInitOpts, "signer"> = {}
   ) {
     const signer = new TradeHubLedgerSigner(cosmosLedger);
-    return TradeHubWallet.withSigner(signer, publicKeyBase64, opts);
+    const wallet = TradeHubWallet.withSigner(signer, publicKeyBase64, opts);
+    wallet.ledger = cosmosLedger;
+    return wallet;
   }
 
   public async loadAccount(): Promise<RestModels.Account> {
@@ -272,6 +276,10 @@ export class TradeHubWallet {
 
   public isPrivateKeySigner() {
     return this.isSigner(TradeHubSigner.Type.PrivateKey);
+  }
+
+  public isBrowserInjectedSigner() {
+    return this.isSigner(TradeHubSigner.Type.BrowserInjected);
   }
 
   public static verifySignature(signatureBase64: string, plaintext: string, pubKeyBase64: string) {
