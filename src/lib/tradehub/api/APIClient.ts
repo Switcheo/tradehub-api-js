@@ -962,6 +962,13 @@ class APIClient {
     return bnOrZero(tradehubSupplyRaw.result).plus(bscSupply).plus(ethSupply);
   }
 
+  async getCoinMapping(): Promise<CosmosResponse<SimpleMap<string>>> {
+    const request = this.apiManager.path("tradehub/coin/mapping")
+    const response = await request.get();
+
+    return response.data as CosmosResponse<SimpleMap<string>>;
+  }
+
   private async fetchSupply(url: string): Promise<BigNumber> {
     try {
       const response = await fetch(url);

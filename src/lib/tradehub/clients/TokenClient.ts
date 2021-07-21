@@ -2,7 +2,7 @@ import fetch from "@lib/utils/fetch";
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { Token } from "../models/rest";
-import { bnOrZero, CoinGeckoTokenNames, CommonAssetName, SimpleMap } from "../utils";
+import { Blockchain, bnOrZero, CoinGeckoTokenNames, CommonAssetName, SimpleMap } from "../utils";
 
 const SYMBOL_OVERRIDE: {
   [symbol: string]: string
@@ -13,6 +13,7 @@ const SYMBOL_OVERRIDE: {
 
 class TokenClient {
   public readonly tokens: SimpleMap<Token> = {};
+  public readonly wrapperMap: SimpleMap<string> = {};
   public readonly poolTokens: SimpleMap<Token> = {};
   public readonly symbols: SimpleMap<string> = {};
   public readonly usdValues: SimpleMap<BigNumber> = {};
@@ -30,6 +31,7 @@ class TokenClient {
 
   public async initialize(): Promise<void> {
     await this.reloadTokens();
+    await this.reloadWrapperMap();
     await this.reloadUSDValues();
   }
 
@@ -107,8 +109,47 @@ class TokenClient {
     return denom.match(/^([a-z\d.-]+)-(\d+)-([a-z\d.-]+)-(\d+)-lp\d+$/i) !== null;
   }
 
+  public getWrappedToken(denom: string, blockchain?: Blockchain): Token | null {
+    // check if denom is wrapped token
+    if (this.wrapperMap[denom])
+      return this.tokens[denom];
+
+    // check if denom is source token
+    if (Object.values(this.wrapperMap).includes(denom)) {
+      for (const [wrappedDenom, sourceDenom] of Object.entries(this.wrapperMap)) {
+        // if mapping is not relevant to current source denom, skip.
+        if (sourceDenom !== denom) {
+          continue;
+        }
+
+        // check if wrapped denom is of correct blockchain
+        const token = this.tokens[wrappedDenom];
+        if (!blockchain || token?.blockchain === blockchain) {
+          return token;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  public getSourceToken(denom: string): Token | null {
+    // check if denom is source token
+    if (Object.values(this.wrapperMap).includes(denom))
+      return this.tokens[denom];
+
+    // check if denom is wrapped token
+    if (this.wrapperMap[denom]) {
+      const sourceDenom = this.wrapperMap[denom];
+      return this.tokens[sourceDenom];
+    }
+
+    return null;
+  }
+
   public async reloadTokens(): Promise<SimpleMap<Token>> {
     const tokenList = await this.api.getTokens();
+
     for (const token of tokenList) {
       if (TokenClient.isPoolToken(token.denom)) {
         this.poolTokens[token.denom] = token;
@@ -121,6 +162,12 @@ class TokenClient {
     }
 
     return this.tokens;
+  }
+
+  public async reloadWrapperMap(): Promise<SimpleMap<string>> {
+    const mappingResponse = await this.api.getCoinMapping();
+    Object.assign(this.wrapperMap, mappingResponse?.result ?? {});
+    return this.wrapperMap;
   }
 
   public async reloadUSDValues(denoms: string[] = Object.keys(this.tokens)): Promise<SimpleMap<BigNumber>> {

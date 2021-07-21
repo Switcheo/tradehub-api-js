@@ -19,6 +19,7 @@ export const TradehubEndpoints = {
   'tradehub/search': '/search',
   'tradehub/blocks/latest': '/blocks/latest',
   'tradehub/supply': '/supply/total/:denom',
+  'tradehub/coin/mapping': '/coin/wrapper_mappings',
 
   // account api
   'account/detail': '/get_account',
