@@ -1,4 +1,5 @@
 import { u as neonUtils, wallet as neonWallet } from "@cityofzion/neon-js"
+import { BN_ONE } from "@lib/tradehub/utils"
 import { BigNumber } from 'bignumber.js'
 import dayjs from 'dayjs'
 import { ethers } from 'ethers'
@@ -840,9 +841,11 @@ export class RestClient implements REST {
 
   public async getWeeklyLPRewardAlloc(): Promise<number> {
     const rewardCurve = await this.getRewardCurve()
-    const reductions = new BigNumber(rewardCurve.result.reduction).times(new BigNumber(rewardCurve.result.reductions_made))
-    const currentBP = new BigNumber(rewardCurve.result.initial_reward).minus(reductions)
-    const poolAllocation = BigNumber.max(new BigNumber(rewardCurve.result.final_reward), currentBP).shiftedBy(-4)
+    const initialReward = new BigNumber(rewardCurve.result.initial_reward)
+    const reductionFactor = BN_ONE.minus(new BigNumber(rewardCurve.result.reduction).shiftedBy(-4))
+    const totalReduction = reductionFactor.pow(new BigNumber(rewardCurve.result.reductions_made))
+    const currentReward = initialReward.times(totalReduction)
+    const poolAllocation = BigNumber.max(new BigNumber(rewardCurve.result.final_reward), currentReward).shiftedBy(-4)
     return poolAllocation.toNumber()
   }
 
