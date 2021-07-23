@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { RestModels } from '../models';
 import { Oracle } from '../models/rest';
 import { RestTypes } from '../sdk';
-import { bnOrZero, BN_ZERO, BroadcastTx, SimpleMap } from '../utils';
+import { bnOrZero, BN_ONE, BN_ZERO, BroadcastTx, SimpleMap } from '../utils';
 import APIManager, { RequestError, RequestResult, ResponseParser } from './APIConnector';
 import {
   CheckUserNameOpts, CosmosResponse, GetAccountOpts, GetAccountRealizedPnlOpts, GetAccountResponse,
@@ -610,9 +610,11 @@ class APIClient {
 
   async getWeeklyLPRewardAlloc(): Promise<BigNumber> {
     const rewardCurve = await this.getRewardCurve()
-    const reductions = new BigNumber(rewardCurve.result.reduction).times(new BigNumber(rewardCurve.result.reductions_made))
-    const currentBP = new BigNumber(rewardCurve.result.initial_reward).minus(reductions)
-    const poolAllocation = BigNumber.max(new BigNumber(rewardCurve.result.final_reward), currentBP).shiftedBy(-4)
+    const initialReward = new BigNumber(rewardCurve.result.initial_reward)
+    const reductionFactor = BN_ONE.minus(new BigNumber(rewardCurve.result.reduction).shiftedBy(-4))
+    const totalReduction = reductionFactor.pow(new BigNumber(rewardCurve.result.reductions_made))
+    const currentReward = initialReward.times(totalReduction)
+    const poolAllocation = BigNumber.max(new BigNumber(rewardCurve.result.final_reward), currentReward).shiftedBy(-4)
     return poolAllocation
   }
 
