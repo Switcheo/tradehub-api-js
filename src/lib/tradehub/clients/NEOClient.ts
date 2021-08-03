@@ -150,6 +150,16 @@ export class NEOClient {
     logger("neo wrapper response", response);
   }
 
+  public async formatWithdrawalAddress(address: string): Promise<string> {
+    const isValidAddress = neonWallet.isAddress(address)
+    if (!isValidAddress) {
+      throw new Error("invalid address")
+    }
+    const scriptHash = neonWallet.getScriptHashFromAddress(address)
+    // return the little endian version of the address
+    return neonUtils.reverseHex(scriptHash)
+  }
+
   public getConfig(): NeoNetworkConfig {
     const networkConfig = this.configProvider.getConfig();
     return networkConfig[NEOClient.BLOCKCHAIN_KEY[this.blockchain]];
