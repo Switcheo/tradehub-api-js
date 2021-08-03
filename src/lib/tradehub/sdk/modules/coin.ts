@@ -14,6 +14,18 @@ class ModCoin extends BaseModule {
       value: params,
     });
   }
+
+  public async send(params: RPCParams.SendToken, memo?: string) {
+    const wallet = this.getWallet();
+
+    if (!params.from_address)
+      params.from_address = wallet.bech32Address;
+
+    return await wallet.sendTx({
+      type: TxTypes.Coin.SEND_TOKENS_TYPE,
+      value: params,
+    }, memo);
+  }
 }
 
 export default ModCoin;

@@ -283,6 +283,18 @@ export class ETHClient {
     return { address, decimals, name, symbol }
   }
 
+  public async formatWithdrawalAddress(address: string): Promise<string> {
+    const isValidAddress = ethers.utils.isAddress(address)
+    if (!isValidAddress) {
+      throw new Error("invalid address")
+    }
+    const isContract = await this.isContract(address)
+    if (isContract) {
+      throw new Error("cannot withdraw to contract address")
+    }
+    return address.substr(2)
+  }
+
   public getEthSigner(privateKey: string): ethers.Signer {
     return new ethers.Wallet(privateKey, this.getProvider());
   }
