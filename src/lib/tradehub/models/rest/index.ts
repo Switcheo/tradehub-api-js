@@ -1,6 +1,6 @@
 export * from './account'
 export * from './balances/Fees'
-export * from './balances/NeoBalances'
+export * from './balances/ExternalBalance'
 export * from './gov'
 export * from './history'
 export * from './market'

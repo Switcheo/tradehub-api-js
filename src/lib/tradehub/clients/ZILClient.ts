@@ -68,7 +68,7 @@ export class ZILClient {
         return new ZILClient(configProvider,blockchain)
     }
 
-    public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]) {
+    public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]): Promise<RestModels.ExternalBalance[]> {
         const tokenList = await api.getTokens()
         const lockProxyAddress = this.getLockProxyAddress().toLowerCase()
         const tokens = tokenList.filter(token =>
@@ -85,10 +85,16 @@ export class ZILClient {
         if (batch_result.error !== undefined) {
             throw new Error(batch_result.error.message)
         }
+
+        const tokensWithBalances: RestModels.ExternalBalance[] = []
         for (let r of batch_result) {
-            (tokens[r.id - 1] as any).external_balance = r.result.balances[appendHexPrefix(address)]
+            const token = tokens[r.id - 1]
+            tokensWithBalances.push({
+                ...token,
+                external_balance: r.result.balances[appendHexPrefix(address)],
+            })
         }
-        return tokens
+        return tokensWithBalances
     }
 
     // see examplesV2/zil_client.ts on how to confirm the transactions

@@ -50,7 +50,7 @@ export class NEOClient {
     return new BigNumber(res ? neonUtils.reverseHex(res) : '00', 16).shiftedBy(-exp).toString()
   }
 
-  public async getExternalBalances(api: APIClient, address: string, url: string, whitelistDenoms?: string[]) {
+  public async getExternalBalances(api: APIClient, address: string, url: string, whitelistDenoms?: string[]): Promise<RestModels.ExternalBalance[]> {
     const tokenList = await api.getTokens()
     const account = new neonWallet.Account(address)
     const tokens = tokenList.filter(token =>
@@ -65,7 +65,7 @@ export class NEOClient {
     // NOTE: fetching of tokens is chunked in sets of 15 as we may hit
     // the gas limit on the RPC node and error out otherwise
     const promises: Promise<{}>[] = // tslint:disable-line
-      chunk(tokens, 75).map(async (partition: ReadonlyArray<RestModels.TokenObject>) => {
+      chunk(tokens, 75).map(async (partition: ReadonlyArray<RestModels.Token>) => {
 
         let acc = {}
         for (const token of partition) {
@@ -94,10 +94,16 @@ export class NEOClient {
       return results.reduce((acc: {}, res: {}) => ({ ...acc, ...res }), {})
     })
 
+    const tokensWithBalances: RestModels.ExternalBalance[] = []
     for (let i = 0; i < tokens.length; i++) {
-      (tokens[i] as any).external_balance = result[(tokens[i] as any).denom.toUpperCase()]
+      const token = tokens[i]
+      tokensWithBalances.push({
+        ...token,
+        external_balance: result[token.denom.toUpperCase()],
+      })
     }
-    return tokens
+
+    return tokensWithBalances
   }
 
   public async retrieveNEP5Info(scriptHash: string): Promise<TokenInitInfo> {

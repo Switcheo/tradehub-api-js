@@ -58,7 +58,7 @@ export class ETHClient {
     return new ETHClient(configProvider, blockchain)
   }
 
-  public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]) {
+  public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]): Promise<RestModels.ExternalBalance[]> {
     const tokenList = await api.getTokens()
     const lockProxyAddress = this.getLockProxyAddress().toLowerCase()
     const tokens = tokenList.filter(token =>
@@ -73,11 +73,16 @@ export class ETHClient {
     const contract = new ethers.Contract(contractAddress, ABIs.balanceReader, provider)
 
     const balances = await contract.getBalances(address, assetIds)
+    const tokensWithBalances: RestModels.ExternalBalance[] = []
     for (let i = 0; i < tokens.length; i++) {
-      (tokens[i] as any).external_balance = balances[i].toString()
+      const token = tokens[i]
+      tokensWithBalances.push({
+        ...token,
+        external_balance: balances[i].toString(),
+      })
     }
 
-    return tokens
+    return tokensWithBalances
   }
 
   public async approveERC20(params: ApproveERC20Params): Promise<EthersTransactionResponse> {

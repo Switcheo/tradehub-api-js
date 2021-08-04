@@ -1,4 +1,4 @@
-export interface TokenObject {
+export interface ExternalBalance {
     asset_id: string
     blockchain: string
     chain_id: number
@@ -13,5 +13,3 @@ export interface TokenObject {
     symbol: string
     external_balance: string
 }
-
-export interface TokenList extends Array<TokenObject> {}
