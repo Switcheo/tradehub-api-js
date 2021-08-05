@@ -87,9 +87,9 @@ export class NEOClient {
 
           try {
             const response: ScriptResult = await client.invokeScript(sb.str) as ScriptResult
-            acc[token.denom.toUpperCase()] = response.stack[0].type === 'Integer' // Happens on polychain devnet
-              ? response.stack[0].value
-              : this.parseHexNum(response.stack[0].value)
+            acc[token.denom.toUpperCase()] = response.stack[0]?.type === 'Integer' // Happens on polychain devnet
+              ? response.stack[0]?.value
+              : this.parseHexNum(response.stack[0]?.value)
 
           } catch (err) {
             console.error('Could not retrieve external balance for ', token.denom)
