@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import { APIClient } from "../api";
 import { RestModels } from "../models";
-import { appendHexPrefix, Blockchain, EthNetworkConfig, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
+import { appendHexPrefix, Blockchain, ETHAddress, EthNetworkConfig, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
 
 export interface ETHClientOpts {
   configProvider: NetworkConfigProvider,
@@ -178,7 +178,7 @@ export class ETHClient {
     return walletAddress
   }
 
-  public async sendDeposit(token, swthAddress: string, ethAddress: string, getSignatureCallback?: (msg: string) => Promise<{ address: string, signature: string }>) {
+  public async sendDeposit(token, swthAddress: string, ethAddress: string, getSignatureCallback: (msg: string) => Promise<{ address: string, signature: string }>) {
     logger("sendDeposit", token, swthAddress, ethAddress)
     const depositAddress = await this.getDepositContractAddress(swthAddress, ethAddress)
     const feeAmount = await this.getDepositFeeAmount(token, depositAddress)
@@ -300,8 +300,20 @@ export class ETHClient {
     return address.substr(2)
   }
 
-  public getEthSigner(privateKey: string): ethers.Signer {
-    return new ethers.Wallet(privateKey, this.getProvider());
+  public getSigner(mnemonic: string): ethers.Wallet {
+    const privateKey = ETHAddress.mnemonicToPrivateKey(mnemonic)
+    return new ethers.Wallet(privateKey, this.getProvider())
+  }
+
+  public async sign(message: string, mnemonic: string) {
+    const ethWallet = this.getSigner(mnemonic)
+    const messageBytes = ethers.utils.arrayify(message)
+    const signatureBytes = await ethWallet.signMessage(messageBytes)
+    const signature = ethers.utils.hexlify(signatureBytes).replace(/^0x/g, '')
+    return {
+      address: ethWallet.address,
+      signature,
+    }
   }
 
   /**
