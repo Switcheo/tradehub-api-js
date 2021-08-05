@@ -12,17 +12,17 @@ import { ethers } from 'ethers';
 import { chunk } from 'lodash';
 import { APIClient } from "../api";
 import { RestModels } from "../models";
-import { Blockchain, NEOAddress, NeoNetworkConfig, Network, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
+import { Blockchain, NeoNetworkConfig, Network, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
 
 export interface NEOClientOpts {
   configProvider: NetworkConfigProvider,
   blockchain?: Blockchain,
 }
 
-export interface SendLedgerDepositParams {
+export interface LockLedgerDepositParams {
   feeAmount: BigNumber
   amount: BigNumber
-  mnemonic: string
+  address: Uint8Array
   token: RestModels.ExternalBalance
   ledger: NeoLedgerAccount
   signCompleteCallback?: () => void
@@ -117,8 +117,7 @@ export class NEOClient {
     return tokensWithBalances
   }
 
-  public async sendDeposit(token: RestModels.ExternalBalance, feeAmountInput: string, mnemonic: string) {
-    const privateKey = NEOAddress.mnemonicToPrivateKey(mnemonic)
+  public async lockDeposit(token: RestModels.ExternalBalance, feeAmountInput: string, privateKey: string) {
     const account = Neon.create.account(privateKey.toString())
 
     const networkConfig = this.getNetworkConfig()
@@ -128,7 +127,7 @@ export class NEOClient {
     const fromAddress = u.reverseHex(account.scriptHash)
     const targetProxyHash = this.getTargetProxyHash(token)
     const toAssetHash = u.str2hexstring(token.denom)
-    const addressBytes = SWTHAddress.getAddressBytes(SWTHAddress.generateAddress(mnemonic), networkConfig.Network)
+    const addressBytes = SWTHAddress.getAddressBytes(SWTHAddress.privateKeyToAddress(privateKey), networkConfig.Network)
     const toAddress = ethers.utils.hexlify(addressBytes)
 
     const amount = ethers.BigNumber.from(token.external_balance)
@@ -167,10 +166,9 @@ export class NEOClient {
     })
   }
 
-  public async sendLedgerDeposit(params: SendLedgerDepositParams) {
+  public async lockLedgerDeposit(params: LockLedgerDepositParams) {
     const {
-      feeAmount,
-      amount, token, mnemonic, ledger, signCompleteCallback,
+      feeAmount, address, amount, token, ledger, signCompleteCallback,
     } = params
     const compressedPublicKey = neonWallet.getPublicKeyEncoded(ledger.publicKey)
   
@@ -181,8 +179,7 @@ export class NEOClient {
     const fromAddress = ledger.scriptHash
     const targetProxyHash = this.getTargetProxyHash(token)
     const toAssetHash = u.str2hexstring(token.denom)
-    const addressBytes = SWTHAddress.getAddressBytes(SWTHAddress.generateAddress(mnemonic), networkConfig.Network)
-    const toAddress = ethers.utils.hexlify(addressBytes)
+    const toAddress = ethers.utils.hexlify(address)
   
     const feeAddress = networkConfig.FeeAddress
     const nonce = Math.floor(Math.random() * 1000000)
