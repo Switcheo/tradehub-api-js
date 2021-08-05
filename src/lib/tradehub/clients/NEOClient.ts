@@ -3,18 +3,29 @@ import {
   sc as neonScript,
   u as neonUtils, wallet as neonWallet
 } from '@cityofzion/neon-core';
-import Neon, { api, rpc } from '@cityofzion/neon-js';
+import Neon, { api, rpc, tx as neonTx, u } from '@cityofzion/neon-js';
+import { NeoLedgerAccount } from '@lib/providers';
 import { TokenInitInfo } from "@lib/types";
 import { logger } from "@lib/utils";
 import BigNumber from "bignumber.js";
+import { ethers } from 'ethers';
 import { chunk } from 'lodash';
 import { APIClient } from "../api";
 import { RestModels } from "../models";
-import { Blockchain, NeoNetworkConfig, NetworkConfigProvider } from "../utils";
+import { Blockchain, NEOAddress, NeoNetworkConfig, Network, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
 
 export interface NEOClientOpts {
   configProvider: NetworkConfigProvider,
   blockchain?: Blockchain,
+}
+
+export interface SendLedgerDepositParams {
+  feeAmount: BigNumber
+  amount: BigNumber
+  mnemonic: string
+  token: RestModels.ExternalBalance
+  ledger: NeoLedgerAccount
+  signCompleteCallback?: () => void
 }
 
 interface ScriptResult {
@@ -106,6 +117,143 @@ export class NEOClient {
     return tokensWithBalances
   }
 
+  public async sendDeposit(token: RestModels.ExternalBalance, feeAmountInput: string, mnemonic: string) {
+    const privateKey = NEOAddress.mnemonicToPrivateKey(mnemonic)
+    const account = Neon.create.account(privateKey.toString())
+
+    const networkConfig = this.getNetworkConfig()
+    const scriptHash = u.reverseHex(token.lock_proxy_hash)
+
+    const fromAssetHash = token.asset_id
+    const fromAddress = u.reverseHex(account.scriptHash)
+    const targetProxyHash = this.getTargetProxyHash(token)
+    const toAssetHash = u.str2hexstring(token.denom)
+    const addressBytes = SWTHAddress.getAddressBytes(SWTHAddress.generateAddress(mnemonic), networkConfig.Network)
+    const toAddress = ethers.utils.hexlify(addressBytes)
+
+    const amount = ethers.BigNumber.from(token.external_balance)
+    const feeAmount = ethers.BigNumber.from(feeAmountInput ?? '100000000')
+    const feeAddress = networkConfig.FeeAddress
+    const nonce = Math.floor(Math.random() * 1000000)
+
+    if (amount.lt(feeAmount)) {
+      return false
+    }
+
+    const sb = Neon.create.scriptBuilder()
+    sb.emitAppCall(scriptHash, 'lock', [
+      fromAssetHash,
+      fromAddress,
+      targetProxyHash,
+      toAssetHash,
+      toAddress,
+      amount.toNumber(),
+      feeAmount.toNumber(),
+      feeAddress,
+      nonce
+    ])
+
+    const rpcUrl = await this.getProviderUrl()
+    const apiProvider = networkConfig.Network === Network.MainNet
+      ? new api.neonDB.instance('https://api.switcheo.network')
+      : new api.neoCli.instance(rpcUrl)
+    return Neon.doInvoke({
+      api: apiProvider,
+      url: rpcUrl,
+      account,
+      script: sb.str,
+      gas: 0,
+      fees: 0
+    })
+  }
+
+  public async sendLedgerDeposit(params: SendLedgerDepositParams) {
+    const {
+      feeAmount,
+      amount, token, mnemonic, ledger, signCompleteCallback,
+    } = params
+    const compressedPublicKey = neonWallet.getPublicKeyEncoded(ledger.publicKey)
+  
+    const networkConfig = this.getNetworkConfig()
+    const scriptHash = u.reverseHex(token.lock_proxy_hash)
+
+    const fromAssetHash = token.asset_id
+    const fromAddress = ledger.scriptHash
+    const targetProxyHash = this.getTargetProxyHash(token)
+    const toAssetHash = u.str2hexstring(token.denom)
+    const addressBytes = SWTHAddress.getAddressBytes(SWTHAddress.generateAddress(mnemonic), networkConfig.Network)
+    const toAddress = ethers.utils.hexlify(addressBytes)
+  
+    const feeAddress = networkConfig.FeeAddress
+    const nonce = Math.floor(Math.random() * 1000000)
+  
+    if (amount.lt(feeAmount)) {
+      throw new Error('Invalid amount')
+    }
+  
+    const sb = Neon.create.scriptBuilder()
+    const data = [
+      fromAssetHash,
+      fromAddress,
+      targetProxyHash,
+      toAssetHash,
+      toAddress,
+      amount.toNumber(),
+      feeAmount.toNumber(),
+      feeAddress,
+      nonce,
+    ]
+    sb.emitAppCall(scriptHash, 'lock', data)
+  
+    const rpcUrl = await this.getProviderUrl()
+    const apiProvider = networkConfig.Network === Network.MainNet
+      ? new api.neonDB.instance('https://api.switcheo.network')
+      : new api.neoCli.instance(rpcUrl)
+  
+    let invokeTxConfig: any = {
+      account: {
+        // zombie account provided because config requires an account, and makes use
+        // of the address and public key properties during the signing process, even
+        // when signingFunction override is provided.
+        ...Neon.create.account(''),
+  
+        // overwrite the address and public key to values provided by the ledger.
+        address: ledger.displayAddress,
+        publicKey: compressedPublicKey,
+      } as neonWallet.Account,
+  
+      signingFunction: async (tx: string, publicKey: string) => {
+        const signature = await ledger.sign(tx)
+        const witness = neonTx.Witness.fromSignature(signature, publicKey)
+        return witness.serialize()
+      },
+  
+      api: apiProvider,
+      url: rpcUrl,
+      script: sb.str,
+      gas: 0,
+      fees: 0,
+    }
+  
+    // similar to Neon.doInvoke(invokeTxConfig), but
+    // separates out sendTx to broadcast to several nodes
+    invokeTxConfig = await api.fillBalance(invokeTxConfig)
+    invokeTxConfig = await api.createInvocationTx(invokeTxConfig)
+    invokeTxConfig = await api.modifyTransactionForEmptyTransaction(invokeTxConfig)
+    invokeTxConfig = await api.signTx(invokeTxConfig)
+  
+    // provide notification to caller that signature is
+    // done and proceeding to broadcasting tx
+    signCompleteCallback()
+
+    await api.sendTx({
+      ...invokeTxConfig,
+      rpcUrl,
+    })
+  
+    return invokeTxConfig.tx?.hash
+  }
+
   public async retrieveNEP5Info(scriptHash: string): Promise<TokenInitInfo> {
     const url = this.getProviderUrl()
     const sb = Neon.create.scriptBuilder()
@@ -164,6 +312,23 @@ export class NEOClient {
     const scriptHash = neonWallet.getScriptHashFromAddress(address)
     // return the little endian version of the address
     return neonUtils.reverseHex(scriptHash)
+  }
+
+  /**
+   * TargetProxyHash is a hash of token originator address that is used
+   * for lockproxy asset registration and identification
+   * 
+   * @param token
+   */
+   public getTargetProxyHash(token: RestModels.Token) {
+    const networkConfig = this.getNetworkConfig()
+    const addressBytes = SWTHAddress.getAddressBytes(token.originator, networkConfig.Network)
+    const addressHex = stripHexPrefix(ethers.utils.hexlify(addressBytes))
+    return addressHex
+  }
+
+  public getNetworkConfig(): NetworkConfig {
+    return this.configProvider.getConfig();
   }
 
   public getConfig(): NeoNetworkConfig {
