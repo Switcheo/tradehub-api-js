@@ -216,7 +216,7 @@ export const NetworkConfigs: {
     },
 
     Neo: {
-      RpcURL: 'https://seed1.switcheo.network:443',
+      RpcURL: 'https://seed3.switcheo.network:443',
       WrapperScriptHash: 'f46719e2d16bf50cddcef9d4bbfece901f73cbb6',
     },
 
