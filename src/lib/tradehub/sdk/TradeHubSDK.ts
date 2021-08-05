@@ -8,7 +8,7 @@ import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigP
 import { TradeHubSigner, TradeHubWallet, TradeHubWalletGenericOpts } from "../wallet";
 import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
-import { ModAccount, ModAdmin, ModBroker, ModCDP, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOracle, ModOrder, ModPosition } from "./modules";
+import { ModAccount, ModAdmin, ModBroker, ModCDP, ModCoin, ModGovernance, ModLeverage, ModLiquidityPool, ModMarket, ModOracle, ModOrder, ModPosition, ModTransfer } from "./modules";
 import { SDKProvider } from "./modules/module";
 import ModStaking from "./modules/staking";
 import CosmosLedger from '@lunie/cosmos-ledger'
@@ -70,6 +70,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   cdp: ModCDP
   oracle: ModOracle
   staking: ModStaking
+  transfer: ModTransfer
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
@@ -137,6 +138,7 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.cdp = new ModCDP(this);
     this.oracle = new ModOracle(this);
     this.staking = new ModStaking(this);
+    this.transfer = new ModTransfer(this);
   }
 
   protected async startWS() {

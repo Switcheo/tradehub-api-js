@@ -1,5 +1,4 @@
 export * from './account'
-export * from './balances/Fees'
 export * from './balances/ExternalBalance'
 export * from './gov'
 export * from './history'

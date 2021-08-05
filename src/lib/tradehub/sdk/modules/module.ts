@@ -1,9 +1,10 @@
 import { APIClient } from "@lib/tradehub/api";
-import { TxMsgValue } from "@lib/tradehub/utils";
+import { NetworkConfig, TxMsgValue } from "@lib/tradehub/utils";
 import { TradeHubWallet } from "@lib/tradehub/wallet";
 
 export interface SDKProvider {
   api: APIClient;
+  networkConfig: NetworkConfig;
   log: (...args: any[]) => void;
   getConnectedWallet: () => TradeHubWallet;
 }
