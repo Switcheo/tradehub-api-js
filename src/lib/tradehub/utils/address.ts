@@ -394,9 +394,8 @@ export const ETHAddress: AddressBuilder<AddressOptions> = {
   },
 
   privateKeyToAddress: (privateKey: string | Buffer): string => {
-    const compressedPublicKey = ETHAddress.privateToPublicKey(privateKey);
-    const address = ETHAddress.publicKeyToAddress(compressedPublicKey)
-    return address
+    const privateKeyBuff = stringOrBufferToBuffer(privateKey)
+    return ethers.utils.computeAddress(privateKeyBuff)
   },
 
   generateAddress: (mnemonic: string, account: number = 0) => {

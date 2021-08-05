@@ -162,9 +162,9 @@ export class ETHClient {
     return lockResultTx
   }
 
-  public async getDepositContractAddress(swthBech32Addres: string, ownerEthAddress: string) {
+  public async getDepositContractAddress(swthBech32Address: string, ownerEthAddress: string): Promise<string> {
     const network = this.getNetworkConfig().Network
-    const addressBytes = SWTHAddress.getAddressBytes(swthBech32Addres, network)
+    const addressBytes = SWTHAddress.getAddressBytes(swthBech32Address, network)
     const swthAddress = ethers.utils.hexlify(addressBytes)
 
     const provider = this.getProvider()
@@ -173,7 +173,7 @@ export class ETHClient {
     const contract = new ethers.Contract(contractAddress, ABIs.lockProxy, provider)
     const walletAddress = await contract.getWalletAddress(ownerEthAddress, swthAddress, this.getWalletBytecodeHash())
 
-    logger("getDepositContractAddress", swthBech32Addres, ownerEthAddress, walletAddress)
+    logger("getDepositContractAddress", swthBech32Address, ownerEthAddress, walletAddress)
 
     return walletAddress
   }
