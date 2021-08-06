@@ -118,7 +118,7 @@ export class NEOClient {
   }
 
   public async lockDeposit(token: RestModels.ExternalBalance, feeAmountInput: string, privateKey: string) {
-    const account = Neon.create.account(privateKey.toString())
+    const account = Neon.create.account(privateKey)
 
     const networkConfig = this.getNetworkConfig()
     const scriptHash = u.reverseHex(token.lock_proxy_hash)

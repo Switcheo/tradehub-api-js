@@ -300,11 +300,11 @@ export class ETHClient {
     return address.substr(2)
   }
 
-  public getEthSigner(privateKey: string): ethers.Wallet {
+  public getEthSigner(privateKey: ethers.utils.BytesLike): ethers.Wallet {
     return new ethers.Wallet(privateKey, this.getProvider())
   }
 
-  public async sign(message: string, privateKey: string) {
+  public async sign(message: string, privateKey: ethers.utils.BytesLike) {
     const ethWallet = this.getEthSigner(privateKey)
     const messageBytes = ethers.utils.arrayify(message)
     const signatureBytes = await ethWallet.signMessage(messageBytes)
