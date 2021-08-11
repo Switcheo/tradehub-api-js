@@ -250,17 +250,19 @@ export class TradeHubWallet {
       tx,
     };
 
-    this.log("sendTx", JSON.stringify(broadcastTx));
+    this.log("sendTx", opts, JSON.stringify(broadcastTx));
 
     const response = (await this.api.tx(broadcastTx)) as TxResponse;
     if (response.code || response.error) {
       // tx failed
       console.error(response.error);
 
-      if (!opts.attemptCount && response.raw_log === UNAUTHORIZED_SIG_ERROR) {
+      const attemptCount = opts.attemptCount ?? 0
+      if (!attemptCount && response.raw_log === UNAUTHORIZED_SIG_ERROR) {
+        this.log("sendTx", `unauth error, retry… (attempts: ${attemptCount})`);
         return await this.sendTxs(msgs, memo, {
           ...opts,
-          attemptCount: (opts.attemptCount ?? 0) + 1
+          attemptCount: attemptCount + 1
         })
       }
 
