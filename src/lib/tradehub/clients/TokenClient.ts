@@ -80,7 +80,7 @@ class TokenClient {
       return SYMBOL_OVERRIDE[symbol]
     }
 
-    if (overrideMap && overrideMap[symbol]) {
+    if (overrideMap?.[symbol]) {
       return overrideMap[symbol]
     }
 
