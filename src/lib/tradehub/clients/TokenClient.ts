@@ -57,7 +57,7 @@ class TokenClient {
     return this.usdValues[commonDenom];
   }
 
-  public getTokenName(denom: string): string {
+  public getTokenName(denom: string, overrideMap?: SimpleMap): string {
     if (typeof denom !== 'string') return '';
     denom = denom.toLowerCase();
 
@@ -80,8 +80,13 @@ class TokenClient {
       return SYMBOL_OVERRIDE[symbol]
     }
 
+    if (overrideMap?.[symbol]) {
+      return overrideMap[symbol]
+    }
+
     return symbol;
   }
+
   public getTokenDesc(denom: string) {
     if (typeof denom !== 'string') return '';
     denom = denom.toLowerCase();
