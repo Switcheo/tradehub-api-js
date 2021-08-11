@@ -8,8 +8,14 @@ import { RestModels } from "../models";
 import { BroadcastTx, CosmosLedger, NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest, TxResponse } from "../utils";
 import { TradeHubSigner } from "./TradeHubSigner";
 
+const UNAUTHORIZED_SIG_ERROR = "unauthorized: signature verification failed; verify correct account sequence and chain-id"
+
 export type OnRequestSignCallback = (signDoc: StdSignDoc) => void | Promise<void>
 export type OnSignCompleteCallback = (signatureBase64: string) => void | Promise<void>
+
+export interface TradeHubWalletSendTxsOpts {
+  attemptCount?: number
+}
 
 export interface TradeHubWalletGenericOpts {
   debugMode?: boolean
@@ -225,7 +231,7 @@ export class TradeHubWallet {
     // no action required yet.
   }
 
-  public async sendTxs(msgs: TxMsg[], memo?: string): Promise<TxResponse> {
+  public async sendTxs(msgs: TxMsg[], memo?: string, opts: TradeHubWalletSendTxsOpts = {}): Promise<TxResponse> {
     const { account, sequence } = this.checkAccountInit();
     this.log("sendTx", account, sequence);
 
@@ -249,7 +255,15 @@ export class TradeHubWallet {
     const response = (await this.api.tx(broadcastTx)) as TxResponse;
     if (response.code || response.error) {
       // tx failed
-      console.error(response);
+      console.error(response.error);
+
+      if (!opts.attemptCount && response.raw_log === UNAUTHORIZED_SIG_ERROR) {
+        return await this.sendTxs(msgs, memo, {
+          ...opts,
+          attemptCount: (opts.attemptCount ?? 0) + 1
+        })
+      }
+
       if (response.error)
         throw new Error(response.error);
       else
