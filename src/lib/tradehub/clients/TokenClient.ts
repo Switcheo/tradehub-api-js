@@ -7,8 +7,14 @@ import { Blockchain, bnOrZero, CoinGeckoTokenNames, CommonAssetName, SimpleMap }
 const SYMBOL_OVERRIDE: {
   [symbol: string]: string
 } = {
-  SWTHB: "SWTH",
-  NNEO: "nNEO",
+  swth: 'SWTH',
+  NNEO: 'nNEO',
+  YAM1: 'YAM',
+  YAM2: 'YAM',
+  ASA1: 'ASA',
+  ASA2: 'ASA',
+  DBC1: 'DBC',
+  DBC2: 'DBC',
 }
 
 class TokenClient {
@@ -30,8 +36,8 @@ class TokenClient {
   }
 
   public async initialize(): Promise<void> {
-    await this.reloadTokens();
     await this.reloadWrapperMap();
+    await this.reloadTokens();
     await this.reloadUSDValues();
   }
 
@@ -161,8 +167,10 @@ class TokenClient {
       } else {
         this.tokens[token.denom] = token;
 
-        const commonDenom = CommonAssetName[token.denom] ?? token.denom;
-        this.symbols[commonDenom] = token.symbol;
+        if (!this.wrapperMap[token.denom]) {
+          const commonDenom = CommonAssetName[token.denom] ?? token.denom;
+          this.symbols[commonDenom] = token.symbol;
+        }
       }
     }
 
