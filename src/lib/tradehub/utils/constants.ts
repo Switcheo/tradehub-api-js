@@ -112,6 +112,16 @@ export const TxTypes = {
   },
 } as const
 
+export const TxFeeTypeDefaultKey = "default_fee";
+export const TxFeeTypeMap = {
+  "claim_pool_rewards": TxTypes.LiquidityPool.CLAIM_POOL_REWARDS,
+  "create_oracle_vote": TxTypes.Oracle.CREATE_VOTE_TYPE,
+  "create_order": TxTypes.Order.CREATE,
+  "create_pool": TxTypes.LiquidityPool.CREATE_POOL,
+  "stake_pool_token": TxTypes.LiquidityPool.STAKE_POOL_TOKEN,
+  "unstake_pool_token": TxTypes.LiquidityPool.UNSTAKE_POOL_TOKEN,
+}
+
 export const CommonAssetName: SimpleMap = {
   swth: 'swth',
   'swth-n': 'swth',

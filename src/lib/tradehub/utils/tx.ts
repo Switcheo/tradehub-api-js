@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
-import { BN_ONE, DEFAULT_GAS, ONE_SWTH } from "./constants";
+import { BN_ONE, BN_ZERO, DEFAULT_GAS, ONE_SWTH, TxFeeTypeDefaultKey } from "./constants";
 import { sortObject } from "./misc";
+import { SimpleMap } from "./types";
 
 export interface TxMsgValue { }
 export interface TxMsg<T extends TxMsgValue = TxMsgValue> {
@@ -46,11 +47,21 @@ export class PreSignDoc {
   constructor(
     public readonly chainId: string,
     public readonly memo: string = "",
-    public readonly fee: TxFee = DEFAULT_FEE,
+    public fee: TxFee = DEFAULT_FEE,
   ) { }
 
   public appendMsg(...msgs: TxMsg[]): PreSignDoc {
     this.msgs.splice(msgs.length, 0, ...msgs);
+    return this;
+  }
+
+  public updateFees(feeMap?: SimpleMap<BigNumber>): PreSignDoc {
+    let totalFees = BN_ZERO;
+    for (const msg of this.msgs) {
+      const msgFee = feeMap?.[msg.type] ?? feeMap?.[TxFeeTypeDefaultKey] ?? ONE_SWTH
+      totalFees = totalFees.plus(msgFee);
+    }
+    this.fee = new TxFee([new DenomAmount(totalFees)], DEFAULT_GAS);
     return this;
   }
 
@@ -60,10 +71,7 @@ export class PreSignDoc {
       sequence,
       this.chainId,
       this.msgs,
-      new TxFee(
-        [new DenomAmount(ONE_SWTH.times(this.msgs.length))],
-        DEFAULT_GAS,
-      ),
+      this.fee,
       this.memo,
     );
   }

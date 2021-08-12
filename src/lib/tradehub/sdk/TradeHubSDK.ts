@@ -4,7 +4,7 @@ import * as _RestTypes from "../api/spec";
 import { ETHClient, NEOClient, ZILClient } from "../clients";
 import TokenClient from "../clients/TokenClient";
 import { RestModels as _RestModels, RPCParams as _RPCParams } from "../models";
-import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs, SimpleMap } from "../utils";
+import { Blockchain, Network, Network as _Network, NetworkConfig, NetworkConfigProvider, NetworkConfigs } from "../utils";
 import { TradeHubSigner, TradeHubWallet, TradeHubWalletGenericOpts } from "../wallet";
 import { WSConnector, WSSubscriber } from "../websocket";
 import { WSChannel } from "../websocket/types";
@@ -25,7 +25,6 @@ export interface TradeHubSDKInitOpts {
   network?: Network
   debugMode?: boolean
   ws?: WSConnector
-  txFees?: SimpleMap<BigNumber>
 
   config?: Partial<NetworkConfig>
 }
@@ -74,14 +73,12 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
 
   // initialized by calling TradeHubSDK.connect(TradeHubWallet)
   wallet?: TradeHubWallet
-  txFees?: SimpleMap<BigNumber>
 
   constructor(opts: TradeHubSDKInitOpts = DEFAULT_OPTS) {
     this.debugMode = opts.debugMode ?? false
 
     this.network = opts.network ?? DEFAULT_OPTS.network;
     this.configOverride = opts.config ?? {};
-    this.txFees = opts.txFees;
     this.initialized = false;
 
     this.networkConfig = {
@@ -159,7 +156,6 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     return {
       network: this.network,
       debugMode: this.debugMode,
-      txFees: this.txFees,
       config: this.configOverride,
     }
   }
@@ -168,11 +164,6 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     if (this.debugMode) {
       console.log.apply(console.log, [this.constructor.name, ...args]);
     }
-  }
-
-  public async reloadTxnFees() {
-    this.log("reloadTxnFees…");
-    this.txFees = await this.api.getTxnFees();
   }
 
   public static parseNetwork(network: string, defaultNetwork: Network | null = DEFAULT_OPTS.network) {
@@ -199,7 +190,6 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
   public async initialize(wallet?: TradeHubWallet) {
     this.log("initialize…");
     if (!this.initialized) {
-      await this.reloadTxnFees();
       await this.token.initialize();
       this.initialized = true;
     }

@@ -1,11 +1,12 @@
 import { Network } from "@lib/types";
 import { stringOrBufferToBuffer, SWTHAddress } from "@lib/utils";
+import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import secp256k1 from 'secp256k1';
 import { sha256 } from 'sha.js';
 import { APIClient } from "../api";
 import { RestModels } from "../models";
-import { BroadcastTx, CosmosLedger, NetworkConfig, NetworkConfigs, PreSignDoc, StdSignDoc, TradeHubSignature, TradeHubTx, TxMsg, TxRequest, TxResponse } from "../utils";
+import { BroadcastTx, CosmosLedger, NetworkConfig, NetworkConfigs, PreSignDoc, SimpleMap, StdSignDoc, TradeHubSignature, TradeHubTx, TxFeeTypeMap, TxMsg, TxRequest, TxResponse } from "../utils";
 import { TradeHubSigner } from "./TradeHubSigner";
 
 const UNAUTHORIZED_SIG_ERROR = "unauthorized: signature verification failed; verify correct account sequence and chain-id"
@@ -109,6 +110,7 @@ export class TradeHubWallet {
 
   account?: number
   sequence?: number
+  txFees?: SimpleMap<BigNumber>
 
   txBroadcastQueue: TxRequest[] = []
 
@@ -214,6 +216,21 @@ export class TradeHubWallet {
     return account;
   }
 
+  public async reloadTxnFees() {
+    this.log("reloadTxnFees…");
+    const rawFeesMap = await this.api.getTxnFees();
+
+    const feesMap = { ...rawFeesMap };
+    for (const key in rawFeesMap) {
+      if (TxFeeTypeMap[key]) {
+        const txMsgType = TxFeeTypeMap[key];
+        feesMap[txMsgType] = rawFeesMap[key];
+      }
+    }
+
+    this.txFees = feesMap;
+  }
+
   public async init(force: boolean = false): Promise<TradeHubWallet> {
     // if account is already loaded, skip initialization
     // unless force flag is marked as true.
@@ -222,6 +239,9 @@ export class TradeHubWallet {
 
     // reload account, sets account and sequence numbers
     await this.loadAccount();
+
+    // reload transaction fees map
+    await this.reloadTxnFees();
 
     // return self
     return this;
@@ -235,7 +255,9 @@ export class TradeHubWallet {
     const { account, sequence } = this.checkAccountInit();
     this.log("sendTx", account, sequence);
 
-    const doc = this.genSignDoc(msgs, memo).prepare(account, sequence);
+    const doc = this.genSignDoc(msgs, memo)
+      .updateFees(this.txFees)
+      .prepare(account, sequence);
     const signature = await this.sign(doc);
 
     const tx: TradeHubTx = {
