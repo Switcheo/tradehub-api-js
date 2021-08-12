@@ -112,7 +112,7 @@ export const NetworkConfigs: {
     ChainId: 'switcheochain',
 
     Eth: {
-      RpcURL: 'https://ropsten.infura.io/v3/e4dd457b33124bbda7e17500e6efbc27',
+      RpcURL: 'https://eth-ropsten.alchemyapi.io/v2/2KD9F3mFPNMfflSqZsPuTKmK_w7fFfut',
       WsURL: 'wss://ropsten.dagger.matic.network',
       PayerURL: `http://13.251.218.38:7001`,
       LockProxyAddr: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
@@ -155,7 +155,7 @@ export const NetworkConfigs: {
     ChainId: 'switcheochain',
 
     Eth: {
-      RpcURL: 'https://ropsten.infura.io/v3/e4dd457b33124bbda7e17500e6efbc27',
+      RpcURL: 'https://eth-mainnet.alchemyapi.io/v2/5J5-HepOkCigvEkfL3Latf2aWJwNDe3e',
       WsURL: 'wss://ropsten.dagger.matic.network',
       PayerURL: `http://54.255.42.175:7001`,
       LockProxyAddr: '0x86edf4748efeded37f4932b7de93a575909cc892',
@@ -198,7 +198,7 @@ export const NetworkConfigs: {
     ChainId: 'switcheo-tradehub-1',
 
     Eth: {
-      RpcURL: 'https://eth-mainnet.alchemyapi.io/v2/59kbsEncz6n4QuzCymsfb8p6ZVqsaAvR',
+      RpcURL: 'https://eth-mainnet.alchemyapi.io/v2/RWHcfoaBKzRpXnLONcEDnVqtUp7StNYl',
       WsURL: 'wss://mainnet.dagger.matic.network',
       PayerURL: `https://eth-payer.switcheo.org`,
       LockProxyAddr: '0x9a016ce184a22dbf6c17daa59eb7d3140dbd1c54',
