@@ -89,25 +89,40 @@ class ModLiquidityPool extends BaseModule {
     });
   }
 
+  public async claimMultiPoolRewards(params: RPCParams.ClaimMultiPoolRewards) {
+    const wallet = this.getWallet();
+
+    if (!params.originator)
+      params.originator = wallet.bech32Address;
+
+    return await wallet.sendTxs(params.pools.map((poolId) => ({
+      type: TxTypes.LiquidityPool.CLAIM_POOL_REWARDS,
+      value: {
+        pool_id: poolId,
+        originator: params.originator,
+      },
+    })));
+  }
+
   public async estimateUnclaimedRewards(params: RPCParams.EstimateUnclaimedRewardsMsg): Promise<RestModels.UnclaimedRewards> {
     const sdk = this.sdkProvider;
     const accruedRewards: RestModels.UnclaimedRewards = {};
     const lastClaimed = await sdk.api.getLastClaimedPoolReward(params);
     let lastHeight = lastClaimed.result;
-    
+
     const allocation = await sdk.api.getRewardHistory({
       poolId: params.poolId,
       blockHeight: new BigNumber(lastClaimed.result || '0').plus(1).toString()
     });
-    
+
     // get current share
     const shares = await sdk.api.getStakedPoolTokenInfo({
       pool_id: parseInt(params.poolId),
       account: params.address,
     });
-    
+
     const commitmentPower = new BigNumber(shares.result.commitment_power || '0');
-    
+
     // calculate accrued rewards based on history
     if (!commitmentPower.isZero() && allocation && allocation.result) {
       allocation.result.forEach((period) => {
@@ -127,7 +142,7 @@ class ModLiquidityPool extends BaseModule {
     // Estimate rewards from last allocated rewards
     // the current logic will under estimate the rewards as the current weekly reward rate is used across the full period
     // instead of deriving the reward rate for each week since the last reward allocation
-    
+
     if (!commitmentPower.isZero()) {
       const weeklyRewards = await sdk.api.getWeeklyPoolRewards();
       const pools = await sdk.api.getLiquidityPools();
@@ -139,16 +154,16 @@ class ModLiquidityPool extends BaseModule {
         totalWeight = totalWeight.plus(pool.rewards_weight);
       });
       const poolWeekRewards = poolWeight.dividedBy(totalWeight).times(weeklyRewards);
-    
+
       // get time from last height
       const blockInfo = await sdk.api.getCosmosBlockInfo({ height: parseInt(lastHeight) + 1 });
-    
+
       const estimatedStart = dayjs(blockInfo.block.header.time);
-    
+
       const now = dayjs();
       const WEEKS_IN_SECONDS = 604800;
       const diff = now.diff(estimatedStart, 'second');
-    
+
       const estimatedRewards = new BigNumber(diff / WEEKS_IN_SECONDS).times(poolWeekRewards)
         .times(commitmentPower).div(currentTotalCommitmentPower)
         .shiftedBy(8).integerValue(BigNumber.ROUND_DOWN);
