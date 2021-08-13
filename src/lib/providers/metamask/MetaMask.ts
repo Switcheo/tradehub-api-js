@@ -1,7 +1,7 @@
-import { ETHClient } from '@lib/clients'
+import { ETHClient } from '@lib/tradehub/clients'
 import { Blockchain, blockchainForChainId, ChainNames } from '@lib/constants'
 import { ABIs } from '@lib/eth'
-import { Network } from '@lib/types'
+import { Network, NetworkConfigs } from '@lib/tradehub/utils'
 import * as ethSignUtils from 'eth-sig-util'
 import { ethers } from 'ethers'
 
@@ -161,7 +161,9 @@ export class MetaMask {
   private checkProvider(blockchain: Blockchain = this.blockchain): ethers.providers.Provider {
     const ethClient = ETHClient.instance({
       blockchain: blockchain,
-      network: this.network,
+      configProvider: {
+        getConfig: () => NetworkConfigs[this.network],
+      },
     })
 
     const provider = ethClient.getProvider()
