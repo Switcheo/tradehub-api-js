@@ -207,7 +207,7 @@ export class TradeHubWallet {
 
   public async loadAccount(): Promise<RestModels.Account> {
     const address = this.bech32Address;
-    const response = await this.api.getAccount({ address });
+    const response = await this.api.getAccountInfo({ address });
     const account = response.result.value;
 
     this.account = parseInt(account.account_number);
