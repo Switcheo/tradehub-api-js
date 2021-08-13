@@ -61,7 +61,7 @@ export class PreSignDoc {
       const msgFee = feeMap?.[msg.type] ?? feeMap?.[TxFeeTypeDefaultKey] ?? ONE_SWTH
       totalFees = totalFees.plus(msgFee);
     }
-    this.fee = new TxFee([new DenomAmount(totalFees)], DEFAULT_GAS);
+    this.fee = new TxFee([new DenomAmount(totalFees)], DEFAULT_GAS.times(this.msgs.length));
     return this;
   }
 
