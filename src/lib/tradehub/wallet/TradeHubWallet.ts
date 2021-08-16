@@ -88,6 +88,14 @@ class TradeHubLedgerSigner implements TradeHubSigner {
   ) { }
 }
 
+class TradeHubNonSigner implements TradeHubSigner {
+  type = TradeHubSigner.Type.PublicKey
+
+  async sign(): Promise<Buffer> {
+    throw new Error("signing not available");
+  }
+}
+
 export class TradeHubWallet {
   network: Network
   debugMode: boolean
@@ -160,6 +168,15 @@ export class TradeHubWallet {
     });
 
     return this
+  }
+
+  public static withPublicKey(
+    publicKeyBase64: string,
+  ) {
+    return new TradeHubWallet({
+      signer: new TradeHubNonSigner(),
+      publicKeyBase64,
+    })
   }
 
   public static withPrivateKey(

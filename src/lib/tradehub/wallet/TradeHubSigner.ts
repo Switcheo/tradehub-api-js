@@ -11,6 +11,7 @@ export namespace TradeHubSigner {
   export enum Type {
     Ledger,
     PrivateKey,
+    PublicKey,
     BrowserInjected,
   }
 }
