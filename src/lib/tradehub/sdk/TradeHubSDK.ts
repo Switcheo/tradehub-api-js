@@ -225,6 +225,19 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
     this.ws?.disconnect();
   }
 
+  public async connectViewOnly(
+    bech32Address: string,
+    opts?: TradeHubWalletGenericOpts,
+  ) {
+    const wallet = TradeHubWallet.withAddress(bech32Address, {
+      ...opts,
+      debugMode: this.debugMode,
+      network: this.network,
+      config: this.configOverride,
+    })
+    return this.connect(wallet)
+  }
+
   public async connectWithPrivateKey(
     privateKey: string | Buffer,
     opts?: TradeHubWalletGenericOpts,

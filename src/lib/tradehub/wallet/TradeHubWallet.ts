@@ -36,24 +36,38 @@ export interface TradeHubWalletGenericOpts {
   onSignComplete?: OnSignCompleteCallback
 }
 
+export interface TradeHubWalletViewOnlyOpts {
+
+}
+
 export type TradeHubWalletInitOpts = TradeHubWalletGenericOpts & ({
   // connect with mnemonic
   mnemonic: string
   privateKey?: string | Buffer
   signer?: TradeHubSigner
   publicKeyBase64?: string
+  bech32Address?: string
 } | {
   // connect with private key
   mnemonic?: string
   privateKey: string | Buffer
   signer?: TradeHubSigner
   publicKeyBase64?: string
+  bech32Address?: string
 } | {
   // connect with custom signer
   mnemonic?: string
   privateKey?: string | Buffer
   signer: TradeHubSigner
   publicKeyBase64: string
+  bech32Address?: string
+} | {
+  // connect with address (view only)
+  mnemonic?: string
+  privateKey?: string | Buffer
+  signer?: TradeHubSigner
+  publicKeyBase64?: string
+  bech32Address: string
 })
 
 class TradeHubPrivateKeySigner implements TradeHubSigner {
@@ -147,13 +161,19 @@ export class TradeHubWallet {
     } else if (this.privateKey) {
       this.signer = new TradeHubPrivateKeySigner(this.privateKey);
       this.pubKeyBase64 = SWTHAddress.privateToPublicKey(this.privateKey).toString("base64");
+    } else if (opts.bech32Address) {
+      // read-only wallet, without private/public keys
+      this.signer = new TradeHubNonSigner();
+      this.bech32Address = opts.bech32Address
     } else {
       throw new Error("cannot instantiate wallet signer")
     }
 
-    this.bech32Address = SWTHAddress.publicKeyToAddress(Buffer.from(this.pubKeyBase64, "base64"), {
-      network: this.network,
-    });
+    if (this.pubKeyBase64) {
+      this.bech32Address = SWTHAddress.publicKeyToAddress(Buffer.from(this.pubKeyBase64, "base64"), {
+        network: this.network,
+      });
+    }
   }
 
   public updateNetwork(network: Network): TradeHubWallet {
@@ -170,10 +190,22 @@ export class TradeHubWallet {
     return this
   }
 
-  public static withPublicKey(
-    publicKeyBase64: string,
+  public static withAddress(
+    bech32Address: string,
+    opts: Partial<TradeHubWalletInitOpts> = {}
   ) {
     return new TradeHubWallet({
+      ...opts,
+      bech32Address,
+    })
+  }
+
+  public static withPublicKey(
+    publicKeyBase64: string,
+    opts: Partial<TradeHubWalletInitOpts> = {}
+  ) {
+    return new TradeHubWallet({
+      ...opts,
       signer: new TradeHubNonSigner(),
       publicKeyBase64,
     })
