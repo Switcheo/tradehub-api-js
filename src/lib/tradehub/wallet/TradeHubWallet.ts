@@ -331,10 +331,15 @@ export class TradeHubWallet {
       const attemptCount = opts.attemptCount ?? 0
       if (!attemptCount && response.raw_log === UNAUTHORIZED_SIG_ERROR) {
         this.log("sendTx", `unauth error, retry… (attempts: ${attemptCount})`);
+        await this.loadAccount();
         return await this.sendTxs(msgs, memo, {
           ...opts,
           attemptCount: attemptCount + 1
         })
+      }
+
+      if (response.code === 19) {
+        throw new Error(`[19] transaction already in mempool`);
       }
 
       if (response.error)
