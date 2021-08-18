@@ -128,7 +128,7 @@ export class NEOClient {
     const targetProxyHash = this.getTargetProxyHash(token)
     const toAssetHash = u.str2hexstring(token.denom)
     const addressBytes = SWTHAddress.getAddressBytes(SWTHAddress.privateKeyToAddress(privateKey), networkConfig.Network)
-    const toAddress = ethers.utils.hexlify(addressBytes)
+    const toAddress = stripHexPrefix(ethers.utils.hexlify(addressBytes))
 
     const amount = ethers.BigNumber.from(token.external_balance)
     const feeAmount = ethers.BigNumber.from(feeAmountInput ?? '100000000')
@@ -179,7 +179,7 @@ export class NEOClient {
     const fromAddress = ledger.scriptHash
     const targetProxyHash = this.getTargetProxyHash(token)
     const toAssetHash = u.str2hexstring(token.denom)
-    const toAddress = ethers.utils.hexlify(address)
+    const toAddress = stripHexPrefix(ethers.utils.hexlify(address))
   
     const feeAddress = networkConfig.FeeAddress
     const nonce = Math.floor(Math.random() * 1000000)
