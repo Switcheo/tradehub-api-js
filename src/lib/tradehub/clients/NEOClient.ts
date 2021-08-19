@@ -117,8 +117,8 @@ export class NEOClient {
     return tokensWithBalances
   }
 
-  public async lockDeposit(token: RestModels.ExternalBalance, feeAmountInput: string, privateKey: string) {
-    const account = Neon.create.account(privateKey)
+  public async lockDeposit(token: RestModels.ExternalBalance, feeAmountInput: string, swthAddress: string, neoPrivateKey: string) {
+    const account = Neon.create.account(neoPrivateKey)
 
     const networkConfig = this.getNetworkConfig()
     const scriptHash = u.reverseHex(token.lock_proxy_hash)
@@ -127,7 +127,7 @@ export class NEOClient {
     const fromAddress = u.reverseHex(account.scriptHash)
     const targetProxyHash = this.getTargetProxyHash(token)
     const toAssetHash = u.str2hexstring(token.denom)
-    const addressBytes = SWTHAddress.getAddressBytes(SWTHAddress.privateKeyToAddress(privateKey), networkConfig.Network)
+    const addressBytes = SWTHAddress.getAddressBytes(swthAddress, networkConfig.Network)
     const toAddress = stripHexPrefix(ethers.utils.hexlify(addressBytes))
 
     const amount = ethers.BigNumber.from(token.external_balance)
