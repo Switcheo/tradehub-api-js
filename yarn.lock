@@ -1221,7 +1221,7 @@
     comment-json "^4.1.0"
     find-up "^4.1.0"
 
-"@keplr-wallet/types@^0.8.13":
+"@keplr-wallet/types@~0.8.13":
   version "0.8.13"
   resolved "https://registry.yarnpkg.com/@keplr-wallet/types/-/types-0.8.13.tgz#c4ea5e5f08af3c8b2708c786b2e85f9aa4c24a4e"
   integrity sha512-UaVATHmGaC5REyprLahyNIC3pZZQV+VTxMz10X3+hD6w2YgyLKimmqVg7ndVQhZrNZrVmMqgATl/UCCFgE6hlQ==
