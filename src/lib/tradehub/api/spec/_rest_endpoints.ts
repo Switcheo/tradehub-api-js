@@ -85,6 +85,7 @@ export const TradehubEndpoints = {
   'gov/parameters/deposit': '/gov/parameters/deposit',
   'gov/parameters/tallying': '/gov/parameters/tallying',
   'gov/proposals/list': '/gov/proposals',
+  'gov/proposals/detail': '/gov/proposals/:proposalId',
   'gov/proposals/proposer': '/gov/proposals/:proposalId/proposer',
   'gov/proposals/tally': '/gov/proposals/:proposalId/tally',
 

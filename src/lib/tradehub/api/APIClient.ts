@@ -54,7 +54,7 @@ import {
   GetUnbondedStakingValidatorsResponse,
   GetUnbondingStakingValidatorsResponse,
   GetWalletBalanceOpts,
-  GovDepositParamsResponse, GovListProposalResponse, GovLiveTallyResponse,
+  GovDepositParamsResponse, GovGetProposalResponse, GovListProposalResponse, GovLiveTallyResponse,
   GovProposerResponse, GovTallyParamsResponse, ListGovProposalOpts, ListValidatorDelegationsOpts, ListValidatorDelegationsResponse,
   parseCosmosDate,
   ResultsMinMax,
@@ -921,6 +921,25 @@ class APIClient {
     }
 
     return data as GovListProposalResponse
+  }
+
+  async getGovProposal(opts: GetGovProposalOpts): Promise<GovGetProposalResponse> {
+    const request = this.apiManager.path('gov/proposals/detail', opts)
+    const response = await request.get()
+    const data = response.data
+    const proposal = data.result;
+    proposal.final_tally_result = {
+      yes: bnOrZero(proposal.final_tally_result.yes),
+      abstain: bnOrZero(proposal.final_tally_result.abstain),
+      no: bnOrZero(proposal.final_tally_result.no),
+      no_with_veto: bnOrZero(proposal.final_tally_result.no_with_veto),
+    }
+    proposal.submit_time = parseCosmosDate(proposal.submit_time)
+    proposal.deposit_end_time = parseCosmosDate(proposal.deposit_end_time)
+    proposal.voting_start_time = parseCosmosDate(proposal.voting_start_time)
+    proposal.voting_end_time = parseCosmosDate(proposal.voting_end_time)
+
+    return data as GovGetProposalResponse
   }
 
   async getGovProposer(opts: GetGovProposalOpts): Promise<GovProposerResponse> {
