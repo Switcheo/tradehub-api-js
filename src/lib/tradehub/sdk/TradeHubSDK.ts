@@ -34,6 +34,7 @@ const DEFAULT_OPTS: TradeHubSDKInitOpts = {
 }
 
 class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
+  static Configs = NetworkConfigs
   static APIClient = APIClient
   static TokenClient = TokenClient
 
