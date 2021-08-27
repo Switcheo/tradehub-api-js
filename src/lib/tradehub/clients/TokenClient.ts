@@ -51,13 +51,23 @@ class TokenClient {
   public getCommonDenom(denom: string): string {
     return CommonAssetName[denom] ?? denom;
   }
+
   public getDecimals(denom: string): number | undefined {
     return (this.tokens[denom] ?? this.poolTokens[denom])?.decimals
   }
+
+  public getBlockchain(denom: string): string {
+    if (denom === 'swth') {
+      return 'tradehub';
+    }
+    return this.tokens[denom]?.blockchain ?? 'unknown';
+  }
+
   public getSymbol(denom: string): string {
     const commonDenom = this.getCommonDenom(denom);
     return this.symbols[commonDenom] ?? commonDenom.toUpperCase();
   }
+
   public getUSDValue(denom: string): BigNumber | undefined {
     const commonDenom = this.getCommonDenom(denom);
     return this.usdValues[commonDenom];
