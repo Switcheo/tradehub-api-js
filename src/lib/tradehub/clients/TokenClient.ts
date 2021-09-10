@@ -134,6 +134,8 @@ class TokenClient {
   public getWrappedTokens(denom: string): Token[] {
     const result: Token[] = [];
 
+    if (!this.tokens) return result;
+
     // check if denom is source token
     if (Object.values(this.wrapperMap).includes(denom)) {
       for (const [wrappedDenom, sourceDenom] of Object.entries(this.wrapperMap)) {
@@ -144,7 +146,9 @@ class TokenClient {
 
         // add wrapped to result list
         const token = this.tokens[wrappedDenom];
-        result.push(token);
+
+        if (token)
+          result.push(token);
       }
     }
 
