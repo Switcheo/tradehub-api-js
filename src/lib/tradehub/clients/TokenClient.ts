@@ -130,6 +130,26 @@ class TokenClient {
     return denom.match(/^([a-z\d.-]+)-(\d+)-([a-z\d.-]+)-(\d+)-lp\d+$/i) !== null;
   }
 
+  public getWrappedTokens(denom: string): Token[] {
+    const result: Token[] = [];
+
+    // check if denom is source token
+    if (Object.values(this.wrapperMap).includes(denom)) {
+      for (const [wrappedDenom, sourceDenom] of Object.entries(this.wrapperMap)) {
+        // if mapping is not relevant to current source denom, skip.
+        if (sourceDenom !== denom) {
+          continue;
+        }
+
+        // add wrapped to result list
+        const token = this.tokens[wrappedDenom];
+        result.push(token);
+      }
+    }
+
+    return result;
+  }
+
   public getWrappedToken(denom: string, blockchain?: Blockchain): Token | null {
     // check if denom is wrapped token
     if (this.wrapperMap[denom])
