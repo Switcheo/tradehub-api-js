@@ -61,6 +61,8 @@ class TokenClient {
       return overrideMap[denom];
     }
 
+    if (TokenClient.isPoolToken(denom)) return Blockchain.TradeHub;
+
     return this.tokens[denom]?.blockchain as Blockchain | undefined;
   }
 
