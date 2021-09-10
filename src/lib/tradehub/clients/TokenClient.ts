@@ -56,11 +56,12 @@ class TokenClient {
     return (this.tokens[denom] ?? this.poolTokens[denom])?.decimals
   }
 
-  public getBlockchain(denom: string, overrideMap: SimpleMap = { swth: "tradehub" }): string | undefined {
+  public getBlockchain(denom: string, overrideMap: SimpleMap<Blockchain> = { swth: Blockchain.TradeHub }): Blockchain | undefined {
     if (overrideMap?.[denom]) {
       return overrideMap[denom];
     }
-    return this.tokens[denom]?.blockchain;
+
+    return this.tokens[denom]?.blockchain as Blockchain | undefined;
   }
 
   public getSymbol(denom: string): string {

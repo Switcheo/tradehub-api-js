@@ -3,4 +3,5 @@ export enum Blockchain {
   Ethereum = 'eth',
   BinanceSmartChain = 'bsc',
   Zilliqa = 'zil',
+  TradeHub = 'tradehub',
 }

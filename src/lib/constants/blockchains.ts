@@ -1,9 +1,5 @@
-export enum Blockchain {
-  Neo = 'neo',
-  Ethereum = 'eth',
-  BinanceSmartChain = 'bsc',
-  Zilliqa = 'zil'
-}
+import { Blockchain as _Blockchain } from "../tradehub/utils/blockchain"
+export import Blockchain = _Blockchain;
 
 export const ChainNames = {
   1: 'MainNet',
