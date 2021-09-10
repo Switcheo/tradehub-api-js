@@ -131,6 +131,13 @@ class TokenClient {
     return denom.match(/^([a-z\d.-]+)-(\d+)-([a-z\d.-]+)-(\d+)-lp\d+$/i) !== null;
   }
 
+  public isWrappedToken(denom?: string) {
+    return !!this.wrapperMap[denom ?? ""];
+  }
+  public hasWrappedToken(denom?: string) {
+    return Object.values(this.wrapperMap).includes(denom);
+  }
+
   public getWrappedTokens(denom: string): Token[] {
     const result: Token[] = [];
 
