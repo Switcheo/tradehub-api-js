@@ -1,5 +1,5 @@
 import { TxMsg, TxTypes } from "@lib/tradehub/utils";
-import { types } from "index";
+import * as types from "@lib/types";
 import BaseModule from "./module";
 
 class ModStaking extends BaseModule {

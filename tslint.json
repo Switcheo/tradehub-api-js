@@ -9,7 +9,7 @@
     ],
     "no-implicit-dependencies": [
       true,
-      "dev"
+      ["@lib", "@zilliqa-js"]
     ]
   }
 }
