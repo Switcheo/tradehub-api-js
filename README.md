@@ -26,3 +26,5 @@ import { TradeHubSDK } from "tradehub-api-js";
 ```
 
 See `/examplesV2` for some examples to help you get started.
+
+All SDK functionalities are packaged in `/src/lib/tradehub`; `/examples` and the rest of `/src/lib` have been deprecated and are kept for backwards compatibility.
