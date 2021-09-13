@@ -2,13 +2,7 @@
 
 *Designed for simplicity*
 
-> The code found in this repository is unaudited and incomplete. Switcheo is not responsible for any losses incurred when using this code.
-
->The Websocket client is still under heavy development.
-
 It is recommended to develop on TestNet.
-
-Head over to [Tradehub Faucet](https://t.me/the_tradehub_bot) get receive free TestNet tokens.
 
 
 ## Features
@@ -19,7 +13,7 @@ Head over to [Tradehub Faucet](https://t.me/the_tradehub_bot) get receive free T
 
 ## Quick Start
 
-* Create a wallet on https://beta-app.dem.exchange/.
+* Create a wallet on https://app.dem.exchange/.
 
 * Add `tradehub-api-js` to package.json
 
@@ -32,7 +26,7 @@ Head over to [Tradehub Faucet](https://t.me/the_tradehub_bot) get receive free T
 * `yarn install` or `npm install`
 
 
-* import clients from ``tradehub-api-js``
+* import clients from `tradehub-api-js`
 
 ```
   const { WalletClient, RestClient, WsClient } = require('tradehub-api-js')
@@ -47,9 +41,3 @@ Head over to [Tradehub Faucet](https://t.me/the_tradehub_bot) get receive free T
 
   run()
 ```
-
-## Examples
-
->Examples are still under heavy development.
-
-Trading related examples can be found at [/examples/trading.js](https://github.com/Switcheo/tradehub-api-js/blob/master/examples/trading.js)
