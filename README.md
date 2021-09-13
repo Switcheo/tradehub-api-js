@@ -1,43 +1,28 @@
-# Tradehub API JS SDK
+# Tradehub SDK
 
-*Designed for simplicity*
+## Setup
 
-It is recommended to develop on TestNet.
-
-
-## Features
-
-* Implementation of all General, Market Data, Account, Blockchain endpoints. *WIP*
-* Handling of authentication
-* Typescript support
-
-## Quick Start
-
-* Create a wallet on https://app.dem.exchange/.
-
-* Add `tradehub-api-js` to package.json
+Install from npm:
 
 ```
-  "dependencies": {
-    "tradehub-api-js": "git+ssh://git@github.com/Switcheo/tradehub-api-js"
-  }
+npm install tradehub-api-js
 ```
 
-* `yarn install` or `npm install`
-
-
-* import clients from `tradehub-api-js`
+## Usage
 
 ```
-  const { WalletClient, RestClient, WsClient } = require('tradehub-api-js')
+import { TradeHubSDK } from "tradehub-api-js";
 
-  const network = 'TESTNET'
+(async () => {
+  const mnemonic = "your mnemonics here";
 
-  async function run() {
-    const wallet = await WalletClient.connectMnemonic(process.env.MNEMONICS, network)
-    const rest = new RestClient({ wallet, network })
-    const ws = new WsClient(network)
-  }
+  const sdk = new TradeHubSDK({
+    network: TradeHubSDK.Network.TestNet,
+  });
 
-  run()
+  const connectedSDK = await sdk.connectWithMnemonic(mnemonic);
+  console.log("connected wallet:", connectedSDK.wallet.bech32Address);
+})();
 ```
+
+See `/examplesV2` for some examples to help you get started.
