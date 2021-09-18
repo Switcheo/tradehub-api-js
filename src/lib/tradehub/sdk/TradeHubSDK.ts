@@ -120,7 +120,10 @@ class TradeHubSDK implements SDKProvider, NetworkConfigProvider {
       blockchain: Blockchain.Zilliqa,
     })
 
-    this.token = TokenClient.instance(this.api);
+    this.token = TokenClient.instance(
+      this.api,
+      this.network,
+    );
 
     // initialize modules
     this.order = new ModOrder(this);

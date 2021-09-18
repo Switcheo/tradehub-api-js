@@ -2,7 +2,7 @@ import fetch from "@lib/utils/fetch";
 import BigNumber from "bignumber.js";
 import { APIClient } from "../api";
 import { Token } from "../models/rest";
-import { Blockchain, bnOrZero, CoinGeckoTokenNames, CommonAssetName, SimpleMap } from "../utils";
+import { Blockchain, bnOrZero, CoinGeckoTokenNames, CommonAssetName, Network, OptionalNetworkMap, SimpleMap } from "../utils";
 
 const SYMBOL_OVERRIDE: {
   [symbol: string]: string
@@ -17,6 +17,17 @@ const SYMBOL_OVERRIDE: {
   DBC2: 'DBC',
 }
 
+const BLACK_LIST: OptionalNetworkMap<string[]> = {
+  [Network.MainNet]: [
+    // duplicated token
+    "busd.b.1",
+    "btcb.b.1",
+    "usdt.b.1",
+  
+    "swth-b", // binance wrapped token
+  ],
+}
+
 class TokenClient {
   public readonly tokens: SimpleMap<Token> = {};
   public readonly wrapperMap: SimpleMap<string> = {};
@@ -28,11 +39,12 @@ class TokenClient {
 
   private constructor(
     public readonly api: APIClient,
+    public readonly network: Network,
   ) {
   }
 
-  public static instance(api: APIClient) {
-    return new TokenClient(api);
+  public static instance(api: APIClient, network: Network) {
+    return new TokenClient(api, network);
   }
 
   public async initialize(): Promise<void> {
@@ -206,6 +218,8 @@ class TokenClient {
     const tokenList = await this.api.getTokens();
 
     for (const token of tokenList) {
+      if (BLACK_LIST[this.network]?.includes(token.denom)) continue;
+
       if (TokenClient.isPoolToken(token.denom)) {
         this.poolTokens[token.denom] = token;
       } else {
