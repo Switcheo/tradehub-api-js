@@ -23,9 +23,9 @@ import { ABIs } from "../../build/main/lib/eth";
   });
 
   const tokensList = Object.values(sdk.token.tokens);
-
-  tokensList.forEach(async (tokenAddress) => {
+  
+  for(const tokenAddress of tokensList) {
     const isRegistered = await lockProxyContract.registry(tokenAddress)
     console.log(isRegistered)
-  });
+  };
 })().catch(console.error).finally(() => process.exit(0))
