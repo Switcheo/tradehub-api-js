@@ -19,13 +19,19 @@ import { ABIs } from "../../build/main/lib/eth";
   );
   const sdk = await new TradeHubSDK({
     network: network,
-    debugMode: true,
+    debugMode: false,
   });
-
+  await sdk.initialize()
   const tokensList = Object.values(sdk.token.tokens);
-  
-  for(const tokenAddress of tokensList) {
-    const isRegistered = await lockProxyContract.registry(tokenAddress)
-    console.log(isRegistered)
+
+  for (const token of tokensList) {
+    if (token.blockchain === 'eth') {
+      try {
+        const isRegistered = await lockProxyContract.registry(token.asset_id)
+        console.log(`${token.denom}: ${isRegistered}`)
+      } catch (error) {
+        console.log(`${token.denom}: ${error}`)
+      };
+    }
   };
 })().catch(console.error).finally(() => process.exit(0))
