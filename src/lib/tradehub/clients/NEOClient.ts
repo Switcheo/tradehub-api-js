@@ -271,7 +271,10 @@ export class NEOClient {
     return { address: scriptHash, decimals, name, symbol }
   }
 
-  public async wrapNeoToNneo(neoAmount: BigNumber, account, rpcUrl) {
+  public async wrapNeoToNneo(neoAmount: BigNumber, neoPrivateKey: string) {
+    const account = Neon.create.account(neoPrivateKey)
+    const rpcUrl = await this.getProviderUrl()
+    
     const wrapperContractScriptHash = this.getConfig().WrapperScriptHash;
     const wrapperContractAddress = neonWallet.getAddressFromScriptHash(wrapperContractScriptHash);
 
@@ -286,7 +289,10 @@ export class NEOClient {
     };
 
     const script = Neon.create.script(props);
-    const apiProvider = new api.neoscan.instance("MainNet");
+    const networkConfig = this.getNetworkConfig()
+    const apiProvider = networkConfig.Network === Network.MainNet
+      ? new api.neonDB.instance('https://api.switcheo.network')
+      : new api.neoCli.instance(rpcUrl)
 
     const config = {
       api: apiProvider, // Network
@@ -298,7 +304,9 @@ export class NEOClient {
 
     // Neon API
     const response = await Neon.doInvoke(config);
-    logger("neo wrapper response", response);
+    logger("wrap NEO response", response);
+
+    return response
   }
 
   public async formatWithdrawalAddress(address: string): Promise<string> {
