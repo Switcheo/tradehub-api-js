@@ -23,6 +23,8 @@ const BLACK_LIST: OptionalNetworkMap<string[]> = {
     "busd.b.1",
     "btcb.b.1",
     "usdt.b.1",
+
+    "yam1", // test token
   
     "swth-b", // binance wrapped token
   ],
