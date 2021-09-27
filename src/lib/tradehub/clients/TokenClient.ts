@@ -23,6 +23,7 @@ const BLACK_LIST: OptionalNetworkMap<string[]> = {
     "busd.b.1",
     "btcb.b.1",
     "usdt.b.1",
+    "nneo1",
 
     "yam1", // test token
   
