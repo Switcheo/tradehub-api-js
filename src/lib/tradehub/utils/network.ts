@@ -106,7 +106,7 @@ export const NetworkConfigs: {
     TendermintURL: `https://dev-tradescan-tm.switcheo.org`,
     WsURL: 'wss://dev-ws.dem.exchange/ws',
 
-    FeeURL: `http://13.251.218.38:9001`,
+    FeeURL: `https://dev-fees.switcheo.org`,
     FeeAddress: '989761fb0c0eb0c05605e849cae77d239f98ac7f',
 
     ChainId: 'switcheochain',
