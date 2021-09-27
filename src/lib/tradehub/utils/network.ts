@@ -115,7 +115,7 @@ export const NetworkConfigs: {
       RpcURL: 'https://eth-ropsten.alchemyapi.io/v2/2KD9F3mFPNMfflSqZsPuTKmK_w7fFfut',
       WsURL: 'wss://ropsten.dagger.matic.network',
       PayerURL: `http://13.251.218.38:7001`,
-      LockProxyAddr: '0x7404752ac021940d0c85a25ce2e3aadce9325292',
+      LockProxyAddr: '0x91f453851e297524749a740d53cf54a89231487c',
       BalanceReader: '0xa74c81866c5bfff6684aa8edf35a5de8c3b9f173',
       ByteCodeHash: '0xc77e5709a69e94d310a6dfb700801758c4caed0385b25bdf82bbdf954e4dd0c3',
     },
