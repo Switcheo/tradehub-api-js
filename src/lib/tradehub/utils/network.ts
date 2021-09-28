@@ -221,8 +221,8 @@ export const NetworkConfigs: {
     },
 
     Zil: {
-      RpcURL: '',
-      LockProxyAddr: '',
+      RpcURL: 'https://api.zilliqa.com',
+      LockProxyAddr: '0xd73c6b871b4d0e130d64581993b745fc938a5be7',
       ChainId: 1,
     }
   },
