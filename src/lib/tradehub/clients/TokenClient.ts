@@ -24,6 +24,7 @@ const BLACK_LIST: OptionalNetworkMap<string[]> = {
     "btcb.b.1",
     "usdt.b.1",
     "zusdt.z.1",
+    "zusdt.z.2",
     "nneo1",
 
     "yam1", // test token
