@@ -1,6 +1,6 @@
 {
   "name": "tradehub-api-js",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "tradehub-api-js",
   "main": "build/main/index.js",
   "files": [
