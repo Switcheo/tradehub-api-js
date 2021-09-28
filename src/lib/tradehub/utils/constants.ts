@@ -205,7 +205,7 @@ export const CommonAssetName: SimpleMap = {
   'usdt.z.1': 'usdt',
   'wbtc.z.1': 'wbtc',
   'zeth.z.1': 'eth',
-  'zusdt.z.1': 'usdt',
+  'zusdt.z.3': 'usdt',
   'zwbtc.z.1': 'wbtc',
   'zwap.z.1': 'zwap',
   'xsgd.z.1': 'xsgd',
