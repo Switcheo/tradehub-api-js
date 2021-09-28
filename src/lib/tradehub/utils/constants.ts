@@ -119,6 +119,7 @@ export const TxFeeTypeMap = {
   "create_pool": TxTypes.LiquidityPool.CREATE_POOL,
   "stake_pool_token": TxTypes.LiquidityPool.STAKE_POOL_TOKEN,
   "unstake_pool_token": TxTypes.LiquidityPool.UNSTAKE_POOL_TOKEN,
+  "withdraw": TxTypes.Coin.CREATE_WITHDRAWAL_TYPE,
 }
 
 export const CommonAssetName: SimpleMap = {
