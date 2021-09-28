@@ -26,6 +26,11 @@ const BLACK_LIST: OptionalNetworkMap<string[]> = {
     "nneo1",
 
     "yam1", // test token
+    "dbc1",
+    "dbc2",
+    "flm",
+    "elink1",
+    "euni1",
   
     "swth-b", // binance wrapped token
   ],
