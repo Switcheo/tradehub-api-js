@@ -17,6 +17,7 @@ export * as RestTypes from "../api/spec";
 export * from "../models";
 export * as ExtClients from "../clients";
 export * as TradeHubTx from "../utils/tx";
+export * as TypeUtils from "../utils/types";
 
 /** @deprecated use RestModels */
 export { RestModels as RestResponse } from "../models";
