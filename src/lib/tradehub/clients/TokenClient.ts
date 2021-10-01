@@ -27,7 +27,9 @@ const BLACK_LIST: OptionalNetworkMap<string[]> = {
     "zusdt.z.2",
     "nneo1",
 
-    "yam1", // test token
+    "asa1", // test token
+    "cgas1",
+    "yam1",
     "dbc1",
     "dbc2",
     "flm",
