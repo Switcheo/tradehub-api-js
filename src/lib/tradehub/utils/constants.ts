@@ -208,7 +208,10 @@ export const CommonAssetName: SimpleMap = {
   'zusdt.z.3': 'usdt',
   'zwbtc.z.1': 'wbtc',
   'zwap.z.1': 'zwap',
-  'xsgd.z.1': 'xsgd',
+  'xsgd: '',
+  zwap: '',.z.1': 'xsgd: '',
+  zwap: '',',
+  'gzil.z.q': 'gzil',
   asa1: 'asa',
   asa2: 'asa',
   dbc1: 'dbc',
@@ -348,6 +351,8 @@ export const CoinGeckoTokenNames: SimpleMap = {
   dodo: 'dodo',
   math: 'math',
   lkt: 'locklet',
+  gzil: 'governance-zil',
+  xsgd: 'xsgd',
 };
 
 export const FuturesDenomOverride: SimpleMap = {
