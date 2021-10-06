@@ -1,3 +1,4 @@
+import { logger } from "@lib/utils";
 import { Transaction, Wallet } from "@zilliqa-js/account";
 import { CallParams, Contract, Value } from '@zilliqa-js/contract';
 import { BN, bytes, Long } from "@zilliqa-js/util";
@@ -76,9 +77,9 @@ export const tokenBalanceBatchRequest = (tokenAddress: string, walletAddress: st
       jsonrpc: "2.0",
       method: "GetSmartContractSubState",
       params: [
-        tokenAddress, // hex token address
+        tokenAddress.toLowerCase(), // hex token address
         "balances",
-        [walletAddress],
+        [walletAddress.toLowerCase()],
       ],
     },
   };
@@ -91,7 +92,7 @@ export const balanceBatchRequest = (address: string): BatchRequest => {
       id: "1",
       jsonrpc: "2.0",
       method: "GetBalance",
-      params: [address],
+      params: [address.replace(/^0x/, "").toLowerCase()],
     },
   };
 }
@@ -119,6 +120,9 @@ export class ZILClient {
   }
 
   public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]): Promise<RestModels.ExternalBalance[]> {
+    address = address.toLowerCase();
+    if (!address.startsWith("0x"))
+      address = `0x${address}`;
     const tokenList = await api.getTokens()
     const tokens = tokenList.filter(token =>
       token.blockchain == this.blockchain &&
@@ -133,18 +137,19 @@ export class ZILClient {
       body: JSON.stringify(requests.flatMap(request => request.item)),
     });
     const results: BatchResponse = await response.json();
-    console.log("batch result", results, requests)
+    logger("batch result", results, requests)
 
     const tokensWithBalances: RestModels.ExternalBalance[] = []
     if (!Array.isArray(results)) {
       return tokensWithBalances
     }
-  
+
     results.forEach((result: any, i: number) => {
       const token = tokens[i]
+      const balance = token.asset_id === zeroAddress ? result.result.balance : result.result.balances?.[address];
       tokensWithBalances.push({
         ...token,
-        external_balance: result.result.balance,
+        external_balance: balance,
       })
     })
 
@@ -240,6 +245,19 @@ export class ZILClient {
   public async checkAllowanceZRC2(token: RestModels.Token, owner: string, spender: string) {
     const contractAddress = token.asset_id
     const zilliqa = new Zilliqa(this.getProviderUrl())
+
+    if (owner.startsWith("zil"))
+      owner = fromBech32Address(owner);
+    if (spender.startsWith("zil"))
+      spender = fromBech32Address(spender);
+
+    owner = owner.toLowerCase();
+    spender = spender.toLowerCase();
+
+    if (!owner.startsWith("0x"))
+      owner = `0x${owner}`;
+    if (!spender.startsWith("0x"))
+      spender = `0x${spender}`;
     const resp = await zilliqa.blockchain.getSmartContractSubState(contractAddress, "allowances", [owner, spender])
     if (resp.error !== undefined) {
       throw new Error(resp.error.message)
