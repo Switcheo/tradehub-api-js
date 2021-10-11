@@ -9,6 +9,7 @@ const SYMBOL_OVERRIDE: {
 } = {
   swth: 'SWTH',
   NNEO: 'nNEO',
+  GZIL: 'gZIL',
   YAM1: 'YAM',
   YAM2: 'YAM',
   ASA1: 'ASA',
