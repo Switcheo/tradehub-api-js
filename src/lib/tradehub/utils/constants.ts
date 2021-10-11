@@ -209,7 +209,7 @@ export const CommonAssetName: SimpleMap = {
   'zwbtc.z.1': 'wbtc',
   'zwap.z.1': 'zwap',
   'xsgd.z.1': 'xsgd',
-  'gzil.z.q': 'gzil',
+  'gzil.z.1': 'gzil',
   asa1: 'asa',
   asa2: 'asa',
   dbc1: 'dbc',
