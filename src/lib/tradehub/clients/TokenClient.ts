@@ -15,7 +15,10 @@ const SYMBOL_OVERRIDE: {
   ASA1: 'ASA',
   ASA2: 'ASA',
   DBC1: 'DBC',
-  DBC2: 'DBC',
+  ZETH: 'zETH',
+  ZWBTC: 'zWBTC',
+  ZXSGD: 'zXSGD',
+  ZXCAD: 'zXCAD',
 }
 
 const BLACK_LIST: OptionalNetworkMap<string[]> = {
