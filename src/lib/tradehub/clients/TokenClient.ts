@@ -45,6 +45,9 @@ const BLACK_LIST: OptionalNetworkMap<string[]> = {
 }
 
 class TokenClient {
+  static SYMBOL_OVERRIDE = SYMBOL_OVERRIDE;
+  static BLACK_LIST = BLACK_LIST;
+
   public readonly tokens: SimpleMap<Token> = {};
   public readonly wrapperMap: SimpleMap<string> = {};
   public readonly poolTokens: SimpleMap<Token> = {};

@@ -7,6 +7,7 @@ import { ethers } from "ethers";
 import { APIClient } from "../api";
 import { RestModels } from "../models";
 import { appendHexPrefix, Blockchain, EthNetworkConfig, NetworkConfig, NetworkConfigProvider, stripHexPrefix, SWTHAddress } from "../utils";
+import TokenClient from "./TokenClient";
 
 export interface ETHClientOpts {
   configProvider: NetworkConfigProvider,
@@ -59,9 +60,12 @@ export class ETHClient {
   }
 
   public async getExternalBalances(api: APIClient, address: string, whitelistDenoms?: string[]): Promise<RestModels.ExternalBalance[]> {
+    const network = this.configProvider.getConfig().Network;
+    const tokenBlacklist = TokenClient.BLACK_LIST[network];
     const tokenList = await api.getTokens()
     const lockProxyAddress = this.getLockProxyAddress().toLowerCase()
     const tokens = tokenList.filter(token =>
+      !tokenBlacklist.includes(token.denom) &&
       token.blockchain == this.blockchain &&
       token.asset_id.length == 40 &&
       token.lock_proxy_hash.toLowerCase() == stripHexPrefix(lockProxyAddress) &&
