@@ -216,6 +216,7 @@ export const CommonAssetName: SimpleMap = {
   dbc1: 'dbc',
   dbc2: 'dbc',
   'lkt.7ef7febf': 'lkt',
+  'lkt.bep20.c5a4937a': 'lkt',
 
   // devnet tokens
   'zil1': 'zil',
