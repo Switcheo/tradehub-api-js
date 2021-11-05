@@ -19,6 +19,7 @@ const SYMBOL_OVERRIDE: {
   ZWBTC: 'zWBTC',
   ZXSGD: 'zXSGD',
   ZXCAD: 'zXCAD',
+  "LKT.BEP20": 'LKT',
 }
 
 const BLACK_LIST: OptionalNetworkMap<string[]> = {
