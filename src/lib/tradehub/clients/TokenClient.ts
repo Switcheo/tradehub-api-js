@@ -19,6 +19,7 @@ const SYMBOL_OVERRIDE: {
   ZWBTC: 'zWBTC',
   ZXSGD: 'zXSGD',
   ZXCAD: 'zXCAD',
+  ePORT: 'PORT',
   "LKT.BEP20": 'LKT',
 }
 

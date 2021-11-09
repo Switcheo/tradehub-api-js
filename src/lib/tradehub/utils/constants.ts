@@ -210,6 +210,9 @@ export const CommonAssetName: SimpleMap = {
   'zwap.z.1': 'zwap',
   'xsgd.z.1': 'xsgd',
   'gzil.z.1': 'gzil',
+  'port.e.1': 'port',
+  'port.z.1': 'port',
+  'xcad.e.1': 'xcad',
   'xcad.z.1': 'xcad',
   asa1: 'asa',
   asa2: 'asa',
@@ -354,9 +357,15 @@ export const CoinGeckoTokenNames: SimpleMap = {
   gzil: 'governance-zil',
   xsgd: 'xsgd',
   xcad: 'xcad-network',
+  port: 'packageportal',
 };
 
 export const FuturesDenomOverride: SimpleMap = {
   WBTC: 'BTC',
   USDC: 'USD',
+}
+
+export const ETH_DENOM_MAP: SimpleMap<string> = {
+  swth: 'swth-e',
+  'port.z.1': 'port.e.1',
 }
