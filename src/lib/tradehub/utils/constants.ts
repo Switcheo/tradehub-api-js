@@ -364,8 +364,3 @@ export const FuturesDenomOverride: SimpleMap = {
   WBTC: 'BTC',
   USDC: 'USD',
 }
-
-export const ETH_DENOM_MAP: SimpleMap<string> = {
-  swth: 'swth-e',
-  'port.z.1': 'port.e.1',
-}
