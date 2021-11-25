@@ -117,6 +117,7 @@ export const TxFeeTypeMap = {
   "create_oracle_vote": TxTypes.Oracle.CREATE_VOTE_TYPE,
   "create_order": TxTypes.Order.CREATE,
   "create_pool": TxTypes.LiquidityPool.CREATE_POOL,
+  "create_pool_with_liquidity": TxTypes.LiquidityPool.CREATE_POOL_WITH_LIQUIDITY,
   "stake_pool_token": TxTypes.LiquidityPool.STAKE_POOL_TOKEN,
   "unstake_pool_token": TxTypes.LiquidityPool.UNSTAKE_POOL_TOKEN,
   "withdraw": TxTypes.Coin.CREATE_WITHDRAWAL_TYPE,
