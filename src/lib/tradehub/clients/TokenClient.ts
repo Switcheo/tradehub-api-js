@@ -31,6 +31,7 @@ const BLACK_LIST: OptionalNetworkMap<string[]> = {
     "usdt.b.1",
     "zusdt.z.1",
     "zusdt.z.2",
+    "swth.z.1",
     "nneo1",
 
     "asa1", // test token
